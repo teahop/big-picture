@@ -1,6 +1,6 @@
 # Industry Map — Specification
 
-Version 0.1, 2026-11-09. Owner: github.com/teahop.
+Version 0.2, 2026-11-09 (0.2: source facts verified in Phase 0; see `data/SOURCES.md`). Owner: github.com/teahop.
 
 ## 1. Purpose
 
@@ -53,19 +53,21 @@ by the build before use.
 
 | Need | Source | Checked 2026-11-09 | Confirm at build |
 |---|---|---|---|
-| Industries, occupation mix, employment, projections | BLS National Employment Matrix (XLSX) | About 300 detailed industries and 800 detailed occupations; coded to NAICS 2022 | Current projection cycle and file layout |
-| Industry value added | BEA GDP by industry | not checked | Table and API or file |
-| Research taxonomy and volume | OpenAlex | 4 domains, 26 fields, 252 subfields, 4,516 topics; API key required since 2026-02-13 with usage-based limits; about 12% of works have no topic | `group_by` support for the queries in 6.1; daily allowance |
-| Research dollars | NSF NCSES HERD survey | FY 2024 is the latest; some tables are only in the NCSES Table Builder | Field list and crosswalk to OpenAlex fields |
-| Field to occupation | NCES CIP 2020 to SOC 2018 crosswalk | Expert-judgment mapping, not empirical | Download location |
-| Occupation knowledge, skills, titles | O*NET database | Release 30.3 renamed files and columns in a content-model update | Pin one release; use its data dictionary |
-| Pay | BLS OEWS (wages by occupation, industry and metro) | not checked | Latest release |
-| Geography | BLS QCEW (employment by industry and area); OpenAlex institution locations | not checked | Latest release |
-| Business R&D by industry (optional bridge) | NSF NCSES business R&D survey | not checked | Availability by NAICS |
-| Patent-to-paper links (optional bridge) | "Reliance on Science" dataset | not checked | Availability and licence |
+| Industries, occupation mix, employment, projections | BLS National Employment Matrix (XLSX) | Cycle 2025-2035; industries coded to NAICS 2022, occupations to SOC 2018. Counts of detailed industries and occupations are not stated on the BLS pages | File layout; count detailed rows from the file |
+| Industry value added | BEA GDP by industry | Release 2026-09-30 (Q2 2026). No bulk file found; data is in the interactive tables and the API dataset `GDPByIndustry` (free key) | Which table and years; API or interactive export |
+| Research taxonomy and volume | OpenAlex | 4 domains, 26 fields, 252 subfields, 4,516 topics; Counts confirmed. Docs now at help.openalex.org. Keyless basic use works; a free key gives a $1/day budget, 30 requests/s and is required for cursor paging past page one (no "required since 2026-02-13" statement found). About 10% of works have no topic. Topic classifier replaced October 2026 | `group_by` works on works; topic-hierarchy fields (`primary_topic.field.id` etc.) only as a single group_by field. Record classifier version; filter to article, review, book, book-chapter when counting |
+| Research dollars | NSF NCSES HERD survey | FY 2024 is the latest (released 2025-12-23); tables cut from 86 to 55; some by-field tables are Table Builder only | Which by-field tables download directly; field list and crosswalk to OpenAlex fields |
+| Field to occupation | NCES CIP 2020 to SOC 2018 crosswalk | Expert-judgment mapping, not empirical. XLSX at nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx; CIP 2020 is still current; the CIP code list has no direct URL | Get the CIP code list another way |
+| Occupation knowledge, skills, titles | O*NET database | Current release is 31.0 (2026-10); 30.3 renamed files and columns. No "Alternate Titles" file: use Job Titles and Sample of Reported Titles; skills are split across Software, Essential and Transferable Skills files. Licence Creative Commons (CC BY 4.0 per a summary) | Pin 31.0; use its data dictionary; confirm licence page |
+| Pay | BLS OEWS (wages by occupation, industry and metro) | May 2025 reference period; files `oesm25nat`, `oesm25in4`, `oesm25ma` ZIPs (XLSX inside) | NAICS edition of the industry file |
+| Geography | BLS QCEW (employment by industry and area); OpenAlex institution locations | Annual files through 2025; quarterly files in 2026; CSV slices API on data.bls.gov | NAICS edition; whether the API serves annual slices |
+| Business R&D by industry (optional bridge) | NSF NCSES Business Enterprise R&D (BERD) survey, successor to BRDIS | Survey year 2024, released 2026-10-29; by-industry tables are downloadable XLSX; methodology uses 2017 NAICS | Table list; NAICS 2017 vs 2022 mismatch |
+| Patent-to-paper links (optional bridge) | "Reliance on Science" dataset | Updated July 2026, through patents granted 2025; Zenodo CSV. **Licence CC BY-NC 4.0 (non-commercial)** | Whether non-commercial terms are acceptable for derived public data |
 
 OpenAlex has no official crosswalk to CIP or NAICS. The project builds its own
 (section 6.3) and keeps it as a reviewed, tracked table.
+
+Three source differences from version 0.1 matter to the design: BEA value added has no bulk file, so it comes from the API or interactive export and is optional until proven; OpenAlex topic assignments depend on a classifier that changed in October 2026, so every research count records the classifier version; and Reliance on Science is non-commercial, so it stays out of the public bundle unless the owner accepts that.
 
 ## 5. Resolution
 
