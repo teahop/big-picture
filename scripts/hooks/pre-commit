@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Blocks commits that stage private paths or contain blocklisted strings.
+# Installed by scripts/setup.sh. Do not bypass with --no-verify.
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+fail=0
+
+# 1. Private paths (also catches renames/copies: check every staged path).
+bad="$(git diff --cached --name-only --diff-filter=ACMRT -z | tr '\0' '\n' | grep -E '^(Personal Data|private)/' || true)"
+if [ -n "$bad" ]; then
+  echo "pre-commit: BLOCKED. Staged paths under Personal Data/ or private/:" >&2
+  echo "$bad" | sed 's/^/  /' >&2
+  fail=1
+fi
+
+# 2. Blocklist strings in staged additions (and staged paths).
+bl="$root/private/blocklist.txt"
+if [ -f "$bl" ]; then
+  tmp="$(mktemp)"; trap 'rm -f "$tmp"' EXIT
+  grep -v '^[[:space:]]*$' "$bl" > "$tmp" || true
+  if [ -s "$tmp" ]; then
+    hits="$( { git diff --cached -U0 --no-color | grep -E '^\+' | grep -vE '^\+\+\+' ; git diff --cached --name-only; } | { grep -n -i -F -f "$tmp" || true; } | cut -d: -f1 | sort -u | wc -l | tr -d ' ')"
+    if [ "$hits" != "0" ]; then
+      echo "pre-commit: BLOCKED. Staged content matches $hits line(s) from private/blocklist.txt." >&2
+      echo "  (Matches are not printed. Run: git diff --cached | grep -i -F -f private/blocklist.txt)" >&2
+      fail=1
+    fi
+  fi
+fi
+exit $fail

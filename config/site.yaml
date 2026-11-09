@@ -1,0 +1,3 @@
+# Single source of the project's display name (working title).
+# The viewer, README title and page metadata read from here.
+display_name: "Industry Map"
