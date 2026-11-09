@@ -14,6 +14,9 @@ const siteName = (): Plugin => ({
 
 export default defineConfig({
   base: "./",
+  // The viewer loads the tracked public bundle straight from data/public.
+  publicDir: "../data/public",
+  server: { fs: { allow: [".."] } },
   define: { __DISPLAY_NAME__: JSON.stringify(site.display_name) },
   plugins: [siteName()],
 });

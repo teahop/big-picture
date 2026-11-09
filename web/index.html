@@ -5,14 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="%DISPLAY_NAME%: industry and research terrain" />
     <title>%DISPLAY_NAME%</title>
-    <style>
-      html, body { margin: 0; height: 100%; background: #0f1115; }
-      canvas { display: block; }
-      #title { position: fixed; top: 12px; left: 16px; color: #e6e8ec; font: 600 14px system-ui, sans-serif; }
-    </style>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="title"></div>
+    <header>
+      <h1 id="title"></h1>
+      <label class="search"><span class="sr">Search sectors</span>
+        <input id="search" type="search" placeholder="Search sectors" autocomplete="off" />
+      </label>
+      <span id="search-count" aria-live="polite"></span>
+      <button id="mode" type="button" aria-pressed="false">Switch to 2D map</button>
+    </header>
+    <p id="notice" role="status"></p>
+    <main>
+      <section class="map" aria-label="Terrain map">
+        <div id="view-3d" class="view"></div>
+        <div id="labels" class="labels" aria-hidden="true"></div>
+        <div id="view-2d" class="view" hidden></div>
+      </section>
+      <aside>
+        <div id="details" aria-live="polite"></div>
+        <h3>Sectors by employment</h3>
+        <ul id="node-list"></ul>
+        <p id="source" class="source"></p>
+      </aside>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

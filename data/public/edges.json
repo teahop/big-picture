@@ -1,0 +1,356 @@
+[
+ {
+  "source": "ind:110000",
+  "target": "ind:420000",
+  "type": "ind-ind",
+  "weight": 0.0794
+ },
+ {
+  "source": "ind:110000",
+  "target": "ind:48-490",
+  "type": "ind-ind",
+  "weight": 0.0675
+ },
+ {
+  "source": "ind:110000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.0515
+ },
+ {
+  "source": "ind:110000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.0469
+ },
+ {
+  "source": "ind:210000",
+  "target": "ind:230000",
+  "type": "ind-ind",
+  "weight": 0.3903
+ },
+ {
+  "source": "ind:210000",
+  "target": "ind:420000",
+  "type": "ind-ind",
+  "weight": 0.261
+ },
+ {
+  "source": "ind:210000",
+  "target": "ind:48-490",
+  "type": "ind-ind",
+  "weight": 0.3295
+ },
+ {
+  "source": "ind:210000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.2331
+ },
+ {
+  "source": "ind:220000",
+  "target": "ind:230000",
+  "type": "ind-ind",
+  "weight": 0.2405
+ },
+ {
+  "source": "ind:220000",
+  "target": "ind:520000",
+  "type": "ind-ind",
+  "weight": 0.2519
+ },
+ {
+  "source": "ind:220000",
+  "target": "ind:540000",
+  "type": "ind-ind",
+  "weight": 0.3059
+ },
+ {
+  "source": "ind:220000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.388
+ },
+ {
+  "source": "ind:230000",
+  "target": "ind:540000",
+  "type": "ind-ind",
+  "weight": 0.1846
+ },
+ {
+  "source": "ind:230000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.1837
+ },
+ {
+  "source": "ind:31-330",
+  "target": "ind:420000",
+  "type": "ind-ind",
+  "weight": 0.44
+ },
+ {
+  "source": "ind:31-330",
+  "target": "ind:48-490",
+  "type": "ind-ind",
+  "weight": 0.2936
+ },
+ {
+  "source": "ind:31-330",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.3002
+ },
+ {
+  "source": "ind:31-330",
+  "target": "ind:560000",
+  "type": "ind-ind",
+  "weight": 0.3047
+ },
+ {
+  "source": "ind:420000",
+  "target": "ind:44-450",
+  "type": "ind-ind",
+  "weight": 0.2444
+ },
+ {
+  "source": "ind:420000",
+  "target": "ind:48-490",
+  "type": "ind-ind",
+  "weight": 0.5426
+ },
+ {
+  "source": "ind:420000",
+  "target": "ind:510000",
+  "type": "ind-ind",
+  "weight": 0.2418
+ },
+ {
+  "source": "ind:420000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.41
+ },
+ {
+  "source": "ind:420000",
+  "target": "ind:560000",
+  "type": "ind-ind",
+  "weight": 0.3029
+ },
+ {
+  "source": "ind:44-450",
+  "target": "ind:48-490",
+  "type": "ind-ind",
+  "weight": 0.1836
+ },
+ {
+  "source": "ind:44-450",
+  "target": "ind:710000",
+  "type": "ind-ind",
+  "weight": 0.187
+ },
+ {
+  "source": "ind:44-450",
+  "target": "ind:720000",
+  "type": "ind-ind",
+  "weight": 0.0956
+ },
+ {
+  "source": "ind:44-450",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.1384
+ },
+ {
+  "source": "ind:48-490",
+  "target": "ind:560000",
+  "type": "ind-ind",
+  "weight": 0.301
+ },
+ {
+  "source": "ind:510000",
+  "target": "ind:520000",
+  "type": "ind-ind",
+  "weight": 0.3549
+ },
+ {
+  "source": "ind:510000",
+  "target": "ind:540000",
+  "type": "ind-ind",
+  "weight": 0.713
+ },
+ {
+  "source": "ind:510000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.6448
+ },
+ {
+  "source": "ind:520000",
+  "target": "ind:540000",
+  "type": "ind-ind",
+  "weight": 0.406
+ },
+ {
+  "source": "ind:520000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.5852
+ },
+ {
+  "source": "ind:530000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.3162
+ },
+ {
+  "source": "ind:530000",
+  "target": "ind:560000",
+  "type": "ind-ind",
+  "weight": 0.3079
+ },
+ {
+  "source": "ind:530000",
+  "target": "ind:710000",
+  "type": "ind-ind",
+  "weight": 0.2181
+ },
+ {
+  "source": "ind:530000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.3469
+ },
+ {
+  "source": "ind:530000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.2597
+ },
+ {
+  "source": "ind:540000",
+  "target": "ind:550000",
+  "type": "ind-ind",
+  "weight": 0.7946
+ },
+ {
+  "source": "ind:540000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.3473
+ },
+ {
+  "source": "ind:550000",
+  "target": "ind:560000",
+  "type": "ind-ind",
+  "weight": 0.3339
+ },
+ {
+  "source": "ind:550000",
+  "target": "ind:610000",
+  "type": "ind-ind",
+  "weight": 0.1232
+ },
+ {
+  "source": "ind:550000",
+  "target": "ind:620000",
+  "type": "ind-ind",
+  "weight": 0.1369
+ },
+ {
+  "source": "ind:550000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.3322
+ },
+ {
+  "source": "ind:550000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.3814
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:610000",
+  "type": "ind-ind",
+  "weight": 0.1932
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:620000",
+  "type": "ind-ind",
+  "weight": 0.1297
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:710000",
+  "type": "ind-ind",
+  "weight": 0.3237
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:720000",
+  "type": "ind-ind",
+  "weight": 0.0589
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.3179
+ },
+ {
+  "source": "ind:560000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.2681
+ },
+ {
+  "source": "ind:610000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.1927
+ },
+ {
+  "source": "ind:610000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.1523
+ },
+ {
+  "source": "ind:620000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.2229
+ },
+ {
+  "source": "ind:620000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.1778
+ },
+ {
+  "source": "ind:710000",
+  "target": "ind:720000",
+  "type": "ind-ind",
+  "weight": 0.2657
+ },
+ {
+  "source": "ind:710000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.29
+ },
+ {
+  "source": "ind:720000",
+  "target": "ind:810000",
+  "type": "ind-ind",
+  "weight": 0.0933
+ },
+ {
+  "source": "ind:810000",
+  "target": "ind:900000",
+  "type": "ind-ind",
+  "weight": 0.2625
+ }
+]

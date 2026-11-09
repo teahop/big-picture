@@ -1,0 +1,38 @@
+{
+ "schema": 1,
+ "size_measures": {
+  "industry": [
+   "employment"
+  ]
+ },
+ "deferred_measures": {
+  "industry": {
+   "value_added": "BEA has no bulk file; deferred to Phase 3"
+  }
+ },
+ "levels": [
+  0
+ ],
+ "sources": [
+  {
+   "name": "BLS National Employment Matrix",
+   "release": "2025-35 projection cycle (base year 2025, projected year 2035)",
+   "url": "https://www.bls.gov/emp/ind-occ-matrix/matrix.xlsx",
+   "retrieved": "2026-11-09",
+   "retrieval_note": "saved by hand: BLS blocks scripted downloads",
+   "industry_coding": "NAICS 2022 based; occupations SOC 2018",
+   "sha256": "cf0a39bcefe3f427af74b53006003a7e3afaa9623e1b9933349b1a5a8ef55b4d"
+  }
+ ],
+ "layout": {
+  "stage": "provisional-level0",
+  "seed": 20261109
+ },
+ "terrain": {
+  "grid_size": 96,
+  "margin": 0.25,
+  "bandwidth_level0": 0.22,
+  "bandwidth_per_level": 0.5
+ },
+ "display_name_source": "config/site.yaml"
+}

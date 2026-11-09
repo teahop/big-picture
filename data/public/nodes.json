@@ -1,0 +1,922 @@
+[
+ {
+  "id": "ind:110000",
+  "label": "Agriculture & forestry",
+  "title": "Agriculture, forestry, fishing, and hunting",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "110000",
+  "provenance": "official",
+  "size": {
+   "employment": 1462.4,
+   "employment_2035": 1484.1
+  },
+  "growth": 1.48,
+  "xy": [
+   -0.061791,
+   1.0
+  ],
+  "top_occupations": [
+   {
+    "soc": "45-2092",
+    "title": "Farmworkers and laborers, crop, nursery, and greenhouse",
+    "share_pct": 29.3
+   },
+   {
+    "soc": "11-9013",
+    "title": "Farmers, ranchers, and other agricultural managers",
+    "share_pct": 17.6
+   },
+   {
+    "soc": "45-2093",
+    "title": "Farmworkers, farm, ranch, and aquacultural animals",
+    "share_pct": 12.0
+   },
+   {
+    "soc": "45-2091",
+    "title": "Agricultural equipment operators",
+    "share_pct": 3.3
+   },
+   {
+    "soc": "45-1011",
+    "title": "First-line supervisors of farming, fishing, and forestry workers",
+    "share_pct": 2.8
+   }
+  ]
+ },
+ {
+  "id": "ind:210000",
+  "label": "Mining & oil/gas",
+  "title": "Mining, quarrying, and oil and gas extraction",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "210000",
+  "provenance": "official",
+  "size": {
+   "employment": 573.5,
+   "employment_2035": 577.3
+  },
+  "growth": 0.66,
+  "xy": [
+   -0.426791,
+   0.60538
+  ],
+  "top_occupations": [
+   {
+    "soc": "47-5013",
+    "title": "Service unit operators, oil and gas",
+    "share_pct": 6.8
+   },
+   {
+    "soc": "47-5071",
+    "title": "Roustabouts, oil and gas",
+    "share_pct": 6.8
+   },
+   {
+    "soc": "53-3032",
+    "title": "Heavy and tractor-trailer truck drivers",
+    "share_pct": 5.5
+   },
+   {
+    "soc": "47-1011",
+    "title": "First-line supervisors of construction trades and extraction workers",
+    "share_pct": 5.3
+   },
+   {
+    "soc": "47-2073",
+    "title": "Operating engineers and other construction equipment operators",
+    "share_pct": 4.4
+   }
+  ]
+ },
+ {
+  "id": "ind:220000",
+  "label": "Utilities",
+  "title": "Utilities",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "220000",
+  "provenance": "official",
+  "size": {
+   "employment": 601.3,
+   "employment_2035": 660.1
+  },
+  "growth": 9.78,
+  "xy": [
+   -0.653639,
+   -0.557942
+  ],
+  "top_occupations": [
+   {
+    "soc": "49-9051",
+    "title": "Electrical power-line installers and repairers",
+    "share_pct": 10.9
+   },
+   {
+    "soc": "43-4051",
+    "title": "Customer service representatives",
+    "share_pct": 4.6
+   },
+   {
+    "soc": "49-1011",
+    "title": "First-line supervisors of mechanics, installers, and repairers",
+    "share_pct": 4.1
+   },
+   {
+    "soc": "49-9012",
+    "title": "Control and valve installers and repairers, except mechanical door",
+    "share_pct": 3.8
+   },
+   {
+    "soc": "17-2071",
+    "title": "Electrical engineers",
+    "share_pct": 3.7
+   }
+  ]
+ },
+ {
+  "id": "ind:230000",
+  "label": "Construction",
+  "title": "Construction",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "230000",
+  "provenance": "official",
+  "size": {
+   "employment": 8266.7,
+   "employment_2035": 8677.4
+  },
+  "growth": 4.97,
+  "xy": [
+   -0.674695,
+   0.611316
+  ],
+  "top_occupations": [
+   {
+    "soc": "47-2061",
+    "title": "Construction laborers",
+    "share_pct": 11.1
+   },
+   {
+    "soc": "47-1011",
+    "title": "First-line supervisors of construction trades and extraction workers",
+    "share_pct": 7.6
+   },
+   {
+    "soc": "47-2111",
+    "title": "Electricians",
+    "share_pct": 7.3
+   },
+   {
+    "soc": "47-2031",
+    "title": "Carpenters",
+    "share_pct": 6.9
+   },
+   {
+    "soc": "47-2152",
+    "title": "Plumbers, pipefitters, and steamfitters",
+    "share_pct": 4.7
+   }
+  ]
+ },
+ {
+  "id": "ind:31-330",
+  "label": "Manufacturing",
+  "title": "Manufacturing",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "31-330",
+  "provenance": "official",
+  "size": {
+   "employment": 12633.7,
+   "employment_2035": 12705.8
+  },
+  "growth": 0.57,
+  "xy": [
+   -0.827225,
+   -0.203024
+  ],
+  "top_occupations": [
+   {
+    "soc": "51-2090",
+    "title": "Miscellaneous assemblers and fabricators",
+    "share_pct": 8.5
+   },
+   {
+    "soc": "51-1011",
+    "title": "First-line supervisors of production and operating workers",
+    "share_pct": 3.9
+   },
+   {
+    "soc": "53-7062",
+    "title": "Laborers and freight, stock, and material movers, hand",
+    "share_pct": 3.2
+   },
+   {
+    "soc": "51-9061",
+    "title": "Inspectors, testers, sorters, samplers, and weighers",
+    "share_pct": 3.0
+   },
+   {
+    "soc": "51-9111",
+    "title": "Packaging and filling machine operators and tenders",
+    "share_pct": 2.4
+   }
+  ]
+ },
+ {
+  "id": "ind:420000",
+  "label": "Wholesale trade",
+  "title": "Wholesale trade",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "420000",
+  "provenance": "official",
+  "size": {
+   "employment": 6059.5,
+   "employment_2035": 6184.7
+  },
+  "growth": 2.07,
+  "xy": [
+   -0.568306,
+   -0.003188
+  ],
+  "top_occupations": [
+   {
+    "soc": "41-4012",
+    "title": "Sales representatives, wholesale and manufacturing, except technical and scientific products",
+    "share_pct": 13.3
+   },
+   {
+    "soc": "53-7062",
+    "title": "Laborers and freight, stock, and material movers, hand",
+    "share_pct": 6.6
+   },
+   {
+    "soc": "53-3032",
+    "title": "Heavy and tractor-trailer truck drivers",
+    "share_pct": 4.5
+   },
+   {
+    "soc": "53-7065",
+    "title": "Stockers and order fillers",
+    "share_pct": 4.4
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 4.2
+   }
+  ]
+ },
+ {
+  "id": "ind:44-450",
+  "label": "Retail trade",
+  "title": "Retail trade",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "44-450",
+  "provenance": "official",
+  "size": {
+   "employment": 15440.9,
+   "employment_2035": 15413.4
+  },
+  "growth": -0.18,
+  "xy": [
+   0.879329,
+   0.08996
+  ],
+  "top_occupations": [
+   {
+    "soc": "41-2031",
+    "title": "Retail salespersons",
+    "share_pct": 22.8
+   },
+   {
+    "soc": "41-2011",
+    "title": "Cashiers",
+    "share_pct": 16.5
+   },
+   {
+    "soc": "53-7065",
+    "title": "Stockers and order fillers",
+    "share_pct": 11.8
+   },
+   {
+    "soc": "41-1011",
+    "title": "First-line supervisors of retail sales workers",
+    "share_pct": 6.4
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 2.9
+   }
+  ]
+ },
+ {
+  "id": "ind:48-490",
+  "label": "Transportation & warehousing",
+  "title": "Transportation and warehousing",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "48-490",
+  "provenance": "official",
+  "size": {
+   "employment": 6639.5,
+   "employment_2035": 6846.8
+  },
+  "growth": 3.12,
+  "xy": [
+   -0.83651,
+   0.227133
+  ],
+  "top_occupations": [
+   {
+    "soc": "53-3032",
+    "title": "Heavy and tractor-trailer truck drivers",
+    "share_pct": 17.5
+   },
+   {
+    "soc": "53-7062",
+    "title": "Laborers and freight, stock, and material movers, hand",
+    "share_pct": 14.3
+   },
+   {
+    "soc": "53-3033",
+    "title": "Light truck drivers",
+    "share_pct": 7.0
+   },
+   {
+    "soc": "53-7065",
+    "title": "Stockers and order fillers",
+    "share_pct": 6.8
+   },
+   {
+    "soc": "53-7051",
+    "title": "Industrial truck and tractor operators",
+    "share_pct": 5.2
+   }
+  ]
+ },
+ {
+  "id": "ind:510000",
+  "label": "Information",
+  "title": "Information",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "510000",
+  "provenance": "official",
+  "size": {
+   "employment": 2861.9,
+   "employment_2035": 3012.9
+  },
+  "growth": 5.28,
+  "xy": [
+   -0.157811,
+   -0.847386
+  ],
+  "top_occupations": [
+   {
+    "soc": "15-1252",
+    "title": "Software developers",
+    "share_pct": 12.1
+   },
+   {
+    "soc": "41-3091",
+    "title": "Sales representatives of services, except advertising, insurance, financial services, and travel",
+    "share_pct": 6.8
+   },
+   {
+    "soc": "43-4051",
+    "title": "Customer service representatives",
+    "share_pct": 3.7
+   },
+   {
+    "soc": "49-2022",
+    "title": "Telecommunications equipment installers and repairers, except line installers",
+    "share_pct": 3.3
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 3.2
+   }
+  ]
+ },
+ {
+  "id": "ind:520000",
+  "label": "Finance & insurance",
+  "title": "Finance and insurance",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "520000",
+  "provenance": "official",
+  "size": {
+   "employment": 6739.3,
+   "employment_2035": 6893.6
+  },
+  "growth": 2.29,
+  "xy": [
+   0.226986,
+   -0.816163
+  ],
+  "top_occupations": [
+   {
+    "soc": "43-4051",
+    "title": "Customer service representatives",
+    "share_pct": 7.8
+   },
+   {
+    "soc": "41-3021",
+    "title": "Insurance sales agents",
+    "share_pct": 7.3
+   },
+   {
+    "soc": "41-3031",
+    "title": "Securities, commodities, and financial services sales agents",
+    "share_pct": 7.0
+   },
+   {
+    "soc": "43-3071",
+    "title": "Tellers",
+    "share_pct": 4.9
+   },
+   {
+    "soc": "13-1031",
+    "title": "Claims adjusters, examiners, and investigators",
+    "share_pct": 4.3
+   }
+  ]
+ },
+ {
+  "id": "ind:530000",
+  "label": "Real estate & leasing",
+  "title": "Real estate and rental and leasing",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "530000",
+  "provenance": "official",
+  "size": {
+   "employment": 2456.7,
+   "employment_2035": 2539.7
+  },
+  "growth": 3.38,
+  "xy": [
+   0.017527,
+   0.47461
+  ],
+  "top_occupations": [
+   {
+    "soc": "49-9071",
+    "title": "Maintenance and repair workers, general",
+    "share_pct": 13.3
+   },
+   {
+    "soc": "11-9141",
+    "title": "Property, real estate, and community association managers",
+    "share_pct": 10.4
+   },
+   {
+    "soc": "41-2021",
+    "title": "Counter and rental clerks",
+    "share_pct": 7.4
+   },
+   {
+    "soc": "41-9022",
+    "title": "Real estate sales agents",
+    "share_pct": 6.5
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 4.3
+   }
+  ]
+ },
+ {
+  "id": "ind:540000",
+  "label": "Professional & technical services",
+  "title": "Professional, scientific, and technical services",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "540000",
+  "provenance": "official",
+  "size": {
+   "employment": 10779.2,
+   "employment_2035": 11705.9
+  },
+  "growth": 8.6,
+  "xy": [
+   -0.25562,
+   -0.63068
+  ],
+  "top_occupations": [
+   {
+    "soc": "15-1252",
+    "title": "Software developers",
+    "share_pct": 6.4
+   },
+   {
+    "soc": "13-2011",
+    "title": "Accountants and auditors",
+    "share_pct": 4.5
+   },
+   {
+    "soc": "23-1011",
+    "title": "Lawyers",
+    "share_pct": 4.4
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 4.1
+   },
+   {
+    "soc": "13-1111",
+    "title": "Management analysts",
+    "share_pct": 3.3
+   }
+  ]
+ },
+ {
+  "id": "ind:550000",
+  "label": "Management of companies",
+  "title": "Management of companies and enterprises",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "550000",
+  "provenance": "official",
+  "size": {
+   "employment": 2623.7,
+   "employment_2035": 2730.4
+  },
+  "growth": 4.07,
+  "xy": [
+   -0.112145,
+   -0.485463
+  ],
+  "top_occupations": [
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 4.4
+   },
+   {
+    "soc": "43-4051",
+    "title": "Customer service representatives",
+    "share_pct": 3.8
+   },
+   {
+    "soc": "13-2011",
+    "title": "Accountants and auditors",
+    "share_pct": 3.7
+   },
+   {
+    "soc": "15-1252",
+    "title": "Software developers",
+    "share_pct": 3.7
+   },
+   {
+    "soc": "11-3031",
+    "title": "Financial managers",
+    "share_pct": 3.3
+   }
+  ]
+ },
+ {
+  "id": "ind:560000",
+  "label": "Administrative & waste services",
+  "title": "Administrative and support and waste management and remediation services",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "560000",
+  "provenance": "official",
+  "size": {
+   "employment": 9013.1,
+   "employment_2035": 9093.5
+  },
+  "growth": 0.89,
+  "xy": [
+   0.319235,
+   -0.208955
+  ],
+  "top_occupations": [
+   {
+    "soc": "37-2011",
+    "title": "Janitors and cleaners, except maids and housekeeping cleaners",
+    "share_pct": 10.5
+   },
+   {
+    "soc": "33-9032",
+    "title": "Security guards",
+    "share_pct": 8.7
+   },
+   {
+    "soc": "37-3011",
+    "title": "Landscaping and groundskeeping workers",
+    "share_pct": 6.4
+   },
+   {
+    "soc": "53-7062",
+    "title": "Laborers and freight, stock, and material movers, hand",
+    "share_pct": 5.4
+   },
+   {
+    "soc": "43-4051",
+    "title": "Customer service representatives",
+    "share_pct": 4.2
+   }
+  ]
+ },
+ {
+  "id": "ind:610000",
+  "label": "Educational services",
+  "title": "Educational services; state, local, and private",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "610000",
+  "provenance": "official",
+  "size": {
+   "employment": 14892.5,
+   "employment_2035": 14990.7
+  },
+  "growth": 0.66,
+  "xy": [
+   0.415923,
+   0.806774
+  ],
+  "top_occupations": [
+   {
+    "soc": "25-2021",
+    "title": "Elementary school teachers, except special education",
+    "share_pct": 9.4
+   },
+   {
+    "soc": "25-9045",
+    "title": "Teaching assistants, except postsecondary",
+    "share_pct": 8.1
+   },
+   {
+    "soc": "25-2031",
+    "title": "Secondary school teachers, except special and career/technical education",
+    "share_pct": 7.2
+   },
+   {
+    "soc": "25-2022",
+    "title": "Middle school teachers, except special and career/technical education",
+    "share_pct": 4.2
+   },
+   {
+    "soc": "37-2011",
+    "title": "Janitors and cleaners, except maids and housekeeping cleaners",
+    "share_pct": 2.9
+   }
+  ]
+ },
+ {
+  "id": "ind:620000",
+  "label": "Health care & social assistance",
+  "title": "Healthcare and social assistance",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "620000",
+  "provenance": "official",
+  "size": {
+   "employment": 24454.6,
+   "employment_2035": 26704.4
+  },
+  "growth": 9.2,
+  "xy": [
+   0.774462,
+   0.555145
+  ],
+  "top_occupations": [
+   {
+    "soc": "31-1120",
+    "title": "Home health and personal care aides",
+    "share_pct": 17.6
+   },
+   {
+    "soc": "29-1141",
+    "title": "Registered nurses",
+    "share_pct": 12.0
+   },
+   {
+    "soc": "31-1131",
+    "title": "Nursing assistants",
+    "share_pct": 5.5
+   },
+   {
+    "soc": "43-6013",
+    "title": "Medical secretaries and administrative assistants",
+    "share_pct": 3.6
+   },
+   {
+    "soc": "31-9092",
+    "title": "Medical assistants",
+    "share_pct": 3.2
+   }
+  ]
+ },
+ {
+  "id": "ind:710000",
+  "label": "Arts, entertainment & recreation",
+  "title": "Arts, entertainment, and recreation",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "710000",
+  "provenance": "official",
+  "size": {
+   "employment": 2681.7,
+   "employment_2035": 2834.8
+  },
+  "growth": 5.71,
+  "xy": [
+   0.622776,
+   -0.549376
+  ],
+  "top_occupations": [
+   {
+    "soc": "39-3091",
+    "title": "Amusement and recreation attendants",
+    "share_pct": 11.2
+   },
+   {
+    "soc": "39-9031",
+    "title": "Exercise trainers and group fitness instructors",
+    "share_pct": 8.3
+   },
+   {
+    "soc": "37-3011",
+    "title": "Landscaping and groundskeeping workers",
+    "share_pct": 3.9
+   },
+   {
+    "soc": "35-3031",
+    "title": "Waiters and waitresses",
+    "share_pct": 3.5
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 3.2
+   }
+  ]
+ },
+ {
+  "id": "ind:720000",
+  "label": "Accommodation & food services",
+  "title": "Accommodation and food services",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "720000",
+  "provenance": "official",
+  "size": {
+   "employment": 14202.1,
+   "employment_2035": 14809.5
+  },
+  "growth": 4.28,
+  "xy": [
+   0.937728,
+   -0.338468
+  ],
+  "top_occupations": [
+   {
+    "soc": "35-3023",
+    "title": "Fast food and counter workers",
+    "share_pct": 23.6
+   },
+   {
+    "soc": "35-3031",
+    "title": "Waiters and waitresses",
+    "share_pct": 14.7
+   },
+   {
+    "soc": "35-2014",
+    "title": "Cooks, restaurant",
+    "share_pct": 9.2
+   },
+   {
+    "soc": "35-1012",
+    "title": "First-line supervisors of food preparation and serving workers",
+    "share_pct": 7.3
+   },
+   {
+    "soc": "35-2011",
+    "title": "Cooks, fast food",
+    "share_pct": 4.4
+   }
+  ]
+ },
+ {
+  "id": "ind:810000",
+  "label": "Other services",
+  "title": "Other services (except public administration)",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "810000",
+  "provenance": "official",
+  "size": {
+   "employment": 6575.7,
+   "employment_2035": 6822.6
+  },
+  "growth": 3.75,
+  "xy": [
+   0.421086,
+   0.234628
+  ],
+  "top_occupations": [
+   {
+    "soc": "37-2012",
+    "title": "Maids and housekeeping cleaners",
+    "share_pct": 4.4
+   },
+   {
+    "soc": "39-5012",
+    "title": "Hairdressers, hairstylists, and cosmetologists",
+    "share_pct": 4.1
+   },
+   {
+    "soc": "11-1021",
+    "title": "General and operations managers",
+    "share_pct": 4.0
+   },
+   {
+    "soc": "49-3023",
+    "title": "Automotive service technicians and mechanics",
+    "share_pct": 3.9
+   },
+   {
+    "soc": "39-9011",
+    "title": "Childcare workers",
+    "share_pct": 3.8
+   }
+  ]
+ },
+ {
+  "id": "ind:900000",
+  "label": "Government (excl. education & hospitals)",
+  "title": "Government, excluding state and local education and hospitals",
+  "type": "ind",
+  "level": 0,
+  "parent": null,
+  "naics_code": "900000",
+  "provenance": "official",
+  "size": {
+   "employment": 11500.5,
+   "employment_2035": 11536.6
+  },
+  "growth": 0.31,
+  "xy": [
+   -0.04052,
+   0.035699
+  ],
+  "top_occupations": [
+   {
+    "soc": "33-3051",
+    "title": "Police and sheriff's patrol officers",
+    "share_pct": 5.8
+   },
+   {
+    "soc": "33-3012",
+    "title": "Correctional officers and jailers",
+    "share_pct": 3.3
+   },
+   {
+    "soc": "33-2011",
+    "title": "Firefighters",
+    "share_pct": 2.9
+   },
+   {
+    "soc": "43-5052",
+    "title": "Postal service mail carriers",
+    "share_pct": 2.8
+   },
+   {
+    "soc": "13-1199",
+    "title": "Business operations specialists, all other",
+    "share_pct": 2.7
+   }
+  ]
+ }
+]

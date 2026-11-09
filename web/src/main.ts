@@ -1,32 +1,35 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { loadBundle } from "./data";
+import { Map2D } from "./map2d";
+import { Scene3D, webglAvailable } from "./scene3d";
+import { State } from "./state";
+import { onThemeChange } from "./theme";
+import { buildPanel } from "./ui";
 
-document.getElementById("title")!.textContent = __DISPLAY_NAME__;
+const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+$("title").textContent = __DISPLAY_NAME__;
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+async function start(): Promise<void> {
+  const bundle = await loadBundle();
+  const state = new State();
+  const map2d = new Map2D($("view-2d"), bundle, state);
+  const gl = webglAvailable();
+  const scene3d = gl ? new Scene3D($("view-3d"), $("labels"), bundle, state) : null;
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0f1115);
+  let mode: "3d" | "2d" = gl ? "3d" : "2d";
+  const toggle = $<HTMLButtonElement>("mode");
+  const apply = () => {
+    scene3d?.show(mode === "3d"); map2d.show(mode === "2d");
+    toggle.textContent = mode === "3d" ? "Switch to 2D map" : "Switch to 3D terrain";
+    toggle.setAttribute("aria-pressed", String(mode === "2d"));
+  };
+  toggle.disabled = !gl;
+  if (!gl) $("notice").textContent = "WebGL is not available, so the 2D contour map is shown.";
+  toggle.addEventListener("click", () => { mode = mode === "3d" ? "2d" : "3d"; apply(); });
+  apply();
 
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(8, 8, 8);
+  buildPanel(bundle, state, (n) => { state.setSelected(n); scene3d?.focus(n); });
+  onThemeChange(() => { scene3d?.applyTheme(); map2d.applyTheme(); });
+  (window as unknown as { __viewer: object }).__viewer = { state, bundle, setMode: (m: "3d" | "2d") => { mode = m; apply(); } };
+}
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-
-// Empty scene: just a reference grid until terrain data exists (Phase 1).
-scene.add(new THREE.GridHelper(10, 20, 0x4a5568, 0x2d3340));
-
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-renderer.setAnimationLoop(() => {
-  controls.update();
-  renderer.render(scene, camera);
-});
+start().catch((err) => { $("notice").textContent = `Could not load the map data: ${String(err)}`; });

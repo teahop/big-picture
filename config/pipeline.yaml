@@ -1,0 +1,8 @@
+# Pipeline parameters. Every random process reads its seed from here.
+seed: 20261109
+
+terrain:
+  grid_size: 96            # cells per side
+  margin: 0.25             # padding around the node bounding box (layout units)
+  bandwidth_level0: 0.22   # Gaussian sigma for Level 0 nodes (layout units)
+  bandwidth_per_level: 0.5 # sigma multiplier for each deeper level (level 1 = x0.5)
