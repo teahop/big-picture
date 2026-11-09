@@ -1,20 +1,27 @@
-import { type Bundle, type NodeRec, heightAt } from "./data";
-import { BANDS, bandColour, readTheme } from "./theme";
+import { type Bundle, type Grid, type NodeRec, heightAt } from "./data";
+import { BANDS, bandColour, readTheme, rgbOf } from "./theme";
 import type { State } from "./state";
 
-/** Top-down terraced contour map: the fallback for devices without WebGL and for screenshots. */
+type Layer = "ind" | "fld";
+interface Panel { x: number; y: number; w: number; h: number; layers: Layer[] }
+type RGB = [number, number, number];
+
+/** Top-down terraced contour map: the fallback for devices without WebGL and for screenshots.
+ *  Stacked mode shows the two terrains one above the other; overlaid blends them. */
 export class Map2D {
   private canvas = document.createElement("canvas");
   private ctx = this.canvas.getContext("2d")!;
   private bg: HTMLCanvasElement | null = null;
+  private bgKey = "";
   private spanX: number; private spanY: number; private dpr = 1;
 
   constructor(private host: HTMLElement, private b: Bundle, private state: State) {
     this.canvas.tabIndex = 0;
     this.canvas.setAttribute("role", "img");
-    this.canvas.setAttribute("aria-label", "Top-down contour map of industry sectors. Use the sector list for keyboard selection.");
+    this.canvas.setAttribute("aria-label", "Top-down contour map of industry sectors and research fields. Use the lists for keyboard selection.");
     host.appendChild(this.canvas);
-    this.spanX = b.grid.x[1] - b.grid.x[0]; this.spanY = b.grid.y[1] - b.grid.y[0];
+    const g = b.grids.employment;
+    this.spanX = g.x[1] - g.x[0]; this.spanY = g.y[1] - g.y[0];
     this.canvas.addEventListener("pointermove", (e) => this.state.setHover(this.nodeAt(e)));
     this.canvas.addEventListener("pointerleave", () => this.state.setHover(null));
     this.canvas.addEventListener("click", (e) => this.state.setSelected(this.nodeAt(e)));
@@ -22,75 +29,109 @@ export class Map2D {
     new ResizeObserver(() => this.resize()).observe(host);
   }
 
-  private geom() {
-    const w = this.canvas.width, h = this.canvas.height;
-    const s = Math.min(w / this.spanX, h / this.spanY);
-    return { s, ox: (w - this.spanX * s) / 2, oy: (h - this.spanY * s) / 2 };
+  private grid(layer: Layer): Grid { return layer === "ind" ? this.b.grids.employment : this.b.grids[this.state.researchMeasure]; }
+  private maxAbs(layer: Layer): number { return layer === "ind" ? this.b.maxAbs.employment : this.b.maxAbs[this.state.researchMeasure]; }
+
+  private panels(): Panel[] {
+    const w = this.canvas.width, h = this.canvas.height, m = this.state.mode;
+    if (m === "stacked") return [{ x: 0, y: 0, w, h: h / 2, layers: ["ind"] }, { x: 0, y: h / 2, w, h: h / 2, layers: ["fld"] }];
+    return [{ x: 0, y: 0, w, h, layers: m === "industry" ? ["ind"] : m === "research" ? ["fld"] : ["fld", "ind"] }];
   }
-  private px(x: number, y: number): [number, number] {
-    const { s, ox, oy } = this.geom();
-    return [ox + (x - this.b.grid.x[0]) * s, oy + (this.b.grid.y[1] - y) * s]; // north (+y) is up
+
+  private geom(p: Panel) {
+    const s = Math.min(p.w / this.spanX, p.h / this.spanY) * 0.96;
+    return { s, ox: p.x + (p.w - this.spanX * s) / 2, oy: p.y + (p.h - this.spanY * s) / 2 };
+  }
+  private px(p: Panel, n: NodeRec): [number, number] {
+    const { s, ox, oy } = this.geom(p), g = this.b.grids.employment;
+    return [ox + (n.xy[0] - g.x[0]) * s, oy + (g.y[1] - n.xy[1]) * s]; // north (+y) is up
   }
 
   private nodeAt(e: MouseEvent): NodeRec | null {
     const r = this.canvas.getBoundingClientRect();
     const mx = (e.clientX - r.left) * this.dpr, my = (e.clientY - r.top) * this.dpr;
     let best: NodeRec | null = null, bd = 30 * this.dpr;
-    for (const n of this.b.nodes) { const [x, y] = this.px(...n.xy); const d = Math.hypot(x - mx, y - my); if (d < bd) { bd = d; best = n; } }
+    for (const p of this.panels()) for (const n of this.b.nodes) {
+      if (!p.layers.includes(n.type)) continue;
+      const [x, y] = this.px(p, n); const d = Math.hypot(x - mx, y - my);
+      if (d < bd) { bd = d; best = n; }
+    }
     return best;
   }
 
   applyTheme(): void { this.bg = null; this.draw(); }
 
-  private paintBackground(): HTMLCanvasElement {
-    const t = readTheme(), w = this.canvas.width, h = this.canvas.height, { s, ox, oy } = this.geom();
-    const off = document.createElement("canvas"); off.width = w; off.height = h;
-    const c = off.getContext("2d")!, img = c.createImageData(w, h);
-    const band = new Int8Array(w * h);
-    const g = this.b.grid;
-    for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
-      const x = g.x[0] + (px - ox) / s, y = g.y[1] - (py - oy) / s;
-      band[py * w + px] = x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1] ? -1
-        : Math.min(Math.floor((heightAt(g, x, y) / this.b.maxHeight) * BANDS), BANDS - 1);
+  private paintPanel(c: CanvasRenderingContext2D, p: Panel): void {
+    const t = readTheme(), { s, ox, oy } = this.geom(p);
+    const w = Math.round(p.w), h = Math.round(p.h), img = c.createImageData(w, h);
+    const bgRgb = rgbOf(t.bg), fg = rgbOf(t.fg), overlay = p.layers.length > 1;
+    const bands: Record<string, Int8Array> = {};
+    for (const layer of p.layers) {
+      const g = this.grid(layer), max = this.maxAbs(layer), arr = new Int8Array(w * h);
+      for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
+        const x = g.x[0] + (px + p.x - ox) / s, y = g.y[1] - (py + p.y - oy) / s;
+        arr[py * w + px] = x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1] ? -1
+          : Math.min(Math.floor((Math.abs(heightAt(g, x, y)) / max) * BANDS), BANDS - 1);
+      }
+      bands[layer] = arr;
     }
-    const bgRgb = [parseInt(t.bg.slice(1, 3), 16), parseInt(t.bg.slice(3, 5), 16), parseInt(t.bg.slice(5, 7), 16)];
-    const fg = [parseInt(t.fg.slice(1, 3), 16), parseInt(t.fg.slice(3, 5), 16), parseInt(t.fg.slice(5, 7), 16)];
+    const edge = (arr: Int8Array, i: number, px: number, py: number) =>
+      (px + 1 < w && arr[i + 1] !== arr[i]) || (py + 1 < h && arr[i + w] !== arr[i]);
+    const mix = (a: RGB, b: RGB, k: number): RGB => [0, 1, 2].map((q) => a[q] * (1 - k) + b[q] * k) as RGB;
     for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
-      const i = py * w + px, b = band[i];
-      let rgb = bgRgb;
-      if (b >= 0) {
-        rgb = bandColour(t, (b + 0.5) / BANDS);
-        const edge = (px + 1 < w && band[i + 1] !== b) || (py + 1 < h && band[i + w] !== b);
-        if (edge) rgb = [0, 1, 2].map((k) => rgb[k] * 0.55 + fg[k] * 0.45);
+      const i = py * w + px;
+      let rgb: RGB = bgRgb;
+      for (const layer of p.layers) {              // research first, industry on top
+        const b = bands[layer][i];
+        if (b < 0) continue;
+        const col = bandColour(t, layer === "ind" ? "ind" : "res", (b + 0.5) / BANDS);
+        if (overlay && layer === "ind") { if (b >= 1) rgb = mix(rgb, col, 0.6); }
+        else rgb = col;
+        if (edge(bands[layer], i, px, py)) rgb = mix(rgb, fg, 0.4);
       }
       img.data.set([rgb[0], rgb[1], rgb[2], 255], i * 4);
     }
-    c.putImageData(img, 0, 0);
-    return off;
+    c.putImageData(img, Math.round(p.x), Math.round(p.y));
   }
 
   draw(): void {
     if (!this.canvas.width) return;
-    if (!this.bg) this.bg = this.paintBackground();
+    const key = this.state.mode + "|" + this.state.researchMeasure;
+    if (!this.bg || key !== this.bgKey) {
+      const off = document.createElement("canvas"); off.width = this.canvas.width; off.height = this.canvas.height;
+      const c = off.getContext("2d")!;
+      for (const p of this.panels()) this.paintPanel(c, p);
+      this.bg = off; this.bgKey = key;
+    }
     const t = readTheme(), ctx = this.ctx, d = this.dpr;
     ctx.drawImage(this.bg, 0, 0);
-    const maxSize = Math.max(...this.b.nodes.map((n) => n.size.employment));
-    ctx.font = `${12 * d}px system-ui, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+    ctx.font = 12 * d + "px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
     const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
-    const bySize = [...this.b.nodes].sort((a, c) => c.size.employment - a.size.employment);
-    for (const n of bySize) {            // largest sectors claim label space first
-      const [x, y] = this.px(...n.xy);
-      const on = this.state.active?.id === n.id || this.state.selected?.id === n.id;
-      const r = (5 + 11 * Math.sqrt(n.size.employment / maxSize)) * d;
-      ctx.lineWidth = (on ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : t.fg;
-      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
-      const w = ctx.measureText(n.label).width, ly = y - r - 3 * d;
-      const box = { x0: x - w / 2, x1: x + w / 2, y0: ly - 14 * d, y1: ly };
-      if (!on && placed.some((p) => box.x0 < p.x1 && box.x1 > p.x0 && box.y0 < p.y1 && box.y1 > p.y0)) continue;
-      placed.push(box);
-      ctx.lineWidth = 3 * d; ctx.strokeStyle = t.bg; ctx.strokeText(n.label, x, ly);
-      ctx.fillStyle = on ? t.accent : t.fg; ctx.fillText(n.label, x, ly);
+    for (const p of this.panels()) {
+      const nodes = this.b.nodes.filter((n) => p.layers.includes(n.type))
+        .sort((a, c) => this.rel(c) - this.rel(a));
+      for (const n of nodes) {
+        const [x, y] = this.px(p, n);
+        const on = this.state.active?.id === n.id || this.state.selected?.id === n.id;
+        const r = (5 + 11 * Math.sqrt(this.rel(n))) * d;
+        ctx.lineWidth = (on ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : t.fg;
+        ctx.beginPath();
+        if (n.type === "ind") ctx.arc(x, y, r, 0, Math.PI * 2);
+        else { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
+        ctx.stroke();
+        const text = (n.type === "ind" ? "▲ " : "▼ ") + n.label, w = ctx.measureText(text).width, ly = y - r - 3 * d;
+        const box = { x0: x - w / 2, x1: x + w / 2, y0: ly - 14 * d, y1: ly };
+        if (!on && placed.some((q) => box.x0 < q.x1 && box.x1 > q.x0 && box.y0 < q.y1 && box.y1 > q.y0)) continue;
+        placed.push(box);
+        ctx.lineWidth = 3 * d; ctx.strokeStyle = t.bg; ctx.strokeText(text, x, ly);
+        ctx.fillStyle = on ? t.accent : t.fg; ctx.fillText(text, x, ly);
+      }
     }
+  }
+
+  private rel(n: NodeRec): number {
+    const m = n.type === "ind" ? "employment" : this.state.researchMeasure;
+    return (n.size[m] ?? 0) / this.b.maxSize[m];
   }
 
   private resize(): void {
@@ -98,7 +139,7 @@ export class Map2D {
     const w = this.host.clientWidth, h = this.host.clientHeight;
     if (!w || !h) return;
     this.canvas.width = Math.round(w * this.dpr); this.canvas.height = Math.round(h * this.dpr);
-    this.canvas.style.width = `${w}px`; this.canvas.style.height = `${h}px`;
+    this.canvas.style.width = w + "px"; this.canvas.style.height = h + "px";
     this.bg = null; this.draw();
   }
 

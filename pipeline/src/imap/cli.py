@@ -24,8 +24,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="stage", metavar="STAGE", required=True)
     for name, helptext in STAGES.items():
         p = sub.add_parser(name, help=helptext, description=helptext)
+        if name == "graph":
+            p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "herd", "cip-soc", "onet"], help="dataset to ingest")
         if name == "export":
             p.add_argument("--target", choices=["public", "private"], default="public")
     return parser
@@ -37,11 +39,22 @@ def run_stage(args: argparse.Namespace) -> int:
         print(f"imap {name}: not implemented yet ({STAGES[name]})", file=sys.stderr)
         return 0
     if name == "ingest":
-        from . import bls
-        return bls.run()
+        if args.source == "bls-matrix":
+            from . import bls
+            return bls.run()
+        if args.source == "openalex-taxonomy":
+            from . import openalex
+            return openalex.run()
+        from . import ingest_files
+        return ingest_files.run(args.source)
     if name == "graph":
-        from . import graph
-        return graph.run()
+        from . import bridge, graph
+        if args.propose_cip:
+            out = bridge.propose_cip()
+            print(f"graph: wrote {len(out)} proposed field-to-CIP rows to {bridge.PROPOSED}")
+            return 0
+        graph.run()
+        return bridge.run()
     if name == "layout":
         from . import layout
         return layout.run()

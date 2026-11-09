@@ -1,15 +1,57 @@
 {
- "schema": 1,
+ "schema": 2,
  "size_measures": {
   "industry": [
    "employment"
+  ],
+  "research": [
+   "works",
+   "rd"
   ]
+ },
+ "measure_labels": {
+  "employment": "Employment (jobs, 2025)",
+  "works": "US publications 2021-25",
+  "rd": "University R&D spending (FY 2024, estimated by field)"
  },
  "deferred_measures": {
   "industry": {
    "value_added": "BEA has no bulk file; deferred to Phase 3"
   }
  },
+ "bridge": {
+  "method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
+  "field_to_cip_reviewed": false,
+  "herd_mapping_reviewed": false,
+  "signals_per_edge": [
+   "occupational",
+   "semantic"
+  ]
+ },
+ "research_sources": [
+  {
+   "name": "OpenAlex",
+   "url": "https://api.openalex.org",
+   "retrieved": "2026-11-09",
+   "filter": "authorships.countries:US,type:article|review|book|book-chapter,publication_year:2021-2025",
+   "note": "topic classifier replaced October 2026"
+  },
+  {
+   "name": "NSF NCSES HERD FY 2024, Table 10",
+   "url": "https://ncses.nsf.gov/pubs/nsf26304/assets/data-tables/tables/nsf26304-tab010.xlsx",
+   "retrieved": "2026-11-09"
+  },
+  {
+   "name": "NCES CIP 2020 to SOC 2018 crosswalk",
+   "url": "https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx",
+   "retrieved": "2026-11-09"
+  },
+  {
+   "name": "O*NET 31.0 (CC BY 4.0)",
+   "url": "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip",
+   "retrieved": "2026-11-09"
+  }
+ ],
  "levels": [
   0
  ],
@@ -25,13 +67,13 @@
   }
  ],
  "layout": {
-  "stage": "provisional-level0",
+  "stage": "joint-level0",
   "seed": 20261109
  },
  "terrain": {
   "grid_size": 96,
   "margin": 0.25,
-  "bandwidth_level0": 0.22,
+  "bandwidth_level0": 0.12,
   "bandwidth_per_level": 0.5
  },
  "display_name_source": "config/site.yaml"

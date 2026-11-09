@@ -10,7 +10,7 @@ update this table, commit, then stop.
 |---|---|---|---|
 | 0 | Setup and guards | done (2026-11-09), awaiting owner OK | Hook proven; scaffolds run; SOURCES.md has spec differences to review (O*NET 31.0, OpenAlex key rule, BEA bulk file, Reliance on Science is non-commercial) |
 | 1 | Coarse industry terrain and viewer skeleton | done (2026-11-09), awaiting owner OK | Reconciles exactly (sectors + self-employed = published total). Health care to Educational services fails the similarity-space sanity pair (passes in the layout). BEA value added deferred to Phase 3, so no size switch yet. Self-employed left off the map |
-| 2 | Coarse research layer, bridge, shared layout | not started | |
+| 2 | Coarse research layer, bridge, shared layout | built, awaiting owner review | Counts match OpenAlex exactly. Bridge sanity: 4 of 5 pass; Economics to Finance and insurance fails (rank 4 to 5). CIP mapping auto-accepted ranks 1-3, NOT reviewed (see owner to-do). Joint layout frozen and tracked |
 | 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | not started | |
 | 4 | Personal overlay | not started | |
 | 5 | Where-next scoring and toggles | not started | |
@@ -22,6 +22,12 @@ update this table, commit, then stop.
 - Install `uv` and Node 20+.
 - Create an OpenAlex API key (needed from Phase 2) and put it in `.env`.
 - Review `Personal Data/PROFILE_NOTES.md`, especially the proposed deep zones.
+
+## Owner review to-do (deferred, not blocking)
+
+- `data/mappings/field_to_cip.csv`: auto-accepted ranks 1-3 per field, unreviewed. Edit `accept` and rerun `imap graph`.
+- `data/mappings/herd_to_openalex.csv`: every row `reviewed=no`; Veterinary placement unsure.
+- Phase 1: Health care and Educational services fail the occupation-similarity sanity pair; owner considers them related (care sectors), so left as is.
 
 ## Phases
 

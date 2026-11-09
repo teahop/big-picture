@@ -1,0 +1,48 @@
+herd_field,openalex_field,reviewed,note
+Computer and information sciences,Computer Science,no,
+Atmospheric science and meteorology,Earth and Planetary Sciences,no,
+Geological and earth sciences,Earth and Planetary Sciences,no,
+Ocean sciences and marine sciences,Earth and Planetary Sciences,no,
+"Geosciences, atmospheric sciences, and ocean sciences nec",Earth and Planetary Sciences,no,
+Agricultural sciences,Agricultural and Biological Sciences,no,
+Biological and biomedical sciences,"Biochemistry, Genetics and Molecular Biology",no,split by US works share among targets
+Biological and biomedical sciences,Immunology and Microbiology,no,split by US works share among targets
+Biological and biomedical sciences,Neuroscience,no,split by US works share among targets
+Biological and biomedical sciences,Agricultural and Biological Sciences,no,split by US works share among targets
+Health sciences,Medicine,no,split by US works share among targets
+Health sciences,Nursing,no,split by US works share among targets
+Health sciences,Health Professions,no,split by US works share among targets
+Health sciences,Dentistry,no,split by US works share among targets
+Health sciences,"Pharmacology, Toxicology and Pharmaceutics",no,split by US works share among targets
+Health sciences,Veterinary,no,split by US works share among targets; unsure whether HERD files veterinary under health or agricultural sciences
+Natural resources and conservation,Environmental Science,no,
+Life sciences nec,Agricultural and Biological Sciences,no,
+Mathematics and statistics,Mathematics,no,split by US works share among targets
+Mathematics and statistics,Decision Sciences,no,split by US works share among targets
+Astronomy and astrophysics,Physics and Astronomy,no,
+Chemistry,Chemistry,no,
+Materials science,Materials Science,no,
+Physics,Physics and Astronomy,no,
+Physical sciences nec,Physics and Astronomy,no,
+Psychology,Psychology,no,
+Anthropology,Social Sciences,no,
+Economics,"Economics, Econometrics and Finance",no,
+Political science and government,Social Sciences,no,
+"Sociology, demography, and population studies",Social Sciences,no,
+Social sciences nec,Social Sciences,no,
+"Aerospace, aeronautical, and astronautical engineering",Engineering,no,
+Bioengineering and biomedical engineering,Engineering,no,
+Chemical engineering,Chemical Engineering,no,
+Civil engineering,Engineering,no,
+"Electrical, electronic, and communications engineering",Engineering,no,
+Industrial and manufacturing engineering,Engineering,no,
+Mechanical engineering,Engineering,no,
+Metallurgical and materials engineering,Materials Science,no,materials engineering mapped to Materials Science
+Engineering nec,Engineering,no,
+Business management and business administration,"Business, Management and Accounting",no,
+Communication and communications technologies,Social Sciences,no,
+Education,Social Sciences,no,OpenAlex files Education under Social Sciences
+Humanities,Arts and Humanities,no,
+Law,Social Sciences,no,OpenAlex files Law under Social Sciences
+Social work,Social Sciences,no,
+Visual and performing arts,Arts and Humanities,no,

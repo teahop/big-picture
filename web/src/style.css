@@ -1,11 +1,11 @@
 :root {
   --bg: #f6f3ee; --fg: #1f1a14; --muted: #5d5448; --panel: #fffdf9; --line: #d9d0c3;
-  --accent: #0a58ca; --ramp-lo: #efe3d0; --ramp-hi: #b4501a;
+  --accent: #8a1c7c; --ramp-lo: #efe3d0; --ramp-hi: #b4501a; --rramp-lo: #dce9f1; --rramp-hi: #1c5d8c;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #17130f; --fg: #f1ebe2; --muted: #b3a999; --panel: #1f1a15; --line: #3a3228;
-          --accent: #6cb2ff; --ramp-lo: #2b2118; --ramp-hi: #f2a65a; }
+          --accent: #ff8ad8; --ramp-lo: #2b2118; --ramp-hi: #f2a65a; --rramp-lo: #15232c; --rramp-hi: #5fb3e6; }
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
@@ -44,3 +44,16 @@ dt { color: var(--muted); } dd { margin: 0; }
   aside { width: auto; border-left: 0; border-top: 1px solid var(--line); max-height: 45%; }
   input { width: 140px; }
 }
+
+fieldset.layers { display: flex; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px; margin: 0; }
+fieldset.layers label { display: block; }
+fieldset.layers input { position: absolute; opacity: 0; }
+fieldset.layers span { display: block; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+fieldset.layers input:checked + span { background: var(--fg); color: var(--bg); }
+fieldset.layers input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+label.size { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); }
+label.size select { font: inherit; font-size: 13px; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; }
+.node-label.fld { font-style: italic; border-style: dashed; }
+aside li small { display: inline; }
+#list-ind button, #list-fld button { display: flex; justify-content: space-between; width: 100%; border: 0; border-radius: 4px; background: none; text-align: left; padding: 4px 6px; }
+#list-ind button.active, #list-fld button.active { background: color-mix(in srgb, var(--accent) 18%, transparent); outline: 1px solid var(--accent); }

@@ -24,3 +24,15 @@ and must be re-checked in a browser before a loader relies on them.
 2. BEA value added has no confirmed bulk file; Phase 1 will use the API (needs a free key) or the interactive export.
 3. Reliance on Science is CC BY-NC 4.0. Keep it optional and out of the public bundle unless the owner accepts that.
 4. O*NET is 31.0, so the SPEC's pinned 30.3 is out of date.
+
+## Phase 2 build notes (retrieved 2026-11-09)
+
+| Source | What was fetched | Release / file | Notes |
+|---|---|---|---|
+| OpenAlex | 4 domains, 26 fields, 252 subfields, 4,516 topics via `/domains`, `/fields`, `/subfields`, `/topics`; US counts via `group_by`; per-field yearly counts; topic co-assignment per field | Live API on 2026-11-09, classifier replaced October 2026 | Free key, 10,000 credits/day; a full run uses about 160. US size filter: `authorships.countries:US,type:article\|review\|book\|book-chapter,publication_year:2021-2025`. Direct recount of all 26 fields matched `group_by` exactly. Global count = entity `works_count`. Key sent as a Bearer header |
+| NSF HERD | Table 10, FY 2024 (standard-form institutions, 99.86% of all R&D) | `nsf26304-tab010.xlsx` | Leaf fields sum exactly to the published total. 2.4% (Sciences nec, Non-S&E nec) left unallocated |
+| NCES CIP-SOC | Sheet `CIP-SOC` | `CIP2020_SOC2018_Crosswalk.xlsx` | 6,097 rows. Only 6-digit CIP titles are in the file |
+| O*NET | Occupation Data, Job Titles, Sample of Reported Titles | `db_31_0_excel.zip`, **O*NET 31.0, August 2026 release** (Read Me), CC BY 4.0 | Headers match the 31.0 data dictionary; 30.3 rename (Alternate Titles to Job Titles) confirmed |
+| Embedding model | `BAAI/bge-small-en-v1.5` via fastembed (ONNX, local) | Downloaded once from Hugging Face | Used for CIP proposal and the semantic bridge signal |
+
+No download in this phase was blocked (BLS remains hand-downloaded, see the Phase 1 note).

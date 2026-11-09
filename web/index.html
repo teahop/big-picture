@@ -10,12 +10,29 @@
   <body>
     <header>
       <h1 id="title"></h1>
-      <label class="search"><span class="sr">Search sectors</span>
-        <input id="search" type="search" placeholder="Search sectors" autocomplete="off" />
+      <fieldset class="layers">
+        <legend class="sr">Layer mode</legend>
+        <label><input type="radio" name="layer" value="industry" /> <span>Industry</span></label>
+        <label><input type="radio" name="layer" value="research" /> <span>Research</span></label>
+        <label><input type="radio" name="layer" value="stacked" /> <span>Stacked</span></label>
+        <label><input type="radio" name="layer" value="overlaid" /> <span>Overlaid</span></label>
+      </fieldset>
+      <label class="size">Industry size
+        <select id="size-industry" aria-describedby="size-note"><option>Employment</option></select>
+      </label>
+      <label class="size">Research size
+        <select id="size-research">
+          <option value="works">Publications</option>
+          <option value="rd">R&amp;D dollars</option>
+        </select>
+      </label>
+      <label class="search"><span class="sr">Search nodes</span>
+        <input id="search" type="search" placeholder="Search" autocomplete="off" />
       </label>
       <span id="search-count" aria-live="polite"></span>
       <button id="mode" type="button" aria-pressed="false">Switch to 2D map</button>
     </header>
+    <p id="size-note" class="sr">Industry value added is planned for a later phase, so employment is the only industry size measure.</p>
     <p id="notice" role="status"></p>
     <main>
       <section class="map" aria-label="Terrain map">
@@ -25,8 +42,8 @@
       </section>
       <aside>
         <div id="details" aria-live="polite"></div>
-        <h3>Sectors by employment</h3>
-        <ul id="node-list"></ul>
+        <div id="group-ind"><h3>Industry sectors by employment</h3><ul id="list-ind"></ul></div>
+        <div id="group-fld"><h3>Research fields</h3><ul id="list-fld"></ul></div>
         <p id="source" class="source"></p>
       </aside>
     </main>
