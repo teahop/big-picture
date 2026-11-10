@@ -1,19 +1,42 @@
-:root {
-  --bg: #f6f3ee; --fg: #1f1a14; --muted: #5d5448; --panel: #fffdf9; --line: #d9d0c3;
-  --accent: #8a1c7c; --ramp-lo: #efe3d0; --ramp-hi: #b4501a; --rramp-lo: #dce9f1; --rramp-hi: #1c5d8c;
-  color-scheme: light dark;
+@import "./design/tokens.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/700.css";
+
+/* The viewer's own variables, mapped onto the design system tokens. Deep teal (--accent) is derived: the system's soft
+   teal is too pale for text and outlines on paper. --footprint is the owner's footprint colour (teal). */
+:root, :root[data-theme="light"] {
+  --bg: var(--surface-page); --fg: var(--text-primary); --muted: var(--text-secondary); --panel: var(--surface-card); --line: var(--border-hairline);
+  --accent: #1f7a63; --footprint: #19a98a;
+  --ramp-lo: var(--greige-200); --ramp-hi: var(--warm-brown);          /* industry peaks: greige up to warm brown */
+  --rramp-lo: #e4e9e1; --rramp-hi: #5f7f71;                            /* research valleys: a desaturated sage derived from the teal; warm-brown-to-greige reversed read as the same hue as the peaks */
+  color-scheme: light;
+}
+/* Dark theme derived from the same palette: warm brown surfaces, off-white text, soft teal accent. */
+:root[data-theme="dark"] {
+  --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
+  --accent: var(--soft-teal); --footprint: var(--soft-teal);
+  --ramp-lo: var(--brown-700); --ramp-hi: var(--greige-200);
+  --rramp-lo: #202a25; --rramp-hi: #8fb3a3;
+  color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #17130f; --fg: #f1ebe2; --muted: #b3a999; --panel: #1f1a15; --line: #3a3228;
-          --accent: #ff8ad8; --ramp-lo: #2b2118; --ramp-hi: #f2a65a; --rramp-lo: #15232c; --rramp-hi: #5fb3e6; }
+  :root:not([data-theme="light"]) {
+    --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
+    --accent: var(--soft-teal); --footprint: var(--soft-teal);
+    --ramp-lo: var(--brown-700); --ramp-hi: var(--greige-200);
+    --rramp-lo: #202a25; --rramp-hi: #8fb3a3;
+    color-scheme: dark;
+  }
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--font-body); }
 body { display: flex; flex-direction: column; }
 header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 h1 { margin: 0; font-size: 16px; margin-right: auto; }
 input, button { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
-input { width: 200px; }
+input:not([type=checkbox]):not([type=radio]) { width: 200px; }
+input[type=checkbox] { width: auto; padding: 0; }
 button { cursor: pointer; }
 button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .5; cursor: default; }
@@ -70,5 +93,8 @@ aside strong { color: var(--accent); }
 .wn-list button { display: flex; justify-content: space-between; width: 100%; text-align: left; }
 .bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 2px 0; }
 .bar { display: block; height: 5px; background: color-mix(in srgb, var(--fg) 15%, transparent); }
-.bar i { display: block; height: 100%; background: #ff5e14; }
+.bar i { display: block; height: 100%; background: var(--footprint); }
 .why, .tag { display: block; }
+aside[hidden] { display: none; }
+.zoomctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.zoomctl button { width: 32px; height: 32px; padding: 0; font-size: 18px; line-height: 1; }

@@ -1,0 +1,85 @@
+/* Design tokens copied from the owner's Claude Design system ("Design System (migrated)"), minus the Hillman font.
+   Refresh by re-reading project/tokens.css from that artifact. The viewer's own variables are mapped in ../style.css. */
+/* Design System (migrated) — generated from tokens.json */
+:root, [data-theme="default"] {
+  --warm-brown: #28211e;
+  --soft-teal: #8dd9bf;
+  --off-white: #f5f0eb;
+  --greige: #c4b5a5;
+  --brown-900: #1b1714;
+  --brown-700: #3a302b;
+  --teal-600: #6fc4a6;
+  --teal-100: #dcf1e9;
+  --greige-200: #e7dfd6;
+  --greige-100: #efe9e2;
+  --taupe-text: #6e6258;
+  --surface-page: var(--off-white);
+  --surface-card: #fbf8f4;
+  --surface-raised: var(--greige-100);
+  --surface-inverse: var(--warm-brown);
+  --text-primary: var(--warm-brown);
+  --text-secondary: var(--taupe-text);
+  --text-on-inverse: var(--off-white);
+  --text-muted-inverse: var(--greige);
+  --text-on-accent: var(--warm-brown);
+  --accent: var(--soft-teal);
+  --accent-strong: var(--teal-600);
+  --accent-wash: var(--teal-100);
+  --border-hairline: var(--greige);
+  --border-subtle: var(--greige-200);
+  --divider: var(--greige);
+  --shadow-xs: 0 1px 2px rgba(40, 33, 30, 0.06);
+  --shadow-sm: 0 2px 8px rgba(40, 33, 30, 0.07);
+  --shadow-md: 0 8px 24px rgba(40, 33, 30, 0.09);
+  --shadow-lg: 0 20px 48px rgba(40, 33, 30, 0.12);
+}
+:root {
+  --display-xxl: 96px;
+  --display-xl: 72px;
+  --display-lg: 54px;
+  --display-md: 40px;
+  --display-sm: 28px;
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  --border-width: 1px;
+  --border-width-strong: 1.5px;
+  --container-narrow: 680px;
+  --container-md: 960px;
+  --container-wide: 1200px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-display: 700;
+  --text-xl: 22px;
+  --text-lg: 18px;
+  --text-md: 16px;
+  --text-sm: 14px;
+  --text-xs: 12px;
+  --leading-tight: 1.05;
+  --leading-snug: 1.25;
+  --leading-normal: 1.55;
+  --tracking-display: -0.01em;
+  --tracking-body: 0em;
+  --tracking-eyebrow: 0.08em;
+  --font-display: "DM Sans", system-ui, -apple-system, sans-serif;   /* Hillman is not used in this project */
+  --font-body: "DM Sans", system-ui, -apple-system, sans-serif;
+}

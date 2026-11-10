@@ -2,12 +2,13 @@ import { ensureLevel, loadBundle, visibleAt, type NodeRec, type ResearchMeasure 
 import { Map2D } from "./map2d";
 import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type LayerMode, type LodSetting } from "./state";
-import { onThemeChange } from "./theme";
+import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
 import { loadOverlay, type Footprint } from "./overlay";
 import { loadScore } from "./score";
 import { buildWhereNext } from "./whereNext";
 
+restoreTheme();
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 $("title").textContent = __DISPLAY_NAME__;
 
@@ -20,8 +21,8 @@ async function start(): Promise<void> {
   let view: "3d" | "2d" = gl ? "3d" : "2d";
 
   // ---- level of detail: manual override, otherwise driven by the camera distance in 3D (Level 1 in 2D)
-  let autoLevel = 0, applying = 0;
-  const wanted = (): number => state.lod !== "auto" ? Math.min(Number(state.lod), maxLevel) : view === "2d" ? Math.min(1, maxLevel) : Math.min(autoLevel, maxLevel);
+  let auto3d = 0, auto2d = 0, applying = 0;
+  const wanted = (): number => state.lod !== "auto" ? Math.min(Number(state.lod), maxLevel) : Math.min(view === "2d" ? auto2d : auto3d, maxLevel);
   const applyLevel = async (): Promise<void> => {
     const level = wanted(), ticket = ++applying;
     if (level === state.level && state.visibleIds.size) return;
@@ -36,7 +37,8 @@ async function start(): Promise<void> {
 
   const map2d = new Map2D($("view-2d"), bundle, state);
   const scene3d = gl ? new Scene3D($("view-3d"), $("labels"), bundle, state) : null;
-  if (scene3d) scene3d.onAutoLevel = (l) => { autoLevel = l; void applyLevel(); };
+  if (scene3d) scene3d.onAutoLevel = (l) => { auto3d = l; if (view === "3d") void applyLevel(); };
+  map2d.onAutoLevel = (l) => { auto2d = l; if (view === "2d") void applyLevel(); };
 
   const toggle = $<HTMLButtonElement>("mode");
   const apply = () => {
@@ -71,7 +73,13 @@ async function start(): Promise<void> {
   buildPanel(bundle, state, pick);
   const score = await loadScore();            // private; null on the public site
   if (score) buildWhereNext(bundle, state, score, pick);
-  onThemeChange(() => { scene3d?.applyTheme(); map2d.applyTheme(); });
+  onThemeChange(() => { scene3d?.applyTheme(); map2d.applyTheme(); syncTheme(); });
+  const themeBtn = $<HTMLButtonElement>("theme");
+  const syncTheme = () => { themeBtn.textContent = effectiveTheme() === "dark" ? "Light mode" : "Dark mode"; };
+  themeBtn.addEventListener("click", () => setTheme(effectiveTheme() === "dark" ? "light" : "dark"));
+  syncTheme();
+  const panelBtn = $<HTMLButtonElement>("panel-toggle");
+  panelBtn.addEventListener("click", () => { const hide = document.querySelector("aside")!.toggleAttribute("hidden"); panelBtn.textContent = hide ? "Show panel" : "Hide panel"; panelBtn.setAttribute("aria-pressed", String(hide)); });
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setView: (v: "3d" | "2d") => { view = v; apply(); },

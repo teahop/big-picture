@@ -19,9 +19,9 @@ export async function loadOverlay(): Promise<OverlayData | null> {
   } catch { return null; }
 }
 
-/** Warm heat colour blended over a terrain colour; `h` in 0..1. */
-export const HEAT: [number, number, number] = [255, 94, 20];
+/** Footprint colour (teal) blended over a terrain colour; `h` in 0..1. */
+import { heatRgb } from "./theme";
 export function blendHeat(base: [number, number, number], h: number): [number, number, number] {
   const a = Math.min(1, Math.pow(Math.max(h, 0), 0.7)) * 0.85;
-  return [0, 1, 2].map((i) => base[i] * (1 - a) + HEAT[i] * a) as [number, number, number];
+  return [0, 1, 2].map((i) => base[i] * (1 - a) + heatRgb[i] * a) as [number, number, number];
 }

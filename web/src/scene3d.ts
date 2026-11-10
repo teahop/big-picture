@@ -186,7 +186,7 @@ export class Scene3D {
     const c = this.state.footprint !== "off" ? this.state.overlay?.centroid[String(this.state.level)] : null;
     if (!c) { if (this.centroidMesh) this.centroidMesh.visible = false; return; }
     if (!this.centroidMesh) {
-      this.centroidMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: 0xff5e14 }));
+      this.centroidMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: readTheme().footprint }));
       this.centroidMesh.name = "footprint-centroid"; this.scene.add(this.centroidMesh);
     }
     const layer: Layer = this.state.showsIndustry() ? "ind" : "fld";
@@ -218,7 +218,7 @@ export class Scene3D {
     for (const [id, m] of this.markers) {
       const on = act?.id === id || sel?.id === id, top = this.state.ranked.has(id);
       const mat = (m.ring as THREE.Mesh | THREE.LineLoop).material as THREE.MeshBasicMaterial | THREE.LineDashedMaterial;
-      mat.color.set(on ? t.accent : top ? "#ff5e14" : t.fg);
+      mat.color.set(on ? t.accent : top ? t.footprint : t.fg);
       m.ring.scale.setScalar(m.r * (on ? 1.5 : top ? 1.3 : 1));
       m.label.classList.toggle("active", on);
     }
