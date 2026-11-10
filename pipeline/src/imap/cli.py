@@ -6,7 +6,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "personal", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "personal", "score", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
@@ -29,7 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "graph":
             p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "herd", "cip-soc", "onet"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "openalex-geo", "qcew", "oews", "herd", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
             p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
         if name == "export":
@@ -49,6 +49,11 @@ def run_stage(args: argparse.Namespace) -> int:
         if args.source == "openalex-taxonomy":
             from . import openalex
             return openalex.run()
+        if args.source in ("qcew", "oews", "openalex-geo"):
+            from . import geo
+            if args.source == "oews":
+                return geo.check_oews()
+            return geo.download_qcew() if args.source == "qcew" else geo.run_openalex_geo()
         if args.source == "openalex-levels":
             from . import openalex
             return openalex.run_levels()
@@ -57,6 +62,9 @@ def run_stage(args: argparse.Namespace) -> int:
     if name == "personal":
         from .personal import run_part
         return run_part(args.part)
+    if name == "score":
+        from . import score
+        return score.run()
     if name == "deep":
         from . import deep_industry
         return deep_industry.run()

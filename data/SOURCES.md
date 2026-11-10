@@ -53,3 +53,11 @@ No download in this phase was blocked (BLS remains hand-downloaded, see the Phas
 | Organisation headcounts | Published employee counts for the listed member organisations | `data/mappings/deep_headcounts.csv` has the source and quality for every row | Mostly Wikipedia infobox values (which cite filings or news) and web search results. Third-party estimates are marked. No figure was entered without a source |
 
 Method limits: headcounts are mostly global company totals, while BLS counts US jobs, so shares within a parent industry reflect the listed organisations only. Where a parent industry has one category the category takes the whole parent. Ownership (private, state, local) comes from the BLS parents; IPEDS shares are applied per ownership group (private = nonprofit plus for-profit; state and local = public).
+
+### Phase 5 geography and wages (retrieved 2026-11-09)
+
+| Source | What was fetched | Release / file | Notes |
+|---|---|---|---|
+| BLS QCEW | Annual employment by area, county files and the US total | `https://data.bls.gov/cew/data/files/2025/csv/2025_annual_by_area.zip` (115 MB, 2025 annual) | Metro areas carry totals only, so a metro is a sum of county files. Industry detail uses NAICS codes derived from the Employment Matrix codes (trailing zeros stripped; aggregated codes such as 3250A1 and remainder nodes have no clean match and stay neutral) |
+| OpenAlex | Metro share of US publications per subfield (group_by subfield, filter `authorships.institutions.geo.city`) | live API, 3 calls | Cities come from the private profile; the output stays in `private/` |
+| BLS OEWS | **Not fetched.** `https://www.bls.gov/oes/special-requests/oesm25in4.zip` returns 403 to scripted requests, as the Employment Matrix did | needs a hand download into `data/raw/oews/` | The pay toggle stays off until the file is present and its layout has been checked |

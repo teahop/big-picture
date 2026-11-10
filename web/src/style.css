@@ -61,3 +61,14 @@ aside li small { display: inline; }
 .node-label.lvl1 { font-size: 11px; }
 .node-label.lvl2 { font-size: 10px; }
 aside strong { color: var(--accent); }
+
+/* where-next panel (private) */
+#where-next h3 { margin-top: 1rem; }
+.wn-controls { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.wn-list { list-style: none; padding: 0; margin: 0; }
+.wn-list li { margin-bottom: 0.6rem; }
+.wn-list button { display: flex; justify-content: space-between; width: 100%; text-align: left; }
+.bars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin: 2px 0; }
+.bar { display: block; height: 5px; background: color-mix(in srgb, var(--fg) 15%, transparent); }
+.bar i { display: block; height: 100%; background: #ff5e14; }
+.why, .tag { display: block; }

@@ -216,10 +216,10 @@ export class Scene3D {
   private refreshHighlight(): void {
     const t = readTheme(), act = this.state.active, sel = this.state.selected;
     for (const [id, m] of this.markers) {
-      const on = act?.id === id || sel?.id === id;
+      const on = act?.id === id || sel?.id === id, top = this.state.ranked.has(id);
       const mat = (m.ring as THREE.Mesh | THREE.LineLoop).material as THREE.MeshBasicMaterial | THREE.LineDashedMaterial;
-      mat.color.set(on ? t.accent : t.fg);
-      m.ring.scale.setScalar(m.r * (on ? 1.5 : 1));
+      mat.color.set(on ? t.accent : top ? "#ff5e14" : t.fg);
+      m.ring.scale.setScalar(m.r * (on ? 1.5 : top ? 1.3 : 1));
       m.label.classList.toggle("active", on);
     }
   }

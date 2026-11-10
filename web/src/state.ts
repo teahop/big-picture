@@ -12,6 +12,7 @@ export class State {
   researchMeasure: ResearchMeasure = "works";
   lod: LodSetting = "auto";
   footprint: Footprint = "off";
+  ranked = new Set<string>();       // top where-next candidates, highlighted on the map (private)
   overlay: OverlayData | null = null;   // private, only when present locally
   level = 0;                       // level of detail currently drawn
   visibleIds = new Set<string>();  // nodes drawn at that level
@@ -22,6 +23,7 @@ export class State {
   setMode(m: LayerMode): void { this.mode = m; this.emit(); }
   setResearchMeasure(m: ResearchMeasure): void { this.researchMeasure = m; this.emit(); }
   setLod(l: LodSetting): void { this.lod = l; this.emit(); }
+  setRanked(ids: Set<string>): void { this.ranked = ids; this.emit(); }
   setFootprint(f: Footprint): void { this.footprint = f; this.emit(); }
   /** Footprint heat grid for the level being drawn, or null when off or missing. */
   heatGrid(): { max: number; values: number[] } | null {

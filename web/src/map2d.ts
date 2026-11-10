@@ -121,7 +121,8 @@ export class Map2D {
         const [x, y] = this.px(p, n);
         const on = this.state.active?.id === n.id || this.state.selected?.id === n.id;
         const r = (3 + 11 * Math.sqrt(this.rel(n))) * d * (n.level === 0 ? 1 : n.level === 1 ? 0.8 : 0.65);
-        ctx.lineWidth = (on ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : t.fg;
+        const top = this.state.ranked.has(n.id);
+        ctx.lineWidth = (on || top ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : top ? "#ff5e14" : t.fg;
         ctx.setLineDash(n.provenance === "estimated" ? [4 * d, 3 * d] : []);
         ctx.beginPath();
         if (n.type === "ind") ctx.arc(x, y, r, 0, Math.PI * 2);

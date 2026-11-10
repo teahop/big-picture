@@ -5,6 +5,8 @@ import { State, type LayerMode, type LodSetting } from "./state";
 import { onThemeChange } from "./theme";
 import { buildPanel } from "./ui";
 import { loadOverlay, type Footprint } from "./overlay";
+import { loadScore } from "./score";
+import { buildWhereNext } from "./whereNext";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 $("title").textContent = __DISPLAY_NAME__;
@@ -61,11 +63,14 @@ async function start(): Promise<void> {
   const syncRadios = () => document.querySelectorAll<HTMLInputElement>("input[name=layer]").forEach((i) => { i.checked = i.value === state.mode; });
   state.subscribe(syncRadios);
 
-  buildPanel(bundle, state, (n: NodeRec) => {
+  const pick = (n: NodeRec) => {
     if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level); }
     if (!state.isVisible(n)) state.setMode(n.type === "ind" ? "industry" : "research");
     void applyLevel().then(() => { state.setSelected(n); scene3d?.focus(n); });
-  });
+  };
+  buildPanel(bundle, state, pick);
+  const score = await loadScore();            // private; null on the public site
+  if (score) buildWhereNext(bundle, state, score, pick);
   onThemeChange(() => { scene3d?.applyTheme(); map2d.applyTheme(); });
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
