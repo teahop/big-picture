@@ -50,6 +50,16 @@ def test_concurrent_roles_split_a_month_and_builds_weigh_half():
     assert pytest.approx(sum(got.values())) == 1.0 and got[5] > got[6]
 
 
+def test_month_capacity_lets_concurrent_roles_exceed_one_month():
+    a, b, c = (Role(i, mi(2020, 1), mi(2020, 2)) for i in (1, 2, 3))
+    got = allocate_months([a, b, c], AS_OF, capacity=1.75)
+    assert pytest.approx(sum(got.values())) == 1.75 and pytest.approx(got[1]) == 1.75 / 3
+    two = allocate_months([a, b], AS_OF, capacity=1.75)
+    assert two == {1: 0.875, 2: 0.875}                  # two roles share the 1.75 capacity
+    umb = Role(9, mi(2020, 1), mi(2020, 2), umbrella=True)
+    assert allocate_months([a, umb], AS_OF, capacity=1.75) == {1: 1.0, 9: 0.0}   # umbrella tops a month up to 1.0 only
+
+
 def test_excluded_roles_carry_nothing():
     got = allocate_months([Role(1, mi(2020, 1), mi(2020, 12) + 1, included=False)], AS_OF)
     assert got == {}

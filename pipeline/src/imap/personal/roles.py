@@ -87,8 +87,10 @@ def parse_duration(raw) -> float | None:
     return (float(y.group(1)) * 12 if y else 0.0) + (float(m.group(1)) if m else 0.0)
 
 
-def allocate_months(roles: list[Role], as_of: date) -> dict[int, float]:
-    """Person-months per role number (see module docstring). Pure and deterministic."""
+def allocate_months(roles: list[Role], as_of: date, capacity: float = 1.0) -> dict[int, float]:
+    """Person-months per role number (see module docstring). Pure and deterministic.
+    `capacity` is the most one calendar month can hold: 1.0 is one full-time month; the owner works 60-80 hours a week,
+    so the profile sets about 1.75. Roles beyond the capacity share it by weight; the umbrella still tops a month up to 1.0 only."""
     now = mi(as_of.year, as_of.month) + 1
     active = [r for r in roles if r.included and r.start is not None and r.end is not None and r.end > r.start]
     others, umb = [r for r in active if not r.umbrella], [r for r in active if r.umbrella]
@@ -97,12 +99,12 @@ def allocate_months(roles: list[Role], as_of: date) -> dict[int, float]:
     for m in range(lo, hi):
         live = [r for r in others if r.start <= m < r.end]
         wsum = sum(r.weight for r in live)
-        used = min(1.0, wsum)
+        used = min(capacity, wsum)
         for r in live:
             out[r.no] += r.weight / wsum * used
         for u in umb:
             if u.start <= m < u.end:
-                out[u.no] += 1.0 - used
+                out[u.no] += max(0.0, 1.0 - used)
     return out
 
 
@@ -215,7 +217,8 @@ def run() -> int:
     roles = build_roles(df, profile, as_of)
     corr_path = private_dir() / "role_corrections.csv"
     node_corr = apply_corrections(roles, corr_path)
-    alloc = allocate_months(roles, as_of)
+    capacity = float(profile.get("presence", {}).get("month_capacity", 1.0))
+    alloc = allocate_months(roles, as_of, capacity)
     prop = propose(df, nodes)
     model = load_model_proposals(private_dir() / "role_proposals_model.csv", nodes)
     col = {c: i for i, c in enumerate(df.columns)}
@@ -248,7 +251,7 @@ def run() -> int:
     (private_dir() / "report_roles.md").write_text("\n".join([
         "# roles report (private)", "",
         f"- as of {as_of}; career span {now - start} months; months with at least one role {active_months}",
-        f"- allocated person-months {total:.1f} (never exceeds months with a role: {total <= active_months + 1e-6}); umbrella share {umb:.1f}",
+        f"- allocated person-months {total:.1f} against {active_months} active months (a month holds at most {capacity:g}): within capacity: {total <= capacity * active_months + 1e-6}; umbrella share {umb:.1f}",
         f"- provisional roles (approximate or year-only dates): {int(out['provisional'].sum())} carrying {prov:.1f} person-months ({prov / max(total, 1e-9):.0%})",
         f"- needing review: {int((out['flags'] != '').sum())} roles have flags; see review_roles.csv",
         "- owner corrections live in role_corrections.csv (columns no, field, value) and are never overwritten"]) + "\n")
