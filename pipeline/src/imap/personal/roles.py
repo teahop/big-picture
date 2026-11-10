@@ -108,7 +108,12 @@ def allocate_months(roles: list[Role], as_of: date) -> dict[int, float]:
 
 def load_workbook() -> pd.DataFrame:
     path = personal_root() / "TJH_Database.xlsx"
-    return pd.read_excel(path, sheet_name="Experience Database")
+    df = pd.read_excel(path, sheet_name="Experience Database")
+    extra = private_dir() / "extra_roles.csv"       # roles the owner adds without editing their workbook (columns as the workbook)
+    if extra.exists():
+        add = pd.read_csv(extra)
+        df = pd.concat([df, add.reindex(columns=df.columns)], ignore_index=True)
+    return df
 
 
 def _rules(profile: dict) -> dict:
