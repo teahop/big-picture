@@ -69,3 +69,21 @@ def test_allocate_herd_rejects_unknown_field(tmp_path):
     h = ingest_files.parse_herd(herd_table(tmp_path))
     with pytest.raises(ingest_files.LayoutMismatch):
         ingest_files.allocate_herd(h, pd.DataFrame({"herd_field": ["Nope"], "openalex_field": ["Medicine"]}), pd.Series({"Medicine": 1}))
+
+
+def test_load_reviewed_requires_an_accepted_row_per_field(tmp_path, monkeypatch):
+    f = tmp_path / "m.csv"
+    pd.DataFrame({"field_id": ["1", "1", "2"], "cip4": ["01.01", "01.02", "02.01"],
+                  "similarity": [.7, .6, .5], "accept": ["yes", "no", "no"]}).to_csv(f, index=False)
+    monkeypatch.setattr(bridge, "REVIEWED", f)
+    with pytest.raises(ValueError, match="no accepted program"):
+        bridge.load_reviewed()
+
+
+def test_mapping_reviewed_flag(tmp_path, monkeypatch):
+    f = tmp_path / "m.csv"
+    pd.DataFrame({"field_id": ["1"], "accept": ["yes"], "reviewed": ["yes"]}).to_csv(f, index=False)
+    monkeypatch.setattr(bridge, "REVIEWED", f)
+    assert bridge.mapping_reviewed()
+    pd.DataFrame({"field_id": ["1"], "accept": ["yes"], "reviewed": ["no"]}).to_csv(f, index=False)
+    assert not bridge.mapping_reviewed()

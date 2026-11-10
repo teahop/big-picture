@@ -759,59 +759,59 @@
   "source": "fld:11",
   "target": "ind:110000",
   "type": "fld-ind",
-  "weight": 1.0,
+  "weight": 0.7439,
   "signals": {
-   "occupational": 0.3803,
+   "occupational": 0.1478,
    "semantic": 0.7018
   }
  },
  {
   "source": "fld:11",
-  "target": "ind:420000",
+  "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.2074,
+  "weight": 0.2569,
   "signals": {
-   "occupational": 0.0519,
-   "semantic": 0.549
+   "occupational": 0.0547,
+   "semantic": 0.5513
   }
  },
  {
   "source": "fld:11",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.4643,
+  "weight": 0.8284,
   "signals": {
-   "occupational": 0.1496,
+   "occupational": 0.2579,
    "semantic": 0.6063
-  }
- },
- {
-  "source": "fld:11",
-  "target": "ind:550000",
-  "type": "fld-ind",
-  "weight": 0.1792,
-  "signals": {
-   "occupational": 0.0102,
-   "semantic": 0.5699
   }
  },
  {
   "source": "fld:11",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.5424,
+  "weight": 0.743,
   "signals": {
-   "occupational": 0.2383,
+   "occupational": 0.2478,
    "semantic": 0.5718
+  }
+ },
+ {
+  "source": "fld:11",
+  "target": "ind:620000",
+  "type": "fld-ind",
+  "weight": 0.2235,
+  "signals": {
+   "occupational": 0.0419,
+   "semantic": 0.5492
   }
  },
  {
   "source": "fld:11",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.1934,
+  "weight": 0.4043,
   "signals": {
-   "occupational": 0.1033,
+   "occupational": 0.1607,
    "semantic": 0.4961
   }
  },
@@ -819,9 +819,9 @@
   "source": "fld:12",
   "target": "ind:110000",
   "type": "fld-ind",
-  "weight": 0.304,
+  "weight": 0.3026,
   "signals": {
-   "occupational": 0.0028,
+   "occupational": 0.002,
    "semantic": 0.512
   }
  },
@@ -829,9 +829,9 @@
   "source": "fld:12",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.2182,
+  "weight": 0.2162,
   "signals": {
-   "occupational": 0.0036,
+   "occupational": 0.0025,
    "semantic": 0.4902
   }
  },
@@ -839,9 +839,9 @@
   "source": "fld:12",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.8612,
+  "weight": 0.5813,
   "signals": {
-   "occupational": 0.2974,
+   "occupational": 0.1655,
    "semantic": 0.5222
   }
  },
@@ -849,9 +849,9 @@
   "source": "fld:12",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.2096,
+  "weight": 0.208,
   "signals": {
-   "occupational": 0.0108,
+   "occupational": 0.0114,
    "semantic": 0.4849
   }
  },
@@ -859,9 +859,9 @@
   "source": "fld:12",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.7124,
+  "weight": 1.0,
   "signals": {
-   "occupational": 0.1792,
+   "occupational": 0.4135,
    "semantic": 0.5367
   }
  },
@@ -869,9 +869,9 @@
   "source": "fld:12",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.4275,
+  "weight": 0.4825,
   "signals": {
-   "occupational": 0.0294,
+   "occupational": 0.0729,
    "semantic": 0.5311
   }
  },
@@ -879,9 +879,9 @@
   "source": "fld:12",
   "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.269,
+  "weight": 0.2942,
   "signals": {
-   "occupational": 0.0175,
+   "occupational": 0.038,
    "semantic": 0.4968
   }
  },
@@ -889,9 +889,9 @@
   "source": "fld:12",
   "target": "ind:720000",
   "type": "fld-ind",
-  "weight": 0.1531,
+  "weight": 0.1529,
   "signals": {
-   "occupational": 0.0012,
+   "occupational": 0.0009,
    "semantic": 0.475
   }
  },
@@ -899,29 +899,19 @@
   "source": "fld:12",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.3984,
+  "weight": 0.3665,
   "signals": {
-   "occupational": 0.0614,
+   "occupational": 0.0515,
    "semantic": 0.5099
-  }
- },
- {
-  "source": "fld:12",
-  "target": "ind:900000",
-  "type": "fld-ind",
-  "weight": 0.6039,
-  "signals": {
-   "occupational": 0.3434,
-   "semantic": 0.438
   }
  },
  {
   "source": "fld:13",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.3216,
+  "weight": 0.3269,
   "signals": {
-   "occupational": 0.0745,
+   "occupational": 0.0714,
    "semantic": 0.5196
   }
  },
@@ -931,7 +921,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3693,
+   "occupational": 0.3391,
    "semantic": 0.5884
   }
  },
@@ -939,9 +929,9 @@
   "source": "fld:13",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.253,
+  "weight": 0.2546,
   "signals": {
-   "occupational": 0.0187,
+   "occupational": 0.018,
    "semantic": 0.5272
   }
  },
@@ -949,9 +939,9 @@
   "source": "fld:13",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.4122,
+  "weight": 0.5538,
   "signals": {
-   "occupational": 0.129,
+   "occupational": 0.1985,
    "semantic": 0.5203
   }
  },
@@ -959,9 +949,9 @@
   "source": "fld:13",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.6226,
+  "weight": 0.5019,
   "signals": {
-   "occupational": 0.2161,
+   "occupational": 0.1302,
    "semantic": 0.5441
   }
  },
@@ -969,19 +959,29 @@
   "source": "fld:13",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.2345,
+  "weight": 0.3034,
   "signals": {
-   "occupational": 0.1426,
+   "occupational": 0.1699,
    "semantic": 0.4514
+  }
+ },
+ {
+  "source": "fld:14",
+  "target": "ind:420000",
+  "type": "fld-ind",
+  "weight": 0.2802,
+  "signals": {
+   "occupational": 0.0291,
+   "semantic": 0.6235
   }
  },
  {
   "source": "fld:14",
   "target": "ind:44-450",
   "type": "fld-ind",
-  "weight": 0.2132,
+  "weight": 0.2071,
   "signals": {
-   "occupational": 0.0266,
+   "occupational": 0.0215,
    "semantic": 0.5985
   }
  },
@@ -989,9 +989,9 @@
   "source": "fld:14",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.1901,
+  "weight": 0.1806,
   "signals": {
-   "occupational": 0.0202,
+   "occupational": 0.0149,
    "semantic": 0.5958
   }
  },
@@ -999,9 +999,9 @@
   "source": "fld:14",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.6444,
+  "weight": 0.5251,
   "signals": {
-   "occupational": 0.1995,
+   "occupational": 0.1347,
    "semantic": 0.5748
   }
  },
@@ -1009,9 +1009,9 @@
   "source": "fld:14",
   "target": "ind:530000",
   "type": "fld-ind",
-  "weight": 0.1855,
+  "weight": 0.1879,
   "signals": {
-   "occupational": 0.0102,
+   "occupational": 0.01,
    "semantic": 0.6075
   }
  },
@@ -1021,7 +1021,7 @@
   "type": "fld-ind",
   "weight": 0.8886,
   "signals": {
-   "occupational": 0.2194,
+   "occupational": 0.1889,
    "semantic": 0.6724
   }
  },
@@ -1029,9 +1029,9 @@
   "source": "fld:14",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.5381,
+  "weight": 0.5719,
   "signals": {
-   "occupational": 0.052,
+   "occupational": 0.0557,
    "semantic": 0.7298
   }
  },
@@ -1039,9 +1039,9 @@
   "source": "fld:14",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.2457,
+  "weight": 0.2671,
   "signals": {
-   "occupational": 0.03,
+   "occupational": 0.0329,
    "semantic": 0.6104
   }
  },
@@ -1049,39 +1049,49 @@
   "source": "fld:14",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.3218,
+  "weight": 0.329,
   "signals": {
-   "occupational": 0.0633,
+   "occupational": 0.0571,
    "semantic": 0.6023
   }
  },
  {
   "source": "fld:14",
-  "target": "ind:620000",
+  "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.2791,
+  "weight": 0.2702,
   "signals": {
-   "occupational": 0.0555,
-   "semantic": 0.5914
+   "occupational": 0.0305,
+   "semantic": 0.616
   }
  },
  {
   "source": "fld:14",
   "target": "ind:720000",
   "type": "fld-ind",
-  "weight": 0.1515,
+  "weight": 0.4495,
   "signals": {
-   "occupational": 0.0061,
+   "occupational": 0.0985,
    "semantic": 0.5959
+  }
+ },
+ {
+  "source": "fld:14",
+  "target": "ind:810000",
+  "type": "fld-ind",
+  "weight": 0.2672,
+  "signals": {
+   "occupational": 0.0407,
+   "semantic": 0.5976
   }
  },
  {
   "source": "fld:14",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.4569,
+  "weight": 0.4322,
   "signals": {
-   "occupational": 0.1494,
+   "occupational": 0.1212,
    "semantic": 0.5495
   }
  },
@@ -1089,9 +1099,9 @@
   "source": "fld:15",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.3441,
+  "weight": 0.3294,
   "signals": {
-   "occupational": 0.0236,
+   "occupational": 0.0131,
    "semantic": 0.605
   }
  },
@@ -1099,9 +1109,9 @@
   "source": "fld:15",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.21,
+  "weight": 0.2106,
   "signals": {
-   "occupational": 0.0137,
+   "occupational": 0.0133,
    "semantic": 0.5588
   }
  },
@@ -1109,9 +1119,9 @@
   "source": "fld:15",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.2542,
+  "weight": 0.2827,
   "signals": {
-   "occupational": 0.0135,
+   "occupational": 0.0303,
    "semantic": 0.576
   }
  },
@@ -1121,7 +1131,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3976,
+   "occupational": 0.3678,
    "semantic": 0.6405
   }
  },
@@ -1129,9 +1139,9 @@
   "source": "fld:15",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.2713,
+  "weight": 0.28,
   "signals": {
-   "occupational": 0.0309,
+   "occupational": 0.0342,
    "semantic": 0.5725
   }
  },
@@ -1139,9 +1149,9 @@
   "source": "fld:15",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.2159,
+  "weight": 0.218,
   "signals": {
-   "occupational": 0.0046,
+   "occupational": 0.0059,
    "semantic": 0.5664
   }
  },
@@ -1149,9 +1159,9 @@
   "source": "fld:15",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.7898,
+  "weight": 0.8181,
   "signals": {
-   "occupational": 0.2739,
+   "occupational": 0.2709,
    "semantic": 0.6313
   }
  },
@@ -1159,9 +1169,9 @@
   "source": "fld:15",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.2957,
+  "weight": 0.3002,
   "signals": {
-   "occupational": 0.042,
+   "occupational": 0.0419,
    "semantic": 0.5754
   }
  },
@@ -1169,9 +1179,9 @@
   "source": "fld:16",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.5307,
+  "weight": 0.7119,
   "signals": {
-   "occupational": 0.1217,
+   "occupational": 0.1951,
    "semantic": 0.573
   }
  },
@@ -1179,9 +1189,9 @@
   "source": "fld:16",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.2736,
+  "weight": 0.277,
   "signals": {
-   "occupational": 0.0296,
+   "occupational": 0.0288,
    "semantic": 0.5519
   }
  },
@@ -1201,7 +1211,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3004,
+   "occupational": 0.276,
    "semantic": 0.6053
   }
  },
@@ -1209,9 +1219,9 @@
   "source": "fld:16",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.2236,
+  "weight": 0.2295,
   "signals": {
-   "occupational": 0.0275,
+   "occupational": 0.0281,
    "semantic": 0.5387
   }
  },
@@ -1219,9 +1229,9 @@
   "source": "fld:16",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.7451,
+  "weight": 0.7584,
   "signals": {
-   "occupational": 0.2414,
+   "occupational": 0.2279,
    "semantic": 0.5659
   }
  },
@@ -1229,9 +1239,9 @@
   "source": "fld:16",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.4117,
+  "weight": 0.3492,
   "signals": {
-   "occupational": 0.2062,
+   "occupational": 0.1607,
    "semantic": 0.4901
   }
  },
@@ -1239,9 +1249,9 @@
   "source": "fld:17",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.2889,
+  "weight": 0.3495,
   "signals": {
-   "occupational": 0.0504,
+   "occupational": 0.0886,
    "semantic": 0.5538
   }
  },
@@ -1249,9 +1259,9 @@
   "source": "fld:17",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.6527,
+  "weight": 0.5962,
   "signals": {
-   "occupational": 0.1592,
+   "occupational": 0.1304,
    "semantic": 0.6258
   }
  },
@@ -1259,9 +1269,9 @@
   "source": "fld:17",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.2021,
+  "weight": 0.1818,
   "signals": {
-   "occupational": 0.0903,
+   "occupational": 0.0811,
    "semantic": 0.4907
   }
  },
@@ -1271,7 +1281,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3499,
+   "occupational": 0.3611,
    "semantic": 0.6338
   }
  },
@@ -1279,9 +1289,9 @@
   "source": "fld:17",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3603,
+  "weight": 0.3558,
   "signals": {
-   "occupational": 0.0562,
+   "occupational": 0.0554,
    "semantic": 0.5788
   }
  },
@@ -1289,19 +1299,29 @@
   "source": "fld:17",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.2121,
+  "weight": 0.195,
   "signals": {
-   "occupational": 0.0573,
+   "occupational": 0.049,
    "semantic": 0.5178
+  }
+ },
+ {
+  "source": "fld:17",
+  "target": "ind:900000",
+  "type": "fld-ind",
+  "weight": 0.2002,
+  "signals": {
+   "occupational": 0.0972,
+   "semantic": 0.4873
   }
  },
  {
   "source": "fld:18",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.2791,
+  "weight": 0.2904,
   "signals": {
-   "occupational": 0.0186,
+   "occupational": 0.0239,
    "semantic": 0.5243
   }
  },
@@ -1309,9 +1329,9 @@
   "source": "fld:18",
   "target": "ind:44-450",
   "type": "fld-ind",
-  "weight": 0.2206,
+  "weight": 0.2222,
   "signals": {
-   "occupational": 0.0055,
+   "occupational": 0.0073,
    "semantic": 0.5146
   }
  },
@@ -1319,9 +1339,9 @@
   "source": "fld:18",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.3704,
+  "weight": 0.3826,
   "signals": {
-   "occupational": 0.024,
+   "occupational": 0.0296,
    "semantic": 0.5548
   }
  },
@@ -1329,9 +1349,9 @@
   "source": "fld:18",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.6059,
+  "weight": 0.486,
   "signals": {
-   "occupational": 0.1887,
+   "occupational": 0.1422,
    "semantic": 0.4792
   }
  },
@@ -1341,7 +1361,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.2326,
+   "occupational": 0.2314,
    "semantic": 0.5897
   }
  },
@@ -1349,9 +1369,9 @@
   "source": "fld:18",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.4162,
+  "weight": 0.4321,
   "signals": {
-   "occupational": 0.0401,
+   "occupational": 0.0469,
    "semantic": 0.5564
   }
  },
@@ -1359,9 +1379,9 @@
   "source": "fld:18",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.5391,
+  "weight": 0.3891,
   "signals": {
-   "occupational": 0.1773,
+   "occupational": 0.1194,
    "semantic": 0.4645
   }
  },
@@ -1369,9 +1389,9 @@
   "source": "fld:18",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.5594,
+  "weight": 0.6789,
   "signals": {
-   "occupational": 0.1843,
+   "occupational": 0.2292,
    "semantic": 0.4654
   }
  },
@@ -1379,20 +1399,20 @@
   "source": "fld:19",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.2926,
+  "weight": 0.2561,
   "signals": {
-   "occupational": 0.0427,
+   "occupational": 0.0226,
    "semantic": 0.535
   }
  },
  {
   "source": "fld:19",
-  "target": "ind:31-330",
+  "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2264,
+  "weight": 0.2302,
   "signals": {
-   "occupational": 0.0419,
-   "semantic": 0.5141
+   "occupational": 0.0123,
+   "semantic": 0.5323
   }
  },
  {
@@ -1411,7 +1431,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3428,
+   "occupational": 0.356,
    "semantic": 0.5936
   }
  },
@@ -1419,9 +1439,9 @@
   "source": "fld:19",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.2847,
+  "weight": 0.28,
   "signals": {
-   "occupational": 0.0253,
+   "occupational": 0.0236,
    "semantic": 0.5422
   }
  },
@@ -1429,9 +1449,9 @@
   "source": "fld:19",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.5169,
+  "weight": 0.6106,
   "signals": {
-   "occupational": 0.1509,
+   "occupational": 0.2122,
    "semantic": 0.5462
   }
  },
@@ -1439,29 +1459,19 @@
   "source": "fld:19",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.7089,
+  "weight": 0.5663,
   "signals": {
-   "occupational": 0.326,
+   "occupational": 0.2539,
    "semantic": 0.5094
-  }
- },
- {
-  "source": "fld:20",
-  "target": "ind:110000",
-  "type": "fld-ind",
-  "weight": 0.2445,
-  "signals": {
-   "occupational": 0.0078,
-   "semantic": 0.5595
   }
  },
  {
   "source": "fld:20",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.29,
+  "weight": 0.3034,
   "signals": {
-   "occupational": 0.017,
+   "occupational": 0.0221,
    "semantic": 0.5707
   }
  },
@@ -1469,9 +1479,9 @@
   "source": "fld:20",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.3097,
+  "weight": 0.3482,
   "signals": {
-   "occupational": 0.0226,
+   "occupational": 0.04,
    "semantic": 0.5741
   }
  },
@@ -1479,9 +1489,9 @@
   "source": "fld:20",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.3849,
+  "weight": 0.5824,
   "signals": {
-   "occupational": 0.0435,
+   "occupational": 0.1389,
    "semantic": 0.588
   }
  },
@@ -1489,9 +1499,9 @@
   "source": "fld:20",
   "target": "ind:530000",
   "type": "fld-ind",
-  "weight": 0.1623,
+  "weight": 0.1608,
   "signals": {
-   "occupational": 0.0053,
+   "occupational": 0.0034,
    "semantic": 0.5277
   }
  },
@@ -1499,9 +1509,9 @@
   "source": "fld:20",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.7796,
+  "weight": 1.0,
   "signals": {
-   "occupational": 0.1938,
+   "occupational": 0.2972,
    "semantic": 0.6276
   }
  },
@@ -1509,29 +1519,19 @@
   "source": "fld:20",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.4491,
+  "weight": 0.476,
   "signals": {
-   "occupational": 0.0347,
+   "occupational": 0.0461,
    "semantic": 0.6215
-  }
- },
- {
-  "source": "fld:20",
-  "target": "ind:610000",
-  "type": "fld-ind",
-  "weight": 0.5377,
-  "signals": {
-   "occupational": 0.2137,
-   "semantic": 0.5121
   }
  },
  {
   "source": "fld:20",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.6,
+  "weight": 0.4492,
   "signals": {
-   "occupational": 0.3049,
+   "occupational": 0.2229,
    "semantic": 0.4634
   }
  },
@@ -1539,9 +1539,9 @@
   "source": "fld:21",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.293,
+  "weight": 0.2923,
   "signals": {
-   "occupational": 0.0065,
+   "occupational": 0.0075,
    "semantic": 0.5763
   }
  },
@@ -1549,9 +1549,9 @@
   "source": "fld:21",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.5479,
+  "weight": 0.5106,
   "signals": {
-   "occupational": 0.0725,
+   "occupational": 0.055,
    "semantic": 0.6265
   }
  },
@@ -1559,9 +1559,9 @@
   "source": "fld:21",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.3101,
+  "weight": 0.3491,
   "signals": {
-   "occupational": 0.0351,
+   "occupational": 0.0548,
    "semantic": 0.5589
   }
  },
@@ -1569,9 +1569,9 @@
   "source": "fld:21",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.5823,
+  "weight": 0.4952,
   "signals": {
-   "occupational": 0.1829,
+   "occupational": 0.1399,
    "semantic": 0.5457
   }
  },
@@ -1579,9 +1579,9 @@
   "source": "fld:21",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.2281,
+  "weight": 0.2295,
   "signals": {
-   "occupational": 0.008,
+   "occupational": 0.0099,
    "semantic": 0.5478
   }
  },
@@ -1589,9 +1589,9 @@
   "source": "fld:21",
   "target": "ind:530000",
   "type": "fld-ind",
-  "weight": 0.1159,
+  "weight": 0.1255,
   "signals": {
-   "occupational": 0.0025,
+   "occupational": 0.0085,
    "semantic": 0.5055
   }
  },
@@ -1599,40 +1599,20 @@
   "source": "fld:21",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.8269,
+  "weight": 0.8018,
   "signals": {
-   "occupational": 0.2326,
+   "occupational": 0.2186,
    "semantic": 0.6057
-  }
- },
- {
-  "source": "fld:21",
-  "target": "ind:550000",
-  "type": "fld-ind",
-  "weight": 0.3368,
-  "signals": {
-   "occupational": 0.035,
-   "semantic": 0.5702
   }
  },
  {
   "source": "fld:21",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.2837,
+  "weight": 0.3351,
   "signals": {
-   "occupational": 0.0289,
+   "occupational": 0.0545,
    "semantic": 0.5532
-  }
- },
- {
-  "source": "fld:21",
-  "target": "ind:710000",
-  "type": "fld-ind",
-  "weight": 0.2109,
-  "signals": {
-   "occupational": 0.0017,
-   "semantic": 0.546
   }
  },
  {
@@ -1641,7 +1621,7 @@
   "type": "fld-ind",
   "weight": 0.6,
   "signals": {
-   "occupational": 0.2928,
+   "occupational": 0.2899,
    "semantic": 0.4585
   }
  },
@@ -1649,9 +1629,9 @@
   "source": "fld:22",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.2115,
+  "weight": 0.2142,
   "signals": {
-   "occupational": 0.0101,
+   "occupational": 0.0119,
    "semantic": 0.5926
   }
  },
@@ -1659,9 +1639,9 @@
   "source": "fld:22",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.3414,
+  "weight": 0.3358,
   "signals": {
-   "occupational": 0.0195,
+   "occupational": 0.0171,
    "semantic": 0.6446
   }
  },
@@ -1669,9 +1649,9 @@
   "source": "fld:22",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.3215,
+  "weight": 0.3662,
   "signals": {
-   "occupational": 0.0314,
+   "occupational": 0.056,
    "semantic": 0.6247
   }
  },
@@ -1679,9 +1659,9 @@
   "source": "fld:22",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.8085,
+  "weight": 0.7428,
   "signals": {
-   "occupational": 0.2982,
+   "occupational": 0.2711,
    "semantic": 0.6114
   }
  },
@@ -1689,9 +1669,9 @@
   "source": "fld:22",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.1976,
+  "weight": 0.1955,
   "signals": {
-   "occupational": 0.0095,
+   "occupational": 0.0087,
    "semantic": 0.5866
   }
  },
@@ -1701,7 +1681,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3105,
+   "occupational": 0.3186,
    "semantic": 0.6895
   }
  },
@@ -1709,9 +1689,9 @@
   "source": "fld:22",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3164,
+  "weight": 0.3025,
   "signals": {
-   "occupational": 0.0536,
+   "occupational": 0.0476,
    "semantic": 0.6024
   }
  },
@@ -1719,9 +1699,9 @@
   "source": "fld:22",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.3037,
+  "weight": 0.2982,
   "signals": {
-   "occupational": 0.1572,
+   "occupational": 0.1584,
    "semantic": 0.5032
   }
  },
@@ -1729,9 +1709,9 @@
   "source": "fld:23",
   "target": "ind:110000",
   "type": "fld-ind",
-  "weight": 0.2887,
+  "weight": 0.2818,
   "signals": {
-   "occupational": 0.0081,
+   "occupational": 0.0041,
    "semantic": 0.5436
   }
  },
@@ -1739,9 +1719,9 @@
   "source": "fld:23",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.2034,
+  "weight": 0.1694,
   "signals": {
-   "occupational": 0.0415,
+   "occupational": 0.0233,
    "semantic": 0.5
   }
  },
@@ -1749,9 +1729,9 @@
   "source": "fld:23",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.1981,
+  "weight": 0.1911,
   "signals": {
-   "occupational": 0.0085,
+   "occupational": 0.0045,
    "semantic": 0.5148
   }
  },
@@ -1759,9 +1739,9 @@
   "source": "fld:23",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.8857,
+  "weight": 0.7518,
   "signals": {
-   "occupational": 0.3081,
+   "occupational": 0.2627,
    "semantic": 0.5825
   }
  },
@@ -1769,9 +1749,9 @@
   "source": "fld:23",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3708,
+  "weight": 0.356,
   "signals": {
-   "occupational": 0.0236,
+   "occupational": 0.0166,
    "semantic": 0.5617
   }
  },
@@ -1779,9 +1759,9 @@
   "source": "fld:23",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.375,
+  "weight": 0.3621,
   "signals": {
-   "occupational": 0.0196,
+   "occupational": 0.0132,
    "semantic": 0.565
   }
  },
@@ -1789,9 +1769,9 @@
   "source": "fld:23",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.4369,
+  "weight": 0.4357,
   "signals": {
-   "occupational": 0.0976,
+   "occupational": 0.1138,
    "semantic": 0.5458
   }
  },
@@ -1799,20 +1779,10 @@
   "source": "fld:23",
   "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.2469,
+  "weight": 0.2517,
   "signals": {
-   "occupational": 0.0025,
+   "occupational": 0.0063,
    "semantic": 0.5332
-  }
- },
- {
-  "source": "fld:23",
-  "target": "ind:810000",
-  "type": "fld-ind",
-  "weight": 0.2414,
-  "signals": {
-   "occupational": 0.0199,
-   "semantic": 0.5228
   }
  },
  {
@@ -1821,17 +1791,27 @@
   "type": "fld-ind",
   "weight": 0.6371,
   "signals": {
-   "occupational": 0.3805,
+   "occupational": 0.448,
    "semantic": 0.4681
+  }
+ },
+ {
+  "source": "fld:24",
+  "target": "ind:110000",
+  "type": "fld-ind",
+  "weight": 0.2568,
+  "signals": {
+   "occupational": 0.0198,
+   "semantic": 0.5301
   }
  },
  {
   "source": "fld:24",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.3038,
+  "weight": 0.3194,
   "signals": {
-   "occupational": 0.0763,
+   "occupational": 0.0742,
    "semantic": 0.5233
   }
  },
@@ -1839,9 +1819,9 @@
   "source": "fld:24",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.3052,
+  "weight": 0.3054,
   "signals": {
-   "occupational": 0.0005,
+   "occupational": 0.0006,
    "semantic": 0.5597
   }
  },
@@ -1851,7 +1831,7 @@
   "type": "fld-ind",
   "weight": 0.9313,
   "signals": {
-   "occupational": 0.4893,
+   "occupational": 0.4075,
    "semantic": 0.5699
   }
  },
@@ -1859,9 +1839,9 @@
   "source": "fld:24",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3095,
+  "weight": 0.3144,
   "signals": {
-   "occupational": 0.0167,
+   "occupational": 0.0172,
    "semantic": 0.5537
   }
  },
@@ -1869,9 +1849,9 @@
   "source": "fld:24",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.2549,
+  "weight": 0.2546,
   "signals": {
-   "occupational": 0.0162,
+   "occupational": 0.0133,
    "semantic": 0.5329
   }
  },
@@ -1879,9 +1859,9 @@
   "source": "fld:24",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.44,
+  "weight": 0.4913,
   "signals": {
-   "occupational": 0.1184,
+   "occupational": 0.1335,
    "semantic": 0.5559
   }
  },
@@ -1889,9 +1869,9 @@
   "source": "fld:24",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.4755,
+  "weight": 0.5449,
   "signals": {
-   "occupational": 0.0615,
+   "occupational": 0.0984,
    "semantic": 0.5963
   }
  },
@@ -1899,29 +1879,29 @@
   "source": "fld:24",
   "target": "ind:720000",
   "type": "fld-ind",
-  "weight": 0.2348,
+  "weight": 0.235,
   "signals": {
-   "occupational": 0.0001,
+   "occupational": 0.0002,
    "semantic": 0.5328
   }
  },
  {
   "source": "fld:24",
-  "target": "ind:810000",
+  "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.2406,
+  "weight": 0.364,
   "signals": {
-   "occupational": 0.01,
-   "semantic": 0.5303
+   "occupational": 0.1883,
+   "semantic": 0.4759
   }
  },
  {
   "source": "fld:25",
   "target": "ind:210000",
   "type": "fld-ind",
-  "weight": 0.2253,
+  "weight": 0.245,
   "signals": {
-   "occupational": 0.0061,
+   "occupational": 0.0212,
    "semantic": 0.5495
   }
  },
@@ -1929,9 +1909,9 @@
   "source": "fld:25",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.1975,
+  "weight": 0.1985,
   "signals": {
-   "occupational": 0.0082,
+   "occupational": 0.0107,
    "semantic": 0.5353
   }
  },
@@ -1939,9 +1919,9 @@
   "source": "fld:25",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.4144,
+  "weight": 0.3848,
   "signals": {
-   "occupational": 0.0671,
+   "occupational": 0.0593,
    "semantic": 0.5883
   }
  },
@@ -1951,7 +1931,7 @@
   "type": "fld-ind",
   "weight": 0.9551,
   "signals": {
-   "occupational": 0.3534,
+   "occupational": 0.4213,
    "semantic": 0.6131
   }
  },
@@ -1959,9 +1939,9 @@
   "source": "fld:25",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.2776,
+  "weight": 0.2696,
   "signals": {
-   "occupational": 0.0315,
+   "occupational": 0.0321,
    "semantic": 0.5537
   }
  },
@@ -1969,9 +1949,9 @@
   "source": "fld:25",
   "target": "ind:44-450",
   "type": "fld-ind",
-  "weight": 0.1845,
+  "weight": 0.1831,
   "signals": {
-   "occupational": 0.0057,
+   "occupational": 0.0059,
    "semantic": 0.5313
   }
  },
@@ -1979,9 +1959,9 @@
   "source": "fld:25",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.1961,
+  "weight": 0.1972,
   "signals": {
-   "occupational": 0.0051,
+   "occupational": 0.007,
    "semantic": 0.537
   }
  },
@@ -1989,9 +1969,9 @@
   "source": "fld:25",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2982,
+  "weight": 0.2983,
   "signals": {
-   "occupational": 0.0038,
+   "occupational": 0.0048,
    "semantic": 0.5843
   }
  },
@@ -1999,9 +1979,9 @@
   "source": "fld:25",
   "target": "ind:530000",
   "type": "fld-ind",
-  "weight": 0.1461,
+  "weight": 0.1466,
   "signals": {
-   "occupational": 0.001,
+   "occupational": 0.0017,
    "semantic": 0.5176
   }
  },
@@ -2009,9 +1989,9 @@
   "source": "fld:25",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.8502,
+  "weight": 0.7026,
   "signals": {
-   "occupational": 0.2652,
+   "occupational": 0.2126,
    "semantic": 0.6334
   }
  },
@@ -2019,9 +1999,9 @@
   "source": "fld:25",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3142,
+  "weight": 0.2932,
   "signals": {
-   "occupational": 0.0385,
+   "occupational": 0.0313,
    "semantic": 0.5649
   }
  },
@@ -2029,29 +2009,19 @@
   "source": "fld:25",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.2185,
+  "weight": 0.2173,
   "signals": {
-   "occupational": 0.0223,
+   "occupational": 0.0259,
    "semantic": 0.534
-  }
- },
- {
-  "source": "fld:25",
-  "target": "ind:610000",
-  "type": "fld-ind",
-  "weight": 0.2898,
-  "signals": {
-   "occupational": 0.055,
-   "semantic": 0.5411
   }
  },
  {
   "source": "fld:26",
   "target": "ind:230000",
   "type": "fld-ind",
-  "weight": 0.308,
+  "weight": 0.3087,
   "signals": {
-   "occupational": 0.0004,
+   "occupational": 0.0009,
    "semantic": 0.5391
   }
  },
@@ -2059,9 +2029,9 @@
   "source": "fld:26",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.3811,
+  "weight": 0.3804,
   "signals": {
-   "occupational": 0.0517,
+   "occupational": 0.052,
    "semantic": 0.5329
   }
  },
@@ -2069,9 +2039,9 @@
   "source": "fld:26",
   "target": "ind:420000",
   "type": "fld-ind",
-  "weight": 0.3308,
+  "weight": 0.3332,
   "signals": {
-   "occupational": 0.0248,
+   "occupational": 0.0264,
    "semantic": 0.5333
   }
  },
@@ -2079,9 +2049,9 @@
   "source": "fld:26",
   "target": "ind:48-490",
   "type": "fld-ind",
-  "weight": 0.202,
+  "weight": 0.2037,
   "signals": {
-   "occupational": 0.002,
+   "occupational": 0.0031,
    "semantic": 0.513
   }
  },
@@ -2089,9 +2059,9 @@
   "source": "fld:26",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.4262,
+  "weight": 0.4501,
   "signals": {
-   "occupational": 0.0198,
+   "occupational": 0.0326,
    "semantic": 0.5585
   }
  },
@@ -2099,9 +2069,9 @@
   "source": "fld:26",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.3809,
+  "weight": 0.3761,
   "signals": {
-   "occupational": 0.0984,
+   "occupational": 0.0969,
    "semantic": 0.5113
   }
  },
@@ -2109,9 +2079,9 @@
   "source": "fld:26",
   "target": "ind:530000",
   "type": "fld-ind",
-  "weight": 0.1436,
+  "weight": 0.1445,
   "signals": {
-   "occupational": 0.0009,
+   "occupational": 0.0016,
    "semantic": 0.4996
   }
  },
@@ -2121,7 +2091,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3108,
+   "occupational": 0.3137,
    "semantic": 0.5613
   }
  },
@@ -2129,9 +2099,9 @@
   "source": "fld:26",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3954,
+  "weight": 0.4034,
   "signals": {
-   "occupational": 0.0367,
+   "occupational": 0.0414,
    "semantic": 0.5433
   }
  },
@@ -2139,9 +2109,9 @@
   "source": "fld:26",
   "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.2235,
+  "weight": 0.223,
   "signals": {
-   "occupational": 0.0026,
+   "occupational": 0.0025,
    "semantic": 0.5179
   }
  },
@@ -2151,7 +2121,7 @@
   "type": "fld-ind",
   "weight": 0.1398,
   "signals": {
-   "occupational": 0.0001,
+   "occupational": 0.0002,
    "semantic": 0.4991
   }
  },
@@ -2159,9 +2129,9 @@
   "source": "fld:26",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.5917,
+  "weight": 0.5385,
   "signals": {
-   "occupational": 0.3066,
+   "occupational": 0.2816,
    "semantic": 0.4657
   }
  },
@@ -2169,9 +2139,9 @@
   "source": "fld:27",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2178,
+  "weight": 0.2181,
   "signals": {
-   "occupational": 0.0,
+   "occupational": 0.0004,
    "semantic": 0.5895
   }
  },
@@ -2179,9 +2149,9 @@
   "source": "fld:27",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.906,
+  "weight": 0.5126,
   "signals": {
-   "occupational": 0.4245,
+   "occupational": 0.1752,
    "semantic": 0.6249
   }
  },
@@ -2189,9 +2159,9 @@
   "source": "fld:27",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.1916,
+  "weight": 0.1955,
   "signals": {
-   "occupational": 0.008,
+   "occupational": 0.0131,
    "semantic": 0.5744
   }
  },
@@ -2199,9 +2169,9 @@
   "source": "fld:27",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.2808,
+  "weight": 0.3096,
   "signals": {
-   "occupational": 0.0729,
+   "occupational": 0.1119,
    "semantic": 0.5734
   }
  },
@@ -2209,9 +2179,9 @@
   "source": "fld:27",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.9582,
+  "weight": 1.0,
   "signals": {
-   "occupational": 0.3949,
+   "occupational": 0.5086,
    "semantic": 0.6626
   }
  },
@@ -2219,9 +2189,9 @@
   "source": "fld:27",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.1885,
+  "weight": 0.2557,
   "signals": {
-   "occupational": 0.0353,
+   "occupational": 0.0992,
    "semantic": 0.5578
   }
  },
@@ -2229,9 +2199,9 @@
   "source": "fld:28",
   "target": "ind:110000",
   "type": "fld-ind",
-  "weight": 0.2685,
+  "weight": 0.2666,
   "signals": {
-   "occupational": 0.0067,
+   "occupational": 0.0059,
    "semantic": 0.5157
   }
  },
@@ -2239,9 +2209,9 @@
   "source": "fld:28",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.3394,
+  "weight": 0.333,
   "signals": {
-   "occupational": 0.0749,
+   "occupational": 0.0655,
    "semantic": 0.4994
   }
  },
@@ -2251,17 +2221,27 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.3476,
+   "occupational": 0.3169,
    "semantic": 0.5656
+  }
+ },
+ {
+  "source": "fld:28",
+  "target": "ind:550000",
+  "type": "fld-ind",
+  "weight": 0.2722,
+  "signals": {
+   "occupational": 0.0207,
+   "semantic": 0.5079
   }
  },
  {
   "source": "fld:28",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.5293,
+  "weight": 0.4987,
   "signals": {
-   "occupational": 0.1812,
+   "occupational": 0.1495,
    "semantic": 0.5016
   }
  },
@@ -2269,39 +2249,39 @@
   "source": "fld:28",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.6398,
+  "weight": 0.6409,
   "signals": {
-   "occupational": 0.1921,
+   "occupational": 0.1761,
    "semantic": 0.5335
+  }
+ },
+ {
+  "source": "fld:28",
+  "target": "ind:810000",
+  "type": "fld-ind",
+  "weight": 0.2623,
+  "signals": {
+   "occupational": 0.0341,
+   "semantic": 0.4955
   }
  },
  {
   "source": "fld:28",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.3122,
+  "weight": 0.3935,
   "signals": {
-   "occupational": 0.1348,
+   "occupational": 0.1663,
    "semantic": 0.4538
-  }
- },
- {
-  "source": "fld:29",
-  "target": "ind:110000",
-  "type": "fld-ind",
-  "weight": 0.1317,
-  "signals": {
-   "occupational": 0.0,
-   "semantic": 0.5689
   }
  },
  {
   "source": "fld:29",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.13,
+  "weight": 0.1498,
   "signals": {
-   "occupational": 0.0031,
+   "occupational": 0.0217,
    "semantic": 0.5664
   }
  },
@@ -2309,9 +2289,9 @@
   "source": "fld:29",
   "target": "ind:560000",
   "type": "fld-ind",
-  "weight": 0.1759,
+  "weight": 0.1721,
   "signals": {
-   "occupational": 0.0303,
+   "occupational": 0.0166,
    "semantic": 0.5846
   }
  },
@@ -2319,9 +2299,9 @@
   "source": "fld:29",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.1752,
+  "weight": 0.2546,
   "signals": {
-   "occupational": 0.0224,
+   "occupational": 0.0937,
    "semantic": 0.5878
   }
  },
@@ -2331,7 +2311,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.885,
+   "occupational": 0.5941,
    "semantic": 0.7476
   }
  },
@@ -2339,7 +2319,7 @@
   "source": "fld:29",
   "target": "ind:720000",
   "type": "fld-ind",
-  "weight": 0.128,
+  "weight": 0.1281,
   "signals": {
    "occupational": 0.0,
    "semantic": 0.5665
@@ -2349,29 +2329,39 @@
   "source": "fld:29",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.1792,
+  "weight": 0.2074,
   "signals": {
-   "occupational": 0.0059,
+   "occupational": 0.0319,
    "semantic": 0.5979
   }
  },
  {
-  "source": "fld:30",
-  "target": "ind:31-330",
+  "source": "fld:29",
+  "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.3298,
+  "weight": 0.3129,
   "signals": {
-   "occupational": 0.0925,
-   "semantic": 0.4911
+   "occupational": 0.223,
+   "semantic": 0.5396
+  }
+ },
+ {
+  "source": "fld:30",
+  "target": "ind:420000",
+  "type": "fld-ind",
+  "weight": 0.2416,
+  "signals": {
+   "occupational": 0.0329,
+   "semantic": 0.5092
   }
  },
  {
   "source": "fld:30",
   "target": "ind:44-450",
   "type": "fld-ind",
-  "weight": 0.2249,
+  "weight": 0.1889,
   "signals": {
-   "occupational": 0.0189,
+   "occupational": 0.0016,
    "semantic": 0.5076
   }
  },
@@ -2379,9 +2369,9 @@
   "source": "fld:30",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2571,
+  "weight": 0.2524,
   "signals": {
-   "occupational": 0.0031,
+   "occupational": 0.0003,
    "semantic": 0.5295
   }
  },
@@ -2391,7 +2381,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.2867,
+   "occupational": 0.3927,
    "semantic": 0.5791
   }
  },
@@ -2399,9 +2389,9 @@
   "source": "fld:30",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.5404,
+  "weight": 0.4499,
   "signals": {
-   "occupational": 0.1535,
+   "occupational": 0.1507,
    "semantic": 0.5187
   }
  },
@@ -2409,9 +2399,9 @@
   "source": "fld:30",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.7873,
+  "weight": 0.5459,
   "signals": {
-   "occupational": 0.2309,
+   "occupational": 0.1581,
    "semantic": 0.5471
   }
  },
@@ -2419,9 +2409,9 @@
   "source": "fld:30",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.4067,
+  "weight": 0.3842,
   "signals": {
-   "occupational": 0.1178,
+   "occupational": 0.1461,
    "semantic": 0.4991
   }
  },
@@ -2429,9 +2419,9 @@
   "source": "fld:31",
   "target": "ind:220000",
   "type": "fld-ind",
-  "weight": 0.1811,
+  "weight": 0.1828,
   "signals": {
-   "occupational": 0.0015,
+   "occupational": 0.0024,
    "semantic": 0.5146
   }
  },
@@ -2439,9 +2429,9 @@
   "source": "fld:31",
   "target": "ind:31-330",
   "type": "fld-ind",
-  "weight": 0.2673,
+  "weight": 0.2917,
   "signals": {
-   "occupational": 0.0568,
+   "occupational": 0.0656,
    "semantic": 0.5165
   }
  },
@@ -2449,9 +2439,9 @@
   "source": "fld:31",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2333,
+  "weight": 0.2349,
   "signals": {
-   "occupational": 0.0004,
+   "occupational": 0.0014,
    "semantic": 0.5306
   }
  },
@@ -2461,7 +2451,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.4162,
+   "occupational": 0.37,
    "semantic": 0.5804
   }
  },
@@ -2469,9 +2459,9 @@
   "source": "fld:31",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.2291,
+  "weight": 0.236,
   "signals": {
-   "occupational": 0.0211,
+   "occupational": 0.0231,
    "semantic": 0.5204
   }
  },
@@ -2479,9 +2469,9 @@
   "source": "fld:31",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.3355,
+  "weight": 0.5171,
   "signals": {
-   "occupational": 0.1594,
+   "occupational": 0.2537,
    "semantic": 0.4928
   }
  },
@@ -2489,9 +2479,9 @@
   "source": "fld:31",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.3603,
+  "weight": 0.3168,
   "signals": {
-   "occupational": 0.2362,
+   "occupational": 0.1832,
    "semantic": 0.4672
   }
  },
@@ -2499,9 +2489,9 @@
   "source": "fld:32",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.2575,
+  "weight": 0.2546,
   "signals": {
-   "occupational": 0.0202,
+   "occupational": 0.0163,
    "semantic": 0.5475
   }
  },
@@ -2509,9 +2499,9 @@
   "source": "fld:32",
   "target": "ind:520000",
   "type": "fld-ind",
-  "weight": 0.1632,
+  "weight": 0.1602,
   "signals": {
-   "occupational": 0.0306,
+   "occupational": 0.0255,
    "semantic": 0.508
   }
  },
@@ -2519,9 +2509,9 @@
   "source": "fld:32",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.6531,
+  "weight": 0.7035,
   "signals": {
-   "occupational": 0.1662,
+   "occupational": 0.176,
    "semantic": 0.6082
   }
  },
@@ -2529,9 +2519,9 @@
   "source": "fld:32",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.3875,
+  "weight": 0.3929,
   "signals": {
-   "occupational": 0.032,
+   "occupational": 0.0315,
    "semantic": 0.5875
   }
  },
@@ -2539,9 +2529,9 @@
   "source": "fld:32",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.4455,
+  "weight": 0.4775,
   "signals": {
-   "occupational": 0.1164,
+   "occupational": 0.1214,
    "semantic": 0.5615
   }
  },
@@ -2551,7 +2541,7 @@
   "type": "fld-ind",
   "weight": 0.8852,
   "signals": {
-   "occupational": 0.3901,
+   "occupational": 0.3455,
    "semantic": 0.5671
   }
  },
@@ -2559,9 +2549,9 @@
   "source": "fld:32",
   "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.2144,
+  "weight": 0.2206,
   "signals": {
-   "occupational": 0.0057,
+   "occupational": 0.0086,
    "semantic": 0.5402
   }
  },
@@ -2569,9 +2559,9 @@
   "source": "fld:32",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.3059,
+  "weight": 0.3663,
   "signals": {
-   "occupational": 0.0225,
+   "occupational": 0.0545,
    "semantic": 0.5636
   }
  },
@@ -2579,9 +2569,9 @@
   "source": "fld:33",
   "target": "ind:44-450",
   "type": "fld-ind",
-  "weight": 0.1866,
+  "weight": 0.1835,
   "signals": {
-   "occupational": 0.0077,
+   "occupational": 0.0061,
    "semantic": 0.5097
   }
  },
@@ -2589,9 +2579,9 @@
   "source": "fld:33",
   "target": "ind:510000",
   "type": "fld-ind",
-  "weight": 0.3988,
+  "weight": 0.3873,
   "signals": {
-   "occupational": 0.021,
+   "occupational": 0.0164,
    "semantic": 0.5712
   }
  },
@@ -2599,9 +2589,9 @@
   "source": "fld:33",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.7813,
+  "weight": 0.7415,
   "signals": {
-   "occupational": 0.19,
+   "occupational": 0.1927,
    "semantic": 0.584
   }
  },
@@ -2609,9 +2599,9 @@
   "source": "fld:33",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.381,
+  "weight": 0.36,
   "signals": {
-   "occupational": 0.0335,
+   "occupational": 0.0254,
    "semantic": 0.5568
   }
  },
@@ -2619,9 +2609,9 @@
   "source": "fld:33",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.849,
+  "weight": 0.9698,
   "signals": {
-   "occupational": 0.2381,
+   "occupational": 0.337,
    "semantic": 0.5739
   }
  },
@@ -2629,9 +2619,9 @@
   "source": "fld:33",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.3805,
+  "weight": 0.3578,
   "signals": {
-   "occupational": 0.0342,
+   "occupational": 0.0253,
    "semantic": 0.5562
   }
  },
@@ -2639,9 +2629,9 @@
   "source": "fld:33",
   "target": "ind:720000",
   "type": "fld-ind",
-  "weight": 0.142,
+  "weight": 0.1414,
   "signals": {
-   "occupational": 0.0038,
+   "occupational": 0.003,
    "semantic": 0.4975
   }
  },
@@ -2649,9 +2639,9 @@
   "source": "fld:33",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.312,
+  "weight": 0.2957,
   "signals": {
-   "occupational": 0.0355,
+   "occupational": 0.0303,
    "semantic": 0.5325
   }
  },
@@ -2659,9 +2649,9 @@
   "source": "fld:33",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.6839,
+  "weight": 0.5365,
   "signals": {
-   "occupational": 0.2974,
+   "occupational": 0.2547,
    "semantic": 0.4789
   }
  },
@@ -2669,9 +2659,9 @@
   "source": "fld:34",
   "target": "ind:110000",
   "type": "fld-ind",
-  "weight": 0.2997,
+  "weight": 0.4305,
   "signals": {
-   "occupational": 0.0121,
+   "occupational": 0.1336,
    "semantic": 0.5726
   }
  },
@@ -2691,7 +2681,7 @@
   "type": "fld-ind",
   "weight": 0.8365,
   "signals": {
-   "occupational": 0.8311,
+   "occupational": 0.5746,
    "semantic": 0.5558
   }
  },
@@ -2699,9 +2689,9 @@
   "source": "fld:34",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.2039,
+  "weight": 0.2694,
   "signals": {
-   "occupational": 0.056,
+   "occupational": 0.1014,
    "semantic": 0.5332
   }
  },
@@ -2709,9 +2699,9 @@
   "source": "fld:34",
   "target": "ind:620000",
   "type": "fld-ind",
-  "weight": 0.4007,
+  "weight": 0.4022,
   "signals": {
-   "occupational": 0.001,
+   "occupational": 0.0021,
    "semantic": 0.6063
   }
  },
@@ -2719,9 +2709,9 @@
   "source": "fld:34",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.3028,
+  "weight": 0.3602,
   "signals": {
-   "occupational": 0.0224,
+   "occupational": 0.0704,
    "semantic": 0.5712
   }
  },
@@ -2739,9 +2729,9 @@
   "source": "fld:35",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.2446,
+  "weight": 0.2443,
   "signals": {
-   "occupational": 0.0009,
+   "occupational": 0.0004,
    "semantic": 0.5839
   }
  },
@@ -2749,9 +2739,9 @@
   "source": "fld:35",
   "target": "ind:550000",
   "type": "fld-ind",
-  "weight": 0.1523,
+  "weight": 0.152,
   "signals": {
-   "occupational": 0.001,
+   "occupational": 0.0007,
    "semantic": 0.549
   }
  },
@@ -2759,9 +2749,9 @@
   "source": "fld:35",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.2392,
+  "weight": 0.2326,
   "signals": {
-   "occupational": 0.0207,
+   "occupational": 0.0108,
    "semantic": 0.5765
   }
  },
@@ -2771,7 +2761,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.842,
+   "occupational": 0.7898,
    "semantic": 0.6427
   }
  },
@@ -2779,9 +2769,9 @@
   "source": "fld:35",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.1733,
+  "weight": 0.1746,
   "signals": {
-   "occupational": 0.1304,
+   "occupational": 0.124,
    "semantic": 0.5222
   }
  },
@@ -2789,9 +2779,9 @@
   "source": "fld:36",
   "target": "ind:540000",
   "type": "fld-ind",
-  "weight": 0.2999,
+  "weight": 0.3657,
   "signals": {
-   "occupational": 0.0175,
+   "occupational": 0.077,
    "semantic": 0.6476
   }
  },
@@ -2799,9 +2789,9 @@
   "source": "fld:36",
   "target": "ind:610000",
   "type": "fld-ind",
-  "weight": 0.3815,
+  "weight": 0.4423,
   "signals": {
-   "occupational": 0.0768,
+   "occupational": 0.1224,
    "semantic": 0.6585
   }
  },
@@ -2811,7 +2801,7 @@
   "type": "fld-ind",
   "weight": 1.0,
   "signals": {
-   "occupational": 0.6704,
+   "occupational": 0.5664,
    "semantic": 0.692
   }
  },
@@ -2819,9 +2809,9 @@
   "source": "fld:36",
   "target": "ind:710000",
   "type": "fld-ind",
-  "weight": 0.2214,
+  "weight": 0.2217,
   "signals": {
-   "occupational": 0.0014,
+   "occupational": 0.0016,
    "semantic": 0.623
   }
  },
@@ -2829,9 +2819,9 @@
   "source": "fld:36",
   "target": "ind:810000",
   "type": "fld-ind",
-  "weight": 0.2165,
+  "weight": 0.2278,
   "signals": {
-   "occupational": 0.0249,
+   "occupational": 0.0319,
    "semantic": 0.613
   }
  },
@@ -2839,9 +2829,9 @@
   "source": "fld:36",
   "target": "ind:900000",
   "type": "fld-ind",
-  "weight": 0.1771,
+  "weight": 0.2039,
   "signals": {
-   "occupational": 0.1212,
+   "occupational": 0.1278,
    "semantic": 0.5648
   }
  }

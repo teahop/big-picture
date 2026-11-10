@@ -21,7 +21,7 @@
  },
  "bridge": {
   "method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
-  "field_to_cip_reviewed": false,
+  "field_to_cip_reviewed": true,
   "herd_mapping_reviewed": false,
   "signals_per_edge": [
    "occupational",

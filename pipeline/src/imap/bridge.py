@@ -125,10 +125,23 @@ def load_reviewed() -> pd.DataFrame | None:
     if not REVIEWED.exists():
         return None
     m = pd.read_csv(REVIEWED, dtype={"field_id": str, "cip4": str})
+    all_ids = set(m["field_id"])
     m = m[m["accept"].astype(str).str.lower().isin(["yes", "y", "1", "true"])].copy()
+    missing = sorted(all_ids - set(m["field_id"]))
+    if missing:
+        raise ValueError(f"Reviewed CIP mapping has no accepted program for field id(s) {missing}; "
+                         "keep at least one accepted row per field")
     sim = m["similarity"].astype(float)
     m["weight"] = m["weight"].astype(float) if "weight" in m else sim
     return m
+
+
+def mapping_reviewed() -> bool:
+    """True when every row of the CIP mapping carries reviewed=yes."""
+    if not REVIEWED.exists():
+        return False
+    m = pd.read_csv(REVIEWED, dtype=str)
+    return "reviewed" in m and bool((m["reviewed"].str.lower() == "yes").all())
 
 
 def minmax_rows(df: pd.DataFrame) -> pd.DataFrame:
