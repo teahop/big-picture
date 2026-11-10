@@ -72,6 +72,25 @@ def degree_shares(degrees: list[dict], nodes: NodeTable) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def course_degree_shares(degrees: list[dict], courses: pd.DataFrame, nodes: NodeTable) -> pd.DataFrame:
+    """Degree -> research nodes from the transcript's course titles: each course spreads one unit over its three most
+    similar research nodes, and a degree is the mean over its courses. Course lists live only in private/."""
+    fld, fv = research_candidates(nodes)
+    keys = {"BS": "(BS", "BA": "(BA", "MBA": "MBA"}
+    rows = []
+    for d in degrees:
+        key = next(k for k, marker in keys.items() if marker in d["text"])
+        mine = courses[courses["degree"] == key]["course"].tolist()
+        cv = embed([f"Course: {c}" for c in mine])
+        shares: dict[str, float] = {}
+        for i in range(len(mine)):
+            for j, s in top_shares(fv @ cv[i]):
+                shares[fld.index[j]] = shares.get(fld.index[j], 0.0) + s / len(mine)
+        for k, v in shares.items():
+            rows.append({"degree": d["text"], "node_id": k, "label": fld.loc[k, "label"], "share": v, "cip4": f"{len(mine)} courses"})
+    return pd.DataFrame(rows)
+
+
 def apply_education_corrections(out: pd.DataFrame, corr: pd.DataFrame, nodes: NodeTable) -> pd.DataFrame:
     """Owner corrections in words: replace a degree's mapping with the listed fields (matched on research node name)."""
     labels = nodes.finest("fld").assign(key=lambda d: d["label"].str.lower())
@@ -119,7 +138,8 @@ def run_education() -> int:
         print("education: no degrees listed in the private profile (education: [{text, cip4}])")
         return 0
     nodes = NodeTable()
-    out = degree_shares(degrees, nodes)
+    course_file = private_dir() / "education_courses.csv"        # transcript course titles (private), when present they replace the degree-text guess
+    out = course_degree_shares(degrees, pd.read_csv(course_file, dtype=str), nodes) if course_file.exists() else degree_shares(degrees, nodes)
     corr = private_dir() / "education_corrections.csv"          # words, not codes: degree (any unique part of its text), field (research node name), share
     if corr.exists():
         out = apply_education_corrections(out, pd.read_csv(corr, dtype=str), nodes)
