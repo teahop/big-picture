@@ -6,7 +6,7 @@ function presence(state: State, n: NodeRec): string {
   if (!state.overlay) return "";
   if (!o || !o.total) return "<p class='hint'>Your footprint: no presence at this node.</p>";
   const f = (x: number) => x.toFixed(2);
-  return "<h3>Your footprint here (private)</h3><p>Total " + f(o.total) + " <small>tenure " + f(o.tenure) + " &middot; connections " + f(o.connections) + " &middot; skills and education " + f(o.skills) + "</small></p>";
+  return "<h3>Your footprint here (private)</h3><p>Own footprint " + f(o.total) + " <small>tenure " + f(o.tenure) + " &middot; skills and education " + f(o.skills) + "</small></p><p>Network (connections, partial coverage) " + f(o.connections) + "</p>";
 }
 
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;

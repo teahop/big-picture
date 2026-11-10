@@ -161,10 +161,13 @@ def run() -> int:
     n = int(cfg["grid_size"])
     level_nodes: dict[str, dict[str, dict[str, float]]] = {"0": {}, "1": {}, "2": {}}
     items: dict[str, dict[str, list]] = {"0": {}, "1": {}, "2": {}}
-    comps_all = {**comp, "total": {}}
-    for c in COMPONENTS:
-        for k, v in comp[c].items():
-            comps_all["total"][k] = comps_all["total"].get(k, 0.0) + v
+    # "total" is the person's own footprint (tenure + skills and education). Connections are a separate layer because
+    # their coverage is partial; "all" adds them back for anyone who wants the combined picture.
+    comps_all = {**comp, "total": {}, "all": {}}
+    for target, parts in (("total", ("tenure", "skills")), ("all", COMPONENTS)):
+        for c in parts:
+            for k, v in comp[c].items():
+                comps_all[target][k] = comps_all[target].get(k, 0.0) + v
     for c, own in comps_all.items():
         agg1 = level1_values(own, nodes, contrib)
         h = halo(agg1, e1, damp)
@@ -212,6 +215,7 @@ def run() -> int:
         "- component totals (finest nodes, before diffusion): " + "; ".join(f"{c} {v:.2f}" for c, v in tot.items()),
         f"- nodes with any presence: {len(node_vals['2'])} at Level 2, {len(node_vals['1'])} at Level 1, {len(node_vals['0'])} at Level 0",
         f"- centroid per level: " + "; ".join(f"L{lv} between_clusters={c['between_clusters']}" for lv, c in cents.items()),
-        "- top 12 nodes at Level 2 (total presence): " + "; ".join(f"{r.label} {r.total:.2f}" for r in top.head(12).itertuples())]) + "\n")
+        "- 'total' = tenure + skills and education; connections are a separate layer; 'all' combines them",
+        "- top 12 nodes at Level 2 (own footprint, without connections): " + "; ".join(f"{r.label} {r.total:.2f}" for r in top.head(12).itertuples())]) + "\n")
     print(f"presence: tenure {tot['tenure']:.1f}, connections {tot['connections']:.1f}, skills {tot['skills']:.2f}; wrote private/overlay.json")
     return 0
