@@ -72,6 +72,25 @@ def degree_shares(degrees: list[dict], nodes: NodeTable) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def apply_education_corrections(out: pd.DataFrame, corr: pd.DataFrame, nodes: NodeTable) -> pd.DataFrame:
+    """Owner corrections in words: replace a degree's mapping with the listed fields (matched on research node name)."""
+    labels = nodes.finest("fld").assign(key=lambda d: d["label"].str.lower())
+    rows = []
+    for deg in out["degree"].unique():
+        mine = corr[corr["degree"].str.lower().apply(lambda k: k in deg.lower())]
+        if mine.empty:
+            rows.append(out[out["degree"] == deg]); continue
+        got = []
+        for r in mine.itertuples():
+            hit = labels[labels["key"] == r.field.strip().lower()]
+            if hit.empty:
+                raise ValueError(f"education correction: no research field named '{r.field}' (see education_review.md for names)")
+            got.append({"degree": deg, "node_id": hit.index[0], "label": hit.iloc[0]["label"], "share": float(r.share), "cip4": ""})
+        d = pd.DataFrame(got); d["share"] = d["share"] / d["share"].sum()
+        rows.append(d)
+    return pd.concat(rows, ignore_index=True)
+
+
 def _descends(nodes: NodeTable, node_id: str, ancestor: str) -> bool:
     cur = node_id
     while True:
@@ -99,7 +118,17 @@ def run_education() -> int:
     if not degrees:
         print("education: no degrees listed in the private profile (education: [{text, cip4}])")
         return 0
-    out = degree_shares(degrees, NodeTable())
+    nodes = NodeTable()
+    out = degree_shares(degrees, nodes)
+    corr = private_dir() / "education_corrections.csv"          # words, not codes: degree (any unique part of its text), field (research node name), share
+    if corr.exists():
+        out = apply_education_corrections(out, pd.read_csv(corr, dtype=str), nodes)
     out.to_csv(private_dir() / "education_mapping.csv", index=False)
+    top = out.sort_values("share", ascending=False).groupby("degree").head(8)
+    lines = ["# education mapping (private): the research fields each degree is counted in", "",
+             "To change one, add rows to education_corrections.csv with columns `degree` (a few words from its title), `field` (the field name as written below) and `share` (0 to 1, per degree they are rescaled to add to 1). A degree with correction rows uses only those rows.", ""]
+    for deg, g in top.groupby("degree", sort=False):
+        lines += [f"## {deg}", ""] + [f"- {r.label}: {r.share:.0%}" for r in g.itertuples()] + [""]
+    (private_dir() / "education_review.md").write_text("\n".join(lines))
     print(f"education: {len(degrees)} degrees mapped to {out['node_id'].nunique()} research nodes")
     return 0

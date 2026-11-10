@@ -19,7 +19,7 @@ from .connections import NODE_SPLIT, tie_normalised
 from .roles import parse_nodes
 from .skills import degree_shares, skill_match
 
-COMPONENTS = ["tenure", "connections", "skills"]
+COMPONENTS = ["tenure", "education", "skills", "connections"]
 
 
 def root_sector(nodes: NodeTable, node_id: str) -> str:
@@ -144,13 +144,17 @@ def run() -> int:
     raw_conn = connection_weights(pd.read_csv(priv / "company_nodes.csv").fillna(""), contacts, nodes, finest, members)
     comp["connections"] = {n: float(pr["connection_weight_k"]) * float(np.log1p(w)) for n, w in raw_conn.items()}
     skills = skill_match(pd.read_csv(priv / "skills_mapping.csv"))
-    sk = {n: float(pr["skill_weight"]) * float(v) for n, v in skills.items()}
-    degrees = profile.get("education", [])
-    if degrees:
-        ed = degree_shares(degrees, nodes)
-        for r in ed.itertuples():
-            sk[r.node_id] = sk.get(r.node_id, 0.0) + float(pr.get("education_weight", 0.0)) * float(r.share)
-    comp["skills"] = sk
+    comp["skills"] = {n: float(pr["skill_weight"]) * float(v) for n, v in skills.items()}
+    edu: dict[str, float] = {}
+    ed_path = priv / "education_mapping.csv"
+    if ed_path.exists():
+        as_of_year = pd.Timestamp(str(profile.get("as_of"))).year
+        years = {d["text"]: (float(d["years"]), int(d["end"])) for d in profile.get("education", [])}
+        for r in pd.read_csv(ed_path).itertuples():
+            yrs, end = years[r.degree]
+            decay = 0.5 ** ((as_of_year - end) / float(pr["tenure_half_life_years"])) if pr.get("education_decay") else 1.0
+            edu[r.node_id] = edu.get(r.node_id, 0.0) + yrs * decay * float(r.share)
+    comp["education"] = edu
 
     # --- levels: own presence, Level 1 aggregation, halo
     e1 = json.loads((public_dir() / "edges_l1.json").read_text())
@@ -164,7 +168,7 @@ def run() -> int:
     # "total" is the person's own footprint (tenure + skills and education). Connections are a separate layer because
     # their coverage is partial; "all" adds them back for anyone who wants the combined picture.
     comps_all = {**comp, "total": {}, "all": {}}
-    for target, parts in (("total", ("tenure", "skills")), ("all", COMPONENTS)):
+    for target, parts in (("total", ("tenure", "education", "skills")), ("all", COMPONENTS)):
         for c in parts:
             for k, v in comp[c].items():
                 comps_all[target][k] = comps_all[target].get(k, 0.0) + v
@@ -215,7 +219,7 @@ def run() -> int:
         "- component totals (finest nodes, before diffusion): " + "; ".join(f"{c} {v:.2f}" for c, v in tot.items()),
         f"- nodes with any presence: {len(node_vals['2'])} at Level 2, {len(node_vals['1'])} at Level 1, {len(node_vals['0'])} at Level 0",
         f"- centroid per level: " + "; ".join(f"L{lv} between_clusters={c['between_clusters']}" for lv, c in cents.items()),
-        "- 'total' = tenure + skills and education; connections are a separate layer; 'all' combines them",
+        "- 'total' = tenure + education + skills; connections are a separate layer; 'all' combines them",
         "- top 12 nodes at Level 2 (own footprint, without connections): " + "; ".join(f"{r.label} {r.total:.2f}" for r in top.head(12).itertuples())]) + "\n")
     print(f"presence: tenure {tot['tenure']:.1f}, connections {tot['connections']:.1f}, skills {tot['skills']:.2f}; wrote private/overlay.json")
     return 0
