@@ -58,7 +58,8 @@ def label_of(nodes: NodeTable, spec: str) -> str:
     return nodes.df.loc[spec, "label"]
 
 
-def classify(companies: pd.DataFrame, nodes: NodeTable, model: dict[str, str], corrections: dict[str, str]) -> pd.DataFrame:
+def classify(companies: pd.DataFrame, nodes: NodeTable, model: dict[str, str], corrections: dict[str, str], accepted: set[str] | None = None) -> pd.DataFrame:
+    accepted = accepted or set()
     ind = nodes.finest("ind")
     nv = embed([nodes.text(r) for r in ind.itertuples()])
     aliases = alias_table(nodes)
@@ -78,6 +79,8 @@ def classify(companies: pd.DataFrame, nodes: NodeTable, model: dict[str, str], c
         if name in corrections:
             node, conf, method = corrections[name], 1.0, "owner correction"
         suggested = node
+        if name in accepted and method != "embedding" or (name in accepted and conf >= LOW_CONFIDENCE):
+            method, conf = "owner reviewed (accepted as proposed)", 1.0
         if method == "embedding" and conf < LOW_CONFIDENCE:
             node, method = "", "unmapped (embedding only, low confidence)"     # a name-only guess would add noise to the footprint
         rows.append({"company_norm": name, "people": int(companies["people"].iloc[i]), "max_tie": float(companies["max_tie"].iloc[i]),
@@ -96,7 +99,9 @@ def run() -> int:
     nodes = NodeTable()
     model = _read_map(private_dir() / "company_proposals_model.csv")
     corr = _read_map(private_dir() / "company_corrections.csv")
-    table = classify(ci, nodes, model, corr)
+    acc_path = private_dir() / "company_accepted.txt"       # companies the owner reviewed and accepted as proposed
+    accepted = set(acc_path.read_text().splitlines()) if acc_path.exists() else set()
+    table = classify(ci, nodes, model, corr, accepted)
     table.to_csv(private_dir() / "company_nodes.csv", index=False)
     top = table.sort_values(["people", "company_norm"], ascending=[False, True]).head(50)
     low = table[(table["confidence"] < LOW_CONFIDENCE) & ~table["company_norm"].isin(top["company_norm"])]
