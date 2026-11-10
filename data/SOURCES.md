@@ -42,3 +42,14 @@ No download in this phase was blocked (BLS remains hand-downloaded, see the Phas
 - **OpenAlex, levels:** subfield co-assignment (one `group_by topics.subfield.id` query per subfield), yearly counts per subfield and per deep-zone topic, same US size filter as Level 0. About 1,000 API calls. Two subfields (Bioengineering under Chemical Engineering, Radiological and Ultrasound Technology) have zero works globally and are not drawn.
 - **NAICS 2022 and online retail:** the Employment Matrix is coded to NAICS 2022, which has no separate electronic shopping industry. A deep zone for online retail therefore attaches to General merchandise retailers (455000).
 - **Deep: category proposal:** public frameworks used for the category lists are cited in the header of `data/mappings/deep_categories_proposed.yaml`.
+
+### Phase 3 deep: industry build (retrieved 2026-11-09)
+
+| Source | What was fetched | Release / file | Notes |
+|---|---|---|---|
+| BLS QCEW | Annual employment, area US000, NAICS 517111, 517112, 517410, 517810, 541410, 541420, 541430, 541490 (all ownerships summed) | `https://data.bls.gov/cew/data/api/2025/a/industry/<code>.csv`, year 2025 | Used for the official-share proxies. NAICS 541610 returned 404; consulting size uses the industry code 5416 row of the size slice |
+| BLS QCEW size slice | Private employment in establishments with fewer than 5 employees, NAICS 5416 | `https://data.bls.gov/cew/data/api/2025/1/size/1.csv`, Q1 2025, mean of three months | Proxy for "Independent consultants and micro-firms" |
+| NCES IPEDS | Institutional Characteristics and Employees by Assigned Position, fall 2023 | `https://nces.ed.gov/ipeds/datacenter/data/HD2023.zip` and `EAP2023.zip` | Total staff headcount (EAPCAT 10000) of four-year institutions (ICLEVEL 1), grouped by Carnegie 2021 basic classification and control. 2024 files were not available (EAP2024 returned 404). Staff include hospital and other non-instructional staff |
+| Organisation headcounts | Published employee counts for the listed member organisations | `data/mappings/deep_headcounts.csv` has the source and quality for every row | Mostly Wikipedia infobox values (which cite filings or news) and web search results. Third-party estimates are marked. No figure was entered without a source |
+
+Method limits: headcounts are mostly global company totals, while BLS counts US jobs, so shares within a parent industry reflect the listed organisations only. Where a parent industry has one category the category takes the whole parent. Ownership (private, state, local) comes from the BLS parents; IPEDS shares are applied per ownership group (private = nonprofit plus for-profit; state and local = public).

@@ -4,11 +4,11 @@ export interface NodeRec {
   provenance: "official" | "estimated"; size: Record<string, number>; growth: number | null; xy: [number, number];
   naics_code?: string; top_occupations?: Occupation[]; remainder?: boolean;
   domain?: string; description?: string; keywords?: string[]; top_subfields?: { name: string; works_us: number }[];
-  size_proxy?: string;
+  size_proxy?: string; weak_proxy?: boolean; replaces?: string[]; zone?: string; members?: string[];
 }
 export interface Edge {
   source: string; target: string; type: "ind-ind" | "fld-fld" | "fld-ind"; weight: number;
-  signals?: { occupational: number; semantic: number };
+  signals?: { occupational?: number; semantic: number };
 }
 export interface Grid { n: number; x: [number, number]; y: [number, number]; values: number[] }
 export type Measure = "employment" | "works" | "rd";
@@ -23,7 +23,7 @@ export interface Meta {
   research_sources: { name: string; url: string; retrieved: string }[];
   measure_labels: Record<string, string>;
   bridge: { field_to_cip_reviewed: boolean; herd_mapping_reviewed: boolean };
-  levels: number[]; level_notes?: Record<string, string>;
+  levels: number[]; level_notes?: Record<string, string>; deep_topic_links_reviewed?: boolean;
 }
 export interface Bundle {
   nodes: NodeRec[]; edges: Edge[]; meta: Meta; byId: Map<string, NodeRec>;
@@ -49,7 +49,7 @@ function addGrids(b: Bundle, level: number, raw: RawGrids): void {
 function addNodes(b: Bundle, nodes: NodeRec[]): void {
   for (const n of nodes) {
     b.nodes.push(n); b.byId.set(n.id, n);
-    if (n.parent) b.childCount.set(n.parent, (b.childCount.get(n.parent) ?? 0) + 1);
+    for (const p of [n.parent, ...(n.replaces ?? [])]) if (p) b.childCount.set(p, (b.childCount.get(p) ?? 0) + 1);
   }
 }
 
@@ -72,7 +72,7 @@ export function ensureLevel(b: Bundle, level: number): Promise<void> {
       const sfx = "_l" + level;
       const [nodes, raw] = await Promise.all([getJson<NodeRec[]>("nodes" + sfx + ".json"), getJson<RawGrids>("grids" + sfx + ".json")]);
       addNodes(b, nodes);
-      if (level === 1) b.edges.push(...(await getJson<Edge[]>("edges_l1.json")));
+      b.edges.push(...(await getJson<Edge[]>("edges_l" + level + ".json")));
       addGrids(b, level, raw);
     })());
   }
@@ -81,10 +81,11 @@ export function ensureLevel(b: Bundle, level: number): Promise<void> {
 
 /** Nodes drawn at a level of detail: a node is shown at level L if its level <= L and none of
  *  its children is (children replace their parent). Level 2 therefore shows topics inside the
- *  deep zones and Level 1 subfields everywhere else. */
+ *  deep zones and Level 1 subfields everywhere else. A deep: industry node can replace several
+ *  Level 1 industries (`replaces`), because its size is drawn from all of them. */
 export function visibleAt(b: Bundle, level: number): NodeRec[] {
   const parents = new Set<string>();
-  for (const n of b.nodes) if (n.level <= level && n.parent) parents.add(n.parent);
+  for (const n of b.nodes) if (n.level <= level) for (const p of [n.parent, ...(n.replaces ?? [])]) if (p) parents.add(p);
   return b.nodes.filter((n) => n.level <= level && !parents.has(n.id));
 }
 

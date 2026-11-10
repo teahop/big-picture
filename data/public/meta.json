@@ -50,6 +50,21 @@
    "name": "O*NET 31.0 (CC BY 4.0)",
    "url": "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip",
    "retrieved": "2026-11-09"
+  },
+  {
+   "name": "BLS QCEW 2025 annual, NAICS 5171xx and 5414xx; Q1 2025 establishment-size slice for NAICS 5416",
+   "url": "https://data.bls.gov/cew/data/api/",
+   "retrieved": "2026-11-09"
+  },
+  {
+   "name": "NCES IPEDS 2023: Institutional Characteristics (HD2023) and Employees by Assigned Position (EAP2023)",
+   "url": "https://nces.ed.gov/ipeds/datacenter/",
+   "retrieved": "2026-11-09"
+  },
+  {
+   "name": "Published organisation headcounts (see data/mappings/deep_headcounts.csv for each source)",
+   "url": "",
+   "retrieved": "2026-11-09"
   }
  ],
  "levels": [
@@ -81,7 +96,9 @@
  "display_name_source": "config/site.yaml",
  "level_notes": {
   "1": "industries: BLS Line items plus remainder nodes; research: OpenAlex subfields",
-  "2": "research: topics replace their deep-zone subfield; industry: unchanged until deep: categories are approved",
+  "2": "research: topics replace their deep-zone subfield; industry: owner-reviewed deep: categories (estimated) replace the Level 1 industries they split",
+  "deep_size": "deep: node employment splits the official BLS total of its parent industries by a size proxy (QCEW, IPEDS or published headcounts); see each node",
   "rd_below_field": "R&D dollars are not published below field level; subfield and topic values are allocated pro rata by US works (estimate)"
- }
+ },
+ "deep_topic_links_reviewed": false
 }

@@ -6,11 +6,12 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
     "levels": "Build Level 1 and Level 2 node tables",
+    "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
     "graph": "Build similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
     "layout": "Seeded layout of node positions (provisional Level 0 in Phase 1)",
     "terrain": "Height grids per layer and size measure",
@@ -51,6 +52,9 @@ def run_stage(args: argparse.Namespace) -> int:
             return openalex.run_levels()
         from . import ingest_files
         return ingest_files.run(args.source)
+    if name == "deep":
+        from . import deep_industry
+        return deep_industry.run()
     if name == "graph":
         from . import bridge, graph
         if args.propose_cip:

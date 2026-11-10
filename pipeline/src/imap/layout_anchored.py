@@ -183,12 +183,27 @@ def run() -> int:
         for c, p in zip(kids["id"], xy):
             pos[f"fld:{c}"] = [round(float(p[0]), 6), round(float(p[1]), 6)]
 
+    # ---- industries: deep: categories under their primary Level 1 industry (Level 2)
+    deep_path = lv / "deep_industry.csv"
+    deep = pd.read_csv(deep_path) if deep_path.exists() else pd.DataFrame(columns=["node_id", "parent_id"])
+    if len(deep):
+        emp1 = ind.set_index("node_id")["emp_2025"]
+        for pid, kids in deep.groupby("parent_id"):
+            code = pid.split(":", 1)[1]
+            sector = sector_of[code]
+            sibs = ind[ind["sector_code"] == sector]["emp_2025"].max()
+            R = max(R_SUB_MIN, K_SUB * radius[f"ind:{sector}"] * float(np.sqrt(emp1[pid] / sibs))); radius[pid] = R
+            vec = embed([f"{r.label}. {r.zone}. Examples: {r.members}" for r in kids.itertuples()])
+            xy = place_children(np.array(pos[pid]), R, pct_distance(vec @ vec.T), np.zeros((len(kids), 2)))
+            for c, p_ in zip(kids["node_id"], xy):
+                pos[c] = [round(float(p_[0]), 6), round(float(p_[1]), 6)]
+
     payload = {"stage": "anchored-level1-2", "frozen_level0_sha256": sha256(l0_path), "nodes": pos, "radius": {k: round(v, 6) for k, v in radius.items()}}
     write(public_dir() / "layout_children.json", payload)
 
     # ---- checks
     worst = 0.0; outside = 0
-    parent_of = {**dict(zip(ind["node_id"], ind["parent_id"])), **dict(zip(subs["node_id"], subs["parent_id"])), **dict(zip(topics["node_id"], topics["parent_id"]))}
+    parent_of = {**dict(zip(ind["node_id"], ind["parent_id"])), **dict(zip(subs["node_id"], subs["parent_id"])), **dict(zip(topics["node_id"], topics["parent_id"])), **dict(zip(deep["node_id"], deep["parent_id"]))}
     for n, par in parent_of.items():
         if n not in pos:
             continue
@@ -198,7 +213,7 @@ def run() -> int:
         outside += d > R + 1e-9
     (report_dir() / "layout_children.md").write_text("\n".join([
         "# anchored layout validation report",
-        f"- placed: {sum(k.startswith('ind:') for k in pos)} industry nodes, {sum(k.startswith('fld:') for k in pos)} research nodes",
+        f"- placed: {sum(k.startswith('ind:') for k in pos)} industry nodes, {sum(k.startswith('deep:') for k in pos)} deep: industry nodes, {sum(k.startswith('fld:') for k in pos)} research nodes",
         f"- Level 0 file sha256 (frozen, not rewritten by this stage): `{payload['frozen_level0_sha256']}`",
         f"- children outside their parent's radius: {outside}; farthest child as a fraction of radius: {worst:.3f}",
     ]) + "\n")

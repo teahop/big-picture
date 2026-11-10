@@ -1,6 +1,178 @@
 {
  "frozen_level0_sha256": "d5ea755c91195c9ba66f52e2e7918fb579b00ef293b3d9afd3a9aec0cec4c7a4",
  "nodes": {
+  "deep:advocacy-and-policy": [
+   -0.214206,
+   0.210894
+  ],
+  "deep:ai-native-apps": [
+   -0.090959,
+   0.047033
+  ],
+  "deep:audio-streaming": [
+   -0.109115,
+   0.053263
+  ],
+  "deep:cable-broadband": [
+   -0.093417,
+   0.054295
+  ],
+  "deep:community-and-daf": [
+   -0.193048,
+   0.194827
+  ],
+  "deep:community-colleges": [
+   0.278517,
+   -0.077906
+  ],
+  "deep:consumer-and-games": [
+   -0.094728,
+   0.051589
+  ],
+  "deep:creator-and-live": [
+   -0.111281,
+   0.052696
+  ],
+  "deep:design-innovation-firms": [
+   -0.053117,
+   -0.058278
+  ],
+  "deep:developer-and-data-infra": [
+   -0.08733,
+   0.050677
+  ],
+  "deep:direct-to-consumer": [
+   -0.583771,
+   0.526492
+  ],
+  "deep:enterprise-software": [
+   -0.094608,
+   0.046688
+  ],
+  "deep:frontier-model-labs": [
+   -0.07112,
+   0.046856
+  ],
+  "deep:global-health-implementers": [
+   0.483558,
+   0.173569
+  ],
+  "deep:health-intermediaries": [
+   -0.192606,
+   0.210894
+  ],
+  "deep:humanitarian-relief": [
+   0.505158,
+   0.173569
+  ],
+  "deep:independents": [
+   0.020494,
+   -0.067276
+  ],
+  "deep:liberal-arts-and-specialized": [
+   0.259002,
+   -0.095511
+  ],
+  "deep:lifelong-learning": [
+   0.304955,
+   0.019469
+  ],
+  "deep:marketplaces": [
+   -0.539887,
+   0.539453
+  ],
+  "deep:network-infrastructure": [
+   -0.090158,
+   0.04973
+  ],
+  "deep:news-and-content-suppliers": [
+   -0.096515,
+   0.056706
+  ],
+  "deep:omnichannel-big-box": [
+   -0.566872,
+   0.549642
+  ],
+  "deep:online-and-for-profit": [
+   0.294788,
+   -0.095511
+  ],
+  "deep:open-and-specialist-models": [
+   -0.082984,
+   0.051207
+  ],
+  "deep:private-foundations": [
+   -0.214648,
+   0.194827
+  ],
+  "deep:regional-public-universities": [
+   0.303563,
+   -0.098279
+  ],
+  "deep:research-policy-consulting": [
+   -0.018025,
+   -0.051281
+  ],
+  "deep:research-universities": [
+   0.263475,
+   -0.098279
+  ],
+  "deep:satellite-and-space-connectivity": [
+   -0.070026,
+   0.053502
+  ],
+  "deep:search-and-portals": [
+   -0.090123,
+   0.052076
+  ],
+  "deep:security-software": [
+   -0.085318,
+   0.063531
+  ],
+  "deep:social-networks": [
+   -0.104906,
+   0.051121
+  ],
+  "deep:social-sector-consulting": [
+   -0.02555,
+   -0.072313
+  ],
+  "deep:specialized-design-trades": [
+   -0.031517,
+   -0.058278
+  ],
+  "deep:strategy-consulting": [
+   -0.002037,
+   -0.045758
+  ],
+  "deep:subscription-and-delivery": [
+   -0.513826,
+   0.532401
+  ],
+  "deep:technology-consulting": [
+   -0.006167,
+   -0.064932
+  ],
+  "deep:trade-and-technical": [
+   0.23193,
+   -0.087125
+  ],
+  "deep:video-streaming": [
+   -0.113578,
+   0.058509
+  ],
+  "deep:wireless-carriers": [
+   -0.087578,
+   0.060731
+  ],
+  "deep:wireline-and-fiber": [
+   -0.086166,
+   0.047942
+  ],
+  "deep:workforce-and-bootcamps": [
+   0.258672,
+   -0.051174
+  ],
   "fld:1100": [
    0.299354,
    -0.274838
@@ -4268,18 +4440,34 @@
   "ind:31-330": 0.107814,
   "ind:420000": 0.074667,
   "ind:44-450": 0.119192,
+  "ind:455000": 0.041717,
   "ind:48-490": 0.078159,
   "ind:510000": 0.051314,
+  "ind:513200": 0.01796,
+  "ind:516210": 0.012,
+  "ind:517000": 0.017161,
+  "ind:519000": 0.012,
   "ind:520000": 0.078744,
   "ind:530000": 0.047543,
   "ind:540000": 0.099587,
+  "ind:541400": 0.012,
+  "ind:541600": 0.030714,
   "ind:550000": 0.049132,
   "ind:560000": 0.091064,
   "ind:610000": 0.117056,
+  "ind:61120L": 0.012,
+  "ind:61130P": 0.019881,
+  "ind:61130S": 0.022271,
+  "ind:61140P": 0.012,
+  "ind:61150P": 0.012,
+  "ind:61160P": 0.012,
   "ind:620000": 0.15,
+  "ind:624200": 0.012,
   "ind:710000": 0.049673,
   "ind:720000": 0.114311,
   "ind:810000": 0.077783,
+  "ind:813200": 0.012,
+  "ind:813300": 0.012,
   "ind:900000": 0.102865
  },
  "stage": "anchored-level1-2"

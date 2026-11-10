@@ -1,0 +1,119 @@
+category_slug,organisation,headcount,scope,as_of,source,quality,note
+frontier-model-labs,OpenAI,4500,global,2026-03,Wikipedia infobox (cites news),third-party,
+frontier-model-labs,Anthropic,5300,global,2026-10,Wikipedia infobox (cites company Form S-1),company-reported,
+frontier-model-labs,Google DeepMind,6000,global,2025,Wikipedia infobox (cites news),third-party,
+frontier-model-labs,Meta AI,,,,,,Excluded: part of Meta Platforms; no separate published headcount
+frontier-model-labs,Mistral AI,1000,global,2026,Wikipedia infobox (cites news; reads 1000+),third-party,
+frontier-model-labs,xAI,1200,global,2026,Wikipedia infobox (reads 1200+; includes about 900 hourly AI tutors),third-party,
+open-and-specialist-models,Cohere,450,global,2025,Wikipedia infobox (reads 450+),third-party,
+open-and-specialist-models,Hugging Face,250,global,2025-02,Wikipedia infobox,third-party,
+open-and-specialist-models,Stability AI,170,global,2024,Wikipedia infobox,third-party,
+open-and-specialist-models,AI21 Labs,233,global,2026-03,Revelio Labs via web search (a news report says cuts to about 70),third-party estimate,Conflicting: 70 to 276
+enterprise-software,Microsoft,223000,global,2025,Wikipedia infobox,company-reported,Includes GitHub
+enterprise-software,Oracle,141000,global,2026-06,Wikipedia infobox (cites annual report),company-reported,
+enterprise-software,Salesforce,83334,global,2026,Wikipedia infobox,company-reported,
+enterprise-software,Adobe,31360,global,2025-11,Wikipedia infobox,company-reported,
+enterprise-software,Intuit,18200,global,,Wikipedia infobox,company-reported,
+enterprise-software,Workday,20400,global,2025,Wikipedia infobox,company-reported,
+ai-native-apps,Perplexity,1413,global,2026-06,TipRanks via web search,third-party estimate,Other trackers 964 to 1600
+ai-native-apps,Harvey,953,global,2026-02,LeadIQ via web search,third-party estimate,Trackers disagree 550 to 2019
+ai-native-apps,Glean,1100,global,2026,TrueUp via web search,third-party estimate,Trackers disagree 1100 to 1766
+ai-native-apps,Cursor (Anysphere),300,global,2025,Wikipedia infobox (cites Fortune),third-party,
+developer-and-data-infra,Databricks,10000,global,2026,Wikipedia infobox (cites Forbes),third-party,
+developer-and-data-infra,Snowflake,9060,global,2026,Wikipedia infobox,company-reported,
+developer-and-data-infra,GitHub,,,,,,Excluded: counted inside Microsoft
+developer-and-data-infra,Datadog,8100,global,2025,Wikipedia infobox,company-reported,
+developer-and-data-infra,MongoDB,5636,global,2026,Wikipedia infobox,company-reported,
+consumer-and-games,Electronic Arts,14500,global,,Wikipedia infobox,company-reported,
+consumer-and-games,Take-Two,12909,global,FY2026,Wikipedia infobox (cites FY2026 filing),company-reported,
+consumer-and-games,Duolingo,830,global,2024-12,Wikipedia infobox,company-reported,
+consumer-and-games,Roblox,2474,global,,Wikipedia infobox,company-reported,
+security-software,CrowdStrike,10698,global,,Wikipedia infobox,company-reported,
+security-software,Palo Alto Networks,16068,global,,Wikipedia infobox,company-reported,
+security-software,Okta,6366,global,2026,Wikipedia infobox,company-reported,
+security-software,Zscaler,7348,global,2024,Wikipedia infobox,company-reported,
+strategy-consulting,McKinsey,38000,global,2025,Wikipedia infobox (cites Forbes),third-party,
+strategy-consulting,Boston Consulting Group,33500,global,2026,Wikipedia infobox (cites company),company-reported,
+strategy-consulting,Bain,22000,global,2025,Wikipedia infobox (cites PitchBook),third-party,
+strategy-consulting,Deloitte (US),181587,US,2025,Statista via web search,third-party estimate,Not confirmed as US-only; includes audit and tax (global total is about 473000)
+strategy-consulting,Accenture (strategy arm),,,,,,Excluded: counted once under technology-consulting
+technology-consulting,Accenture,779000,global,2025-08,Accenture FY2025 Form 10-K via web search,company-reported,US share not disclosed; majority of staff are in India and the Philippines and the US
+technology-consulting,IBM Consulting,160000,global,2025,Wikipedia and SiliconANGLE via web search,third-party estimate,
+technology-consulting,Slalom,12000,global,,Wikipedia infobox,third-party,
+technology-consulting,Thoughtworks,10000,global,,Wikipedia infobox (cites company),company-reported,
+research-policy-consulting,RAND,2087,global,2026-06,Revelio Labs via web search,third-party estimate,Other trackers 1849 to 3000
+research-policy-consulting,Mathematica,1575,global,2026-06,Revelio Labs via web search,third-party estimate,Other trackers 1577 to 2437
+research-policy-consulting,ICF,8400,global,2025,Wikipedia infobox (cites ICF Form 10-K),company-reported,
+research-policy-consulting,Abt Associates,3500,global,2025,Washington Technology Top 100 via web search,third-party,
+research-policy-consulting,Navigant/Guidehouse,18000,global,2025,Wikipedia infobox (Guidehouse),third-party,
+social-sector-consulting,IDEO.org,,,,,,No published headcount found
+social-sector-consulting,Dalberg,,,,,,No published headcount found
+social-sector-consulting,FSG,,,,,,No published headcount found
+social-sector-consulting,Bridgespan,415,global,2025-04,Bridgespan 25th anniversary report via web search,company-reported,
+design-innovation-firms,IDEO,500,global,2023,Wikipedia infobox (reads 500+),third-party,
+design-innovation-firms,frog,2000,global,2021,Wikipedia infobox (reads 2000+),third-party,
+design-innovation-firms,Fjord (Accenture Song),,,,,,Excluded: counted inside Accenture
+design-innovation-firms,Pentagram,,,,,,No published headcount found
+design-innovation-firms,Smart Design,,,,,,No published headcount found
+marketplaces,Amazon,1576000,global,,Wikipedia infobox,company-reported,
+marketplaces,eBay,12300,global,,Wikipedia infobox,company-reported,
+marketplaces,Etsy,2400,global,,Wikipedia infobox,company-reported,
+marketplaces,Walmart Marketplace,,,,,,Excluded: counted inside Walmart
+omnichannel-big-box,Walmart,2100000,global,2025,Wikipedia infobox (1.6 million of them in the US),company-reported,
+omnichannel-big-box,Target,415000,global,2026,Wikipedia infobox,third-party,
+omnichannel-big-box,Costco,341000,global,,Wikipedia infobox,company-reported,
+omnichannel-big-box,Kroger (online),410000,global,FY2025,Wikipedia infobox (cites Kroger 10-K),company-reported,Whole company; online share not separable
+direct-to-consumer,Warby Parker,4036,global,2025,Wikipedia infobox,company-reported,
+direct-to-consumer,Allbirds,542,global,2024,Wikipedia infobox,company-reported,
+direct-to-consumer,Glossier,,,,,,No published headcount found
+subscription-and-delivery,Chewy,18100,global,2024,Wikipedia infobox,company-reported,
+subscription-and-delivery,Instacart,3265,global,2024,Wikipedia infobox,company-reported,
+subscription-and-delivery,Stitch Fix,4165,global,2025,Wikipedia infobox,company-reported,
+video-streaming,Netflix,16000,global,2025-12,Netflix FY2025 Form 10-K via web search (full-time only),company-reported,
+video-streaming,Disney (streaming),,,,,,Excluded: no separate published headcount
+video-streaming,Warner Bros. Discovery (Max),35500,global,,Wikipedia infobox (whole company),company-reported,Whole company
+video-streaming,Paramount+,18600,global,2024,Wikipedia infobox (Paramount Global; whole company),company-reported,Whole company
+audio-streaming,Spotify (US),7284,global,2026-09,Wikipedia infobox,company-reported,Global total; a US-only figure is not published
+audio-streaming,SiriusXM,5515,global,,Wikipedia infobox,company-reported,
+audio-streaming,iHeartMedia,9550,global,2025,Wikipedia infobox,company-reported,
+social-networks,Meta,66775,global,,Wikipedia infobox,company-reported,
+social-networks,Snap,5261,global,,Wikipedia infobox,company-reported,
+social-networks,Pinterest,4666,global,2024,Wikipedia infobox,company-reported,
+social-networks,Reddit,2555,global,2025,Wikipedia infobox,company-reported,
+social-networks,X,1500,global,2023-08,Wikipedia infobox (cites news),third-party,
+creator-and-live,YouTube,,,,,,Excluded: inside Alphabet; no separate headcount
+creator-and-live,Twitch,,,,,,Excluded: inside Amazon; no separate headcount
+creator-and-live,Patreon,400,global,2021,Wikipedia infobox (cites TechCrunch),third-party,
+creator-and-live,Substack,94,global,2022-06,Wikipedia infobox (cites Axios),third-party,
+news-and-content-suppliers,BuzzFeed,507,global,2025-12,Wikipedia infobox,company-reported,
+news-and-content-suppliers,Vox Media,,,,,,No published headcount found
+news-and-content-suppliers,The Athletic,,,,,,Excluded: inside The New York Times; no separate headcount
+cable-broadband,Comcast,179000,global,,Wikipedia infobox,company-reported,Whole company including NBCUniversal and Sky
+cable-broadband,Charter,91900,US,2025,Wikipedia infobox (cites Form 10-K),company-reported,
+cable-broadband,Cox,20000,US,2020,Wikipedia infobox,third-party,
+cable-broadband,Altice USA,10900,US,,Wikipedia infobox,company-reported,
+network-infrastructure,American Tower,4866,global,2025,Wikipedia infobox,company-reported,
+network-infrastructure,Crown Castle,1500,US,2019,Wikipedia infobox (reads approx. 1500),third-party,Old figure
+network-infrastructure,Zayo,3781,US,2019,Wikipedia infobox (cites Form 10-K),company-reported,Old figure
+private-foundations,Gates Foundation,2215,global,2025,Wikipedia infobox (cites fact sheet),company-reported,
+private-foundations,Ford Foundation,1059,global,2025,Revelio Labs via web search,third-party estimate,Trackers disagree 200 to 1059
+private-foundations,Hewlett Foundation,127,US,2023,Form 990 via CauseIQ via web search,company-reported,
+private-foundations,Wellcome (US presence),,,,,,Excluded: no published US headcount (the UK charity reports 2377 staff in total)
+community-and-daf,Silicon Valley Community Foundation,129,US,2023,Form 990 via CauseIQ via web search,company-reported,
+community-and-daf,Fidelity Charitable,480,US,,AeroLeads via web search,third-party estimate,Low confidence: sources say 200 to 1000
+community-and-daf,Schwab Charitable,,,,,,No reliable headcount found (a directory gives 51 to 200)
+advocacy-and-policy,ACLU,1000,US,2026,Third-party directories via web search,third-party estimate,Low confidence: national office alone is about 300 to 700
+advocacy-and-policy,Sierra Club,800,US,2025,Sierra Club self-description via web search,company-reported,
+advocacy-and-policy,AARP (advocacy),5591,US,2025,Zippia via web search,third-party estimate,Whole of AARP; advocacy share not separable
+advocacy-and-policy,Center for American Progress,296,US,2025,OnThinkTanks via web search,third-party,
+global-health-implementers,PATH,1600,global,,Wikipedia infobox,third-party,
+global-health-implementers,Partners In Health,18000,global,,Wikipedia infobox,third-party,Mostly local staff abroad
+global-health-implementers,FHI 360,2200,global,,Wikipedia infobox,third-party,
+global-health-implementers,Population Services International,392,global,2013,Wikipedia infobox (cites a 2013 Form 990),third-party,Old figure
+humanitarian-relief,American Red Cross,17900,US,2025-06,BBB Wise Giving Alliance via web search,third-party,
+humanitarian-relief,International Rescue Committee,17000,global,,IRC certification page via web search (reads more than 17000),company-reported,
+humanitarian-relief,Catholic Relief Services,5211,global,,Wikipedia infobox (cites BBB),third-party,
+humanitarian-relief,World Vision US,31000,global,,Wikipedia infobox (World Vision International),third-party,Whole of World Vision International
+health-intermediaries,Management Sciences for Health,2752,global,2025,Revelio Labs via web search,third-party estimate,Trackers disagree 2000 to 2800
+health-intermediaries,Results for Development,,,,,,No published headcount found
+health-intermediaries,Devex,120,global,,Wikipedia infobox (cites company),company-reported,

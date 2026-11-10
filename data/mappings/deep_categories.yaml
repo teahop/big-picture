@@ -1,4 +1,6 @@
-# PROPOSED custom `deep:` industry categories (SPEC 5.3). NOT YET USED: awaiting owner review.
+# Custom `deep:` industry categories (SPEC 5.3). REVIEWED by the owner on 2026-11-09 with no changes to the
+# category list, labels, members or proxy text. The build added only the machine-readable `calc:` and `parent:` keys
+# that spell out how each proxy is computed (see pipeline/src/imap/deep_industry.py); the owner has not reviewed those.
 # Edit freely: delete a category, rename it, change members, or change the size proxy.
 # Every deep: node carries provenance "estimated" and splits an OFFICIAL Level 1 parent total,
 # so a zone's categories always add up to the BLS employment of the industries they sit under.
@@ -9,7 +11,7 @@
 #   2. headcount share: published headcounts of the listed member companies (SEC 10-K "employees",
 #      or the company's own published figure), scaled to the parent's BLS total
 #   3. equal share: only if nothing above exists (flagged "weak" in the node)
-# No numbers are filled in yet; the build fetches them after you approve the list.
+# Numbers are fetched by `uv run imap deep` (headcounts in data/mappings/deep_headcounts.csv, QCEW 2025, IPEDS 2023); see data/SOURCES.md.
 #
 # Public sources behind the category lists (retrieved 2026-11-09):
 #   AI stack layers: Social Capital "The AI stack" (https://research.socialcapital.com/p/the-ai-stack),
@@ -40,9 +42,9 @@ zones:
       - {slug: technology-consulting, label: "Technology and digital transformation consulting", parent: "541600", members: ["Accenture", "IBM Consulting", "Slalom", "Thoughtworks"], proxy: headcount share}
       - {slug: research-policy-consulting, label: "Research, policy and economic consulting", parent: "541600", members: ["RAND", "Mathematica", "ICF", "Abt Associates", "Navigant/Guidehouse"], proxy: headcount share}
       - {slug: social-sector-consulting, label: "Social-sector and human-centered design consulting", parent: "541600", members: ["IDEO.org", "Dalberg", "FSG", "Bridgespan"], proxy: headcount share}
-      - {slug: independents, label: "Independent consultants and micro-firms", parent: "541600", members: [], proxy: "official share (QCEW establishment-size bands) if available, else equal share"}
+      - {slug: independents, label: "Independent consultants and micro-firms", parent: "541600", members: [], proxy: "official share (QCEW establishment-size bands) if available, else equal share", calc: {kind: qcew_size, industry: "5416", size_code: 1}}
       - {slug: design-innovation-firms, label: "Design and innovation consultancies", parent: "541400", members: ["IDEO", "frog", "Fjord (Accenture Song)", "Pentagram", "Smart Design"], proxy: headcount share}
-      - {slug: specialized-design-trades, label: "Industrial, graphic, interior and other specialized design", parent: "541400", members: [], proxy: "official share: QCEW 5414xx NAICS detail"}
+      - {slug: specialized-design-trades, label: "Industrial, graphic, interior and other specialized design", parent: "541400", members: [], proxy: "official share: QCEW 5414xx NAICS detail", calc: {kind: qcew, codes: ["541410", "541420", "541430", "541490"], minus: [design-innovation-firms]}}
 
   - zone: "Electronic shopping and online retail"
     parents: ["455000"]
@@ -67,10 +69,10 @@ zones:
   - zone: "Telecommunications"
     parents: ["517000"]
     categories:
-      - {slug: wireless-carriers, label: "Wireless carriers", members: ["Verizon Wireless", "T-Mobile", "AT&T Mobility"], proxy: "official share: QCEW 517112 wireless telecommunications"}
-      - {slug: wireline-and-fiber, label: "Wireline and fiber providers", members: ["Lumen", "Frontier", "Windstream"], proxy: "official share: QCEW 517111 wired telecommunications"}
+      - {slug: wireless-carriers, label: "Wireless carriers", members: ["Verizon Wireless", "T-Mobile", "AT&T Mobility"], proxy: "official share: QCEW 517112 wireless telecommunications", calc: {kind: qcew, codes: ["517112"]}}
+      - {slug: wireline-and-fiber, label: "Wireline and fiber providers", members: ["Lumen", "Frontier", "Windstream"], proxy: "official share: QCEW 517111 wired telecommunications", calc: {kind: qcew, codes: ["517111"], minus: [cable-broadband]}}
       - {slug: cable-broadband, label: "Cable and broadband operators", members: ["Comcast", "Charter", "Cox", "Altice USA"], proxy: headcount share}
-      - {slug: satellite-and-space-connectivity, label: "Satellite and space-based connectivity", members: ["Viasat", "EchoStar", "SpaceX (Starlink)"], proxy: "official share: QCEW 517410 satellite telecommunications"}
+      - {slug: satellite-and-space-connectivity, label: "Satellite and space-based connectivity", members: ["Viasat", "EchoStar", "SpaceX (Starlink)"], proxy: "official share: QCEW 517410 satellite telecommunications", calc: {kind: qcew, codes: ["517410"]}}
       - {slug: network-infrastructure, label: "Towers, fiber transport and other network infrastructure", members: ["American Tower", "Crown Castle", "Zayo"], proxy: headcount share}
 
   - zone: "Nonprofits, philanthropy and global health delivery"
@@ -87,11 +89,11 @@ zones:
     parents: ["61130P", "61130S", "61130L", "61120P", "61120S", "61120L", "61140P", "61140S", "61140L", "61150P", "61150S", "61150L", "61160P", "61160S", "61160L"]
     note: "BLS already splits these by ownership (private, state, local); categories split by institution type using NCES IPEDS staff counts."
     categories:
-      - {slug: research-universities, label: "Research universities", members: ["UC system", "Stanford", "MIT", "University of Michigan"], proxy: "official share: IPEDS employees, Carnegie R1/R2"}
-      - {slug: regional-public-universities, label: "Regional public universities and master's institutions", members: ["CSU system", "SUNY colleges"], proxy: "official share: IPEDS employees, Carnegie master's"}
-      - {slug: community-colleges, label: "Community and junior colleges", members: [], proxy: "official share: IPEDS employees, 2-year public"}
-      - {slug: liberal-arts-and-specialized, label: "Liberal arts and specialized colleges", members: [], proxy: "official share: IPEDS employees, baccalaureate and special-focus"}
-      - {slug: online-and-for-profit, label: "Online and for-profit providers", members: ["Western Governors University", "Southern New Hampshire University", "University of Phoenix"], proxy: "official share: IPEDS employees, for-profit"}
+      - {slug: research-universities, label: "Research universities", members: ["UC system", "Stanford", "MIT", "University of Michigan"], proxy: "official share: IPEDS employees, Carnegie R1/R2", calc: {kind: ipeds, group: research}, parent: "61130*"}
+      - {slug: regional-public-universities, label: "Regional public universities and master's institutions", members: ["CSU system", "SUNY colleges"], proxy: "official share: IPEDS employees, Carnegie master's", calc: {kind: ipeds, group: regional}, parent: "61130*"}
+      - {slug: community-colleges, label: "Community and junior colleges", members: [], proxy: "official share: IPEDS employees, 2-year public", parent: "61120*"}
+      - {slug: liberal-arts-and-specialized, label: "Liberal arts and specialized colleges", members: [], proxy: "official share: IPEDS employees, baccalaureate and special-focus", calc: {kind: ipeds, group: liberal}, parent: "61130*"}
+      - {slug: online-and-for-profit, label: "Online and for-profit providers", members: ["Western Governors University", "Southern New Hampshire University", "University of Phoenix"], proxy: "official share: IPEDS employees, for-profit", calc: {kind: ipeds, group: online}, parent: "61130*"}
       - {slug: workforce-and-bootcamps, label: "Workforce training, bootcamps and corporate learning", parent: "61140*", members: ["General Assembly", "Coursera (training arm)", "Skillsoft"], proxy: headcount share}
       - {slug: trade-and-technical, label: "Technical and trade schools", parent: "61150*", members: [], proxy: "official share: IPEDS employees, less-than-2-year and technical"}
       - {slug: lifelong-learning, label: "Continuing and lifelong learning providers", parent: "61160*", members: [], proxy: equal share (weak)}

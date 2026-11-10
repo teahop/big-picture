@@ -11,7 +11,7 @@ update this table, commit, then stop.
 | 0 | Setup and guards | done (2026-11-09), awaiting owner OK | Hook proven; scaffolds run; SOURCES.md has spec differences to review (O*NET 31.0, OpenAlex key rule, BEA bulk file, Reliance on Science is non-commercial) |
 | 1 | Coarse industry terrain and viewer skeleton | done (2026-11-09), awaiting owner OK | Reconciles exactly (sectors + self-employed = published total). Health care to Educational services fails the similarity-space sanity pair (passes in the layout). BEA value added deferred to Phase 3, so no size switch yet. Self-employed left off the map |
 | 2 | Coarse research layer, bridge, shared layout | done (2026-11-09), awaiting owner OK | Counts match OpenAlex exactly. CIP mapping owner-reviewed; all 5 bridge sanity pairs pass. In the joint layout Finance and Professional services sit farther apart than the median sector pair, and Economics ranks Finance 6th by layout distance. HERD mapping owner-reviewed; Energy R&D is an estimate (about $1.07B from general engineering lines); Veterinary has no HERD source |
-| 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | in progress, paused at review gate | Level 1 (304 industries, 250 subfields) and Level 2 research topics (501) built; Level 0 unchanged; children inside radius; viewer LOD + performance done. Waiting on owner review of `data/mappings/deep_categories_proposed.yaml` (deep: industry categories and size proxies), then deep nodes, their embedding links, and the final checks |
+| 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | done (2026-11-09), awaiting owner OK | Level 1 (304 industries, 250 subfields), Level 2 research topics (501) and 43 estimated `deep:` industry nodes (owner-reviewed categories). Level 0 unchanged; children inside radius; deep nodes reconcile with their BLS parents to 1e-13; rebuild is byte-identical; Level 2 frame time 1.6 ms (all 1,107 nodes loaded). Open for the owner: deep-to-topic links, the headcount table, and 3 weak proxies (see notes below) |
 | 4 | Personal overlay | not started | |
 | 5 | Where-next scoring and toggles | not started | |
 | 6 | Polish and publish | not started | |
@@ -29,7 +29,9 @@ update this table, commit, then stop.
 - ~~`data/mappings/herd_to_openalex.csv`~~: reviewed by the owner 2026-11-09 (Veterinary moved out of Health sciences, Communication mapped to Computer Science). Three Energy rows are an estimate (split of Electrical, Mechanical, Engineering nec) and stay `reviewed=no`. Veterinary now has no HERD source ($0); decide whether Agricultural sciences should also feed it.
 - Phase 1: Health care and Educational services fail the occupation-similarity sanity pair; owner considers them related (care sectors), so left as is.
 
-- `data/mappings/deep_categories_proposed.yaml`: proposed `deep:` industry categories and size proxies (Phase 3 review gate; delete, rename or add before approving).
+- ~~`data/mappings/deep_categories.yaml`~~: categories and proxies reviewed by the owner 2026-11-09, no changes. The machine-readable `calc:` and `parent:` keys added at build time are not yet reviewed.
+- `data/mappings/deep_headcounts.csv`: organisation headcounts behind the headcount-share proxies (about 20 organisations have none; many are third-party estimates; Accenture, IBM and Deloitte figures are global or unconfirmed and dominate the consulting split). Owner may correct any row; rerun `uv run imap deep`, then layout, terrain and export.
+- `data/interim/reports/deep_topic_links.md`: top embedding links from each `deep:` node to Level 2 research topics (local report; the viewer marks them unreviewed).
 - `config/deep_zones.yaml`: which subfields and industries are deepened. Public file: it shows which zones were chosen.
 
 ## Phases

@@ -140,6 +140,41 @@ def level2_nodes(ch: dict) -> list[dict]:
              "growth": _ok(r.growth), "xy": ch[r.node_id]} for r in topics.itertuples()]
 
 
+def deep_nodes(ch: dict) -> list[dict]:
+    lv = interim_dir() / "levels"
+    if not (lv / "deep_industry.csv").exists():
+        return []
+    deep = pd.read_csv(lv / "deep_industry.csv")
+    occ = pd.read_csv(lv / "deep_industry_occupations.csv", dtype={"occ_code": str})
+    onet = pd.read_csv(interim_dir() / "onet" / "occupations.csv", dtype={"soc": str}).set_index("soc")["title"]
+    nodes = []
+    for r in deep.itertuples():
+        sub = occ[occ.node_id == r.node_id]; tot = sub["emp_2025"].sum() or 1.0
+        top = sub.sort_values(["emp_2025", "occ_code"], ascending=[False, True]).head(5)
+        nodes.append({"id": r.node_id, "label": r.label, "title": r.title, "type": "ind", "level": 2, "parent": r.parent_id,
+                      "replaces": [x for x in r.replaces.split(";") if x != r.parent_id], "provenance": "estimated",
+                      "size_proxy": r.size_proxy, "weak_proxy": bool(r.weak), "zone": r.zone,
+                      "members": [m for m in (r.members.split("; ") if isinstance(r.members, str) else []) if m],
+                      "size": {"employment": round(float(r.emp_2025), 1), "employment_2035": round(float(r.emp_2035), 1)},
+                      "growth": round(float(r.growth), 2), "xy": ch[r.node_id],
+                      "top_occupations": [{"soc": o.occ_code, "title": onet.get(o.occ_code, o.occ_code), "share_pct": round(float(o.emp_2025 / tot * 100), 1)} for o in top.itertuples()]})
+    return nodes
+
+
+def deep_edges(k_deep: int = 5, k_topic: int = 2) -> list[dict]:
+    from .deep_industry import topic_links
+    if not (interim_dir() / "levels" / "deep_industry.csv").exists():
+        return []
+    links = topic_links()
+    keep = set()
+    for _, g in links.groupby("deep_id"):
+        keep.update(g.nlargest(k_deep, "cosine").index)
+    for _, g in links.groupby("topic_node"):
+        keep.update(g.nlargest(k_topic, "cosine").index)
+    return [{"source": r.topic_node, "target": r.deep_id, "type": "fld-ind", "weight": round(float(r.cosine), 4), "signals": {"semantic": round(float(r.cosine), 4)}}
+            for r in links.loc[sorted(keep)].sort_values(["deep_id", "topic_node"]).itertuples()]
+
+
 def _topk_pairs(sim: pd.DataFrame, k: int) -> set[tuple[str, str]]:
     keep: set[tuple[str, str]] = set()
     arr = sim.to_numpy(); cols = list(sim.columns)
@@ -199,18 +234,26 @@ def run(target: str) -> int:
     have_l1 = (interim_dir() / "levels" / "industry_l1.csv").exists() and (out / "layout_children.json").exists()
     if have_l1:
         ch = json.loads((out / "layout_children.json").read_text())
-        n1, n2 = level1_nodes(ch["nodes"]), level2_nodes(ch["nodes"])
+        n1, n2 = level1_nodes(ch["nodes"]), level2_nodes(ch["nodes"]) + deep_nodes(ch["nodes"])
         (out / "nodes_l1.json").write_text(json.dumps(n1, separators=(",", ":")) + "\n")
         (out / "nodes_l2.json").write_text(json.dumps(n2, separators=(",", ":")) + "\n")
         e1 = level1_edges()
         (out / "edges_l1.json").write_text(json.dumps(e1, separators=(",", ":")) + "\n")
+        e2 = deep_edges()
+        (out / "edges_l2.json").write_text(json.dumps(e2, separators=(",", ":")) + "\n")
         (out / "grids_l1.json").write_text(json.dumps(levels["1"], separators=(",", ":")) + "\n")
         (out / "grids_l2.json").write_text(json.dumps(levels["2"], separators=(",", ":")) + "\n")
         meta["levels"] = [0, 1, 2]
         meta["level_notes"] = {"1": "industries: BLS Line items plus remainder nodes; research: OpenAlex subfields",
-                               "2": "research: topics replace their deep-zone subfield; industry: unchanged until deep: categories are approved",
+                               "2": "research: topics replace their deep-zone subfield; industry: owner-reviewed deep: categories (estimated) replace the Level 1 industries they split",
+                               "deep_size": "deep: node employment splits the official BLS total of its parent industries by a size proxy (QCEW, IPEDS or published headcounts); see each node",
                                "rd_below_field": "R&D dollars are not published below field level; subfield and topic values are allocated pro rata by US works (estimate)"}
-        print(f"export levels: {len(n1)} Level 1 nodes, {len(n2)} Level 2 nodes, {len(e1)} Level 1 edges")
+        meta["deep_topic_links_reviewed"] = False
+        meta["research_sources"] += [
+            {"name": "BLS QCEW 2025 annual, NAICS 5171xx and 5414xx; Q1 2025 establishment-size slice for NAICS 5416", "url": "https://data.bls.gov/cew/data/api/", "retrieved": "2026-11-09"},
+            {"name": "NCES IPEDS 2023: Institutional Characteristics (HD2023) and Employees by Assigned Position (EAP2023)", "url": "https://nces.ed.gov/ipeds/datacenter/", "retrieved": "2026-11-09"},
+            {"name": "Published organisation headcounts (see data/mappings/deep_headcounts.csv for each source)", "url": "", "retrieved": "2026-11-09"}]
+        print(f"export levels: {len(n1)} Level 1 nodes, {len(n2)} Level 2 nodes, {len(e1)} Level 1 edges, {len(e2)} deep links")
     (out / "meta.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(f"export public: {len(nodes)} nodes, {len(records)} edges -> {out}")
     return 0

@@ -11,8 +11,9 @@ const section = (title: string, items: string, empty = "") =>
 function bridgeList(items: Link[]): string {
   return items.map((l) => {
     const s = l.signals;
-    const detail = s
+    const detail = s && s.occupational !== undefined
       ? "<small>score " + l.weight.toFixed(2) + " &middot; occupation match " + pct(s.occupational) + " &middot; text similarity " + s.semantic.toFixed(2) + "</small>"
+      : s ? "<small>text similarity " + s.semantic.toFixed(2) + "</small>"
       : "<small>score " + l.weight.toFixed(2) + "</small>";
     return "<li>" + (l.node.type === "ind" ? "▲ " : "▼ ") + esc(l.node.label) + "<br>" + detail + "</li>";
   }).join("");
@@ -32,12 +33,16 @@ function lineage(b: Bundle, n: NodeRec): string {
 
 function industryDetails(b: Bundle, n: NodeRec): string {
   const occ = (n.top_occupations ?? []).map((o) => "<li>" + esc(o.title) + " <small>" + o.share_pct.toFixed(1) + "%</small></li>").join("");
-  return "<h2>▲ " + esc(n.label) + "</h2>" + lineage(b, n)
-    + "<p class='sub'>Industry &middot; " + esc(n.title) + " &middot; NAICS " + esc(n.naics_code ?? "") + " &middot; " + n.provenance + "</p>"
+  const unrev = n.level === 2 && b.meta.deep_topic_links_reviewed === false ? "Text-similarity links to research topics; not yet reviewed by the owner." : "";
+  const members = n.members && n.members.length ? "<h3>Example organisations</h3><p>" + n.members.map(esc).join(", ") + "</p>" : "";
+  return "<h2>" + (n.provenance === "estimated" ? "\u2248 " : "") + "▲ " + esc(n.label) + "</h2>" + lineage(b, n)
+    + "<p class='sub'>Industry &middot; " + esc(n.title) + (n.naics_code ? " &middot; NAICS " + esc(n.naics_code) : n.zone ? " &middot; zone: " + esc(n.zone) : "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>Employment 2025</dt><dd>" + fmtJobs(n.size.employment) + " jobs</dd>"
     + "<dt>Projected 2035</dt><dd>" + fmtJobs(n.size.employment_2035) + " jobs</dd>"
     + "<dt>Projected growth</dt><dd>" + fmtGrowth(n.growth) + " over ten years</dd></dl>"
-    + section("Strongest research links", bridgeList(links(b, n.id, "fld")), "Links to research appear at Level 0 and Level 1.")
+    + (unrev && links(b, n.id, "fld").length ? "<p class='hint'>" + unrev + "</p>" : "")
+    + section("Strongest research links", bridgeList(links(b, n.id, "fld")), "No research links computed for this node.")
+    + members
     + section("Most similar industries", simpleList(links(b, n.id, "ind", 3)))
     + section("Largest occupations", occ);
 }
@@ -50,7 +55,7 @@ function fieldDetails(b: Bundle, n: NodeRec): string {
     + "<dl><dt>US publications</dt><dd>" + fmtWorks(n.size.works) + " <small>(2021-25)</small></dd>"
     + "<dt>University R&amp;D</dt><dd>" + rd + "</dd>"
     + "<dt>Publication growth</dt><dd>" + fmtGrowth(n.growth) + " <small>(2019 to 2024)</small></dd></dl>"
-    + section("Strongest industry links", bridgeList(links(b, n.id, "ind")), n.level === 2 ? "Industry links for deep-zone topics appear once the deep: industry categories are approved." : "")
+    + section("Strongest industry links", bridgeList(links(b, n.id, "ind")), n.level === 2 && b.meta.deep_topic_links_reviewed === false ? "Links from topics to industry categories are text-similarity only and not yet reviewed." : "")
     + section("Most similar research", simpleList(links(b, n.id, "fld", 3)))
     + (n.keywords && n.keywords.length ? "<h3>Keywords</h3><p>" + n.keywords.map(esc).join(", ") + "</p>" : "")
     + (n.level === 2 && n.description ? "<h3>About</h3><p>" + esc(n.description) + "</p>" : "")

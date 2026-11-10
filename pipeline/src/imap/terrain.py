@@ -113,7 +113,22 @@ def run() -> int:
         keep = subs[~is_deep]
         r_ids = list(keep["node_id"]) + list(topics["node_id"])
         r_lv = np.array([1] * len(keep) + [2] * len(topics))
-        levels["2"] = level_layers(cfg, extent, (ind_xy, np.ones(len(ind1), int), {"employment": a_ind1}),
+        # industries at Level 2: deep: categories replace the Level 1 industries they split; each replaced
+        # parent's amplitude is shared among the deep nodes that take part of it (volume-preserving).
+        i_ids, i_amp, i_lv = list(ind1["node_id"]), a_ind1, np.ones(len(ind1), int)
+        dpath, cpath = lv / "deep_industry.csv", lv / "deep_industry_contrib.csv"
+        if dpath.exists() and cpath.exists():
+            deep_n = pd.read_csv(dpath); contrib = pd.read_csv(cpath, dtype={"parent_code": str})
+            row = {c: i for i, c in enumerate(ind1["ind_code"])}
+            a_deep = pd.Series(0.0, index=deep_n["node_id"])
+            for pcode, g in contrib.groupby("parent_code"):
+                w = np.log1p(g["emp_2025"].to_numpy(float)); w = w / w.sum()
+                a_deep.loc[g["node_id"].to_numpy()] += a_ind1[row[pcode]] * ratio_sq * w
+            gone = ind1["ind_code"].isin(set(contrib["parent_code"])).to_numpy()
+            i_ids = list(ind1["node_id"][~gone]) + list(deep_n["node_id"])
+            i_amp = np.concatenate([a_ind1[~gone], a_deep.reindex(deep_n["node_id"]).to_numpy()])
+            i_lv = np.array([1] * int((~gone).sum()) + [2] * len(deep_n))
+        levels["2"] = level_layers(cfg, extent, (xy(i_ids, ch), i_lv, {"employment": i_amp}),
             (xy(r_ids, ch), r_lv, {"works": a_w2, "rd": a_r2}))
     out = interim_dir() / "terrain"; out.mkdir(parents=True, exist_ok=True)
     payload = {"levels": levels, "params": cfg,
