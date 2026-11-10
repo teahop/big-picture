@@ -1,0 +1,33 @@
+# Deep zones: where the map is deepened beyond Level 1 (SPEC 5.3).
+# Generic taxonomy labels only (OpenAlex subfield ids and Employment Matrix industry codes).
+# Nothing from private notes is recorded here. Edit this file to add or remove zones.
+
+research_subfields:     # Level 2 = all OpenAlex topics under each subfield
+  - {id: "1709", name: "Human-Computer Interaction"}
+  - {id: "1702", name: "Artificial Intelligence"}
+  - {id: "3205", name: "Experimental and Cognitive Psychology"}
+  - {id: "2805", name: "Cognitive Neuroscience"}
+  - {id: "3312", name: "Sociology and Political Science"}
+  - {id: "1705", name: "Computer Networks and Communications"}
+  - {id: "1407", name: "Organizational Behavior and Human Resource Management"}
+  - {id: "1405", name: "Management of Technology and Innovation"}
+  - {id: "3307", name: "Human Factors and Ergonomics"}
+  - {id: "2739", name: "Public Health, Environmental and Occupational Health"}
+  - {id: "2738", name: "Psychiatry and Mental health"}
+  - {id: "1406", name: "Marketing"}
+
+industries:             # custom `deep:` categories attach under these Level 1 industries
+  - label: "Software publishers and AI model developers"
+    ind_codes: ["513200"]
+  - label: "Management, scientific and technical consulting; specialized design services"
+    ind_codes: ["541600", "541400"]
+  - label: "Electronic shopping and online retail"
+    ind_codes: ["455000"]          # NAICS 2022 has no separate e-commerce industry; closest parent
+  - label: "Media, streaming and social platforms"
+    ind_codes: ["516210", "519000"]
+  - label: "Telecommunications"
+    ind_codes: ["517000"]
+  - label: "Nonprofits, philanthropy and global health delivery"
+    ind_codes: ["813200", "813300", "624200"]
+  - label: "Higher and adult education"
+    ind_codes: ["61130P", "61130S", "61130L", "61120P", "61120S", "61120L", "61140P", "61140S", "61140L", "61150P", "61150S", "61150L", "61160P", "61160S", "61160L"]

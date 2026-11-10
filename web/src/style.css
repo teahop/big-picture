@@ -57,3 +57,7 @@ label.size select { font: inherit; font-size: 13px; color: var(--fg); background
 aside li small { display: inline; }
 #list-ind button, #list-fld button { display: flex; justify-content: space-between; width: 100%; border: 0; border-radius: 4px; background: none; text-align: left; padding: 4px 6px; }
 #list-ind button.active, #list-fld button.active { background: color-mix(in srgb, var(--accent) 18%, transparent); outline: 1px solid var(--accent); }
+.node-label.est { border-style: dotted; border-width: 2px; }
+.node-label.lvl1 { font-size: 11px; }
+.node-label.lvl2 { font-size: 10px; }
+aside strong { color: var(--accent); }

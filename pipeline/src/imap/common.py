@@ -40,3 +40,7 @@ def load_config() -> dict:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load_deep_zones() -> dict:
+    return yaml.safe_load((repo_root() / "config" / "deep_zones.yaml").read_text())

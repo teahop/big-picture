@@ -161,3 +161,43 @@ def run() -> int:
     (report_dir() / "ingest_openalex-taxonomy.md").write_text("\n".join(lines) + "\n")
     print(f"ingest openalex-taxonomy: {counts}; {client.calls} API calls")
     return 0
+
+
+def counts_by_year(client: Client, flt: str) -> dict[int, int]:
+    d = client.get("works", filter=f"authorships.countries:US,type:article|review|book|book-chapter,{flt},publication_year:{YEARS.start}-{YEARS.stop - 1}",
+                   group_by="publication_year")
+    return {int(g["key"]): g["count"] for g in d["group_by"]}
+
+
+def run_levels() -> int:
+    """Level 1 and 2 research data: subfield co-assignment, subfield and deep-topic yearly counts."""
+    from .common import load_deep_zones
+    client = Client()
+    out = interim_dir() / "openalex"
+    subs = pd.read_csv(out / "subfields.csv", dtype={"id": str})
+    topics = pd.read_csv(out / "topics.csv", dtype={"id": str, "subfield_id": str})
+    sub_ids = list(subs["id"])
+    co = pd.DataFrame(0.0, index=sub_ids, columns=sub_ids)
+    rows = []
+    for sid in sub_ids:
+        d = client.get("works", filter=f"{SIZE_FILTER},primary_topic.subfield.id:{sid}", group_by="topics.subfield.id")
+        for g in d["group_by"]:
+            gid = short(g["key"]) if g["key"] not in (None, "unknown") else None
+            if gid in co.columns:
+                co.loc[sid, gid] = g["count"]
+        for y, n in counts_by_year(client, f"primary_topic.subfield.id:{sid}").items():
+            rows.append({"level": "subfield", "id": sid, "year": y, "works_us": n})
+    deep = {z["id"] for z in load_deep_zones()["research_subfields"]}
+    for tid in topics.loc[topics.subfield_id.isin(deep), "id"]:
+        for y, n in counts_by_year(client, f"primary_topic.id:{tid}").items():
+            rows.append({"level": "topic", "id": tid, "year": y, "works_us": n})
+    co.to_csv(out / "subfield_coassignment.csv")
+    yc = pd.DataFrame(rows); yc.to_csv(out / "level_year_counts.csv", index=False)
+    (report_dir() / "ingest_openalex-levels.md").write_text(
+        "# ingest openalex-levels validation report\n"
+        f"- API calls: {client.calls}\n- subfield co-assignment matrix {co.shape}; row sums vs subfield US works: "
+        f"max relative gap {float(((co.sum(axis=1) - subs.set_index('id').works_us.reindex(co.index)).abs() / subs.set_index('id').works_us.reindex(co.index).clip(lower=1)).max()):.2f} "
+        "(works carry up to 3 topics so row sums exceed works)\n"
+        f"- yearly counts: {len(yc):,} rows ({(yc.level == 'subfield').sum():,} subfield, {(yc.level == 'topic').sum():,} topic)\n")
+    print(f"ingest openalex-levels: {client.calls} API calls")
+    return 0

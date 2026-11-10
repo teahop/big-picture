@@ -1,9 +1,12 @@
-import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtWorks, links } from "./data";
+import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtWorks, levelMaxSize, links } from "./data";
 import type { State } from "./state";
 
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const pct = (x: number) => Math.round(x * 100) + "%";
+
+const section = (title: string, items: string, empty = "") =>
+  items ? "<h3>" + title + "</h3><ul>" + items + "</ul>" : empty ? "<h3>" + title + "</h3><p class='hint'>" + empty + "</p>" : "";
 
 function bridgeList(items: Link[]): string {
   return items.map((l) => {
@@ -18,29 +21,40 @@ function simpleList(items: Link[]): string {
   return items.map((l) => "<li>" + esc(l.node.label) + " <small>similarity " + l.weight.toFixed(2) + "</small></li>").join("");
 }
 
+const LEVEL_NAMES = ["Level 0 (sector / field)", "Level 1 (detailed industry / subfield)", "Level 2 (deep zone)"];
+function lineage(b: Bundle, n: NodeRec): string {
+  const parent = n.parent ? b.byId.get(n.parent) : undefined;
+  const kids = b.childCount.get(n.id) ?? 0;
+  const est = n.provenance === "estimated" ? " <strong>Estimated</strong>" + (n.size_proxy ? " (size proxy: " + esc(n.size_proxy) + ")" : "") + "." : "";
+  return "<p class='sub'>" + LEVEL_NAMES[n.level] + (parent ? " &middot; inside " + esc(parent.label) : "")
+    + (kids ? " &middot; " + kids + " finer nodes (zoom in)" : "") + "." + est + "</p>";
+}
+
 function industryDetails(b: Bundle, n: NodeRec): string {
   const occ = (n.top_occupations ?? []).map((o) => "<li>" + esc(o.title) + " <small>" + o.share_pct.toFixed(1) + "%</small></li>").join("");
-  return "<h2>▲ " + esc(n.label) + "</h2>"
-    + "<p class='sub'>Industry sector &middot; " + esc(n.title) + " &middot; NAICS " + esc(n.naics_code ?? "") + " &middot; " + n.provenance + "</p>"
+  return "<h2>▲ " + esc(n.label) + "</h2>" + lineage(b, n)
+    + "<p class='sub'>Industry &middot; " + esc(n.title) + " &middot; NAICS " + esc(n.naics_code ?? "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>Employment 2025</dt><dd>" + fmtJobs(n.size.employment) + " jobs</dd>"
     + "<dt>Projected 2035</dt><dd>" + fmtJobs(n.size.employment_2035) + " jobs</dd>"
     + "<dt>Projected growth</dt><dd>" + fmtGrowth(n.growth) + " over ten years</dd></dl>"
-    + "<h3>Strongest research links</h3><ul>" + bridgeList(links(b, n.id, "fld")) + "</ul>"
-    + "<h3>Most similar sectors</h3><ul>" + simpleList(links(b, n.id, "ind", 3)) + "</ul>"
-    + "<h3>Largest occupations</h3><ul>" + occ + "</ul>";
+    + section("Strongest research links", bridgeList(links(b, n.id, "fld")), "Links to research appear at Level 0 and Level 1.")
+    + section("Most similar industries", simpleList(links(b, n.id, "ind", 3)))
+    + section("Largest occupations", occ);
 }
 
 function fieldDetails(b: Bundle, n: NodeRec): string {
   const subs = (n.top_subfields ?? []).map((s) => "<li>" + esc(s.name) + " <small>" + fmtWorks(s.works_us) + " works</small></li>").join("");
   const rd = n.size.rd > 0 ? fmtDollars(n.size.rd) + " <small>(estimated split of HERD)</small>" : "no HERD source";
-  return "<h2>▼ " + esc(n.label) + "</h2>"
-    + "<p class='sub'>Research field &middot; " + esc(n.domain ?? "") + " &middot; " + n.provenance + "</p>"
+  return "<h2>▼ " + esc(n.label) + "</h2>" + lineage(b, n)
+    + "<p class='sub'>Research &middot; " + esc(n.domain ?? "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>US publications</dt><dd>" + fmtWorks(n.size.works) + " <small>(2021-25)</small></dd>"
     + "<dt>University R&amp;D</dt><dd>" + rd + "</dd>"
     + "<dt>Publication growth</dt><dd>" + fmtGrowth(n.growth) + " <small>(2019 to 2024)</small></dd></dl>"
-    + "<h3>Strongest industry links</h3><ul>" + bridgeList(links(b, n.id, "ind")) + "</ul>"
-    + "<h3>Most similar fields</h3><ul>" + simpleList(links(b, n.id, "fld", 3)) + "</ul>"
-    + "<h3>Largest subfields</h3><ul>" + subs + "</ul>";
+    + section("Strongest industry links", bridgeList(links(b, n.id, "ind")), n.level === 2 ? "Industry links for deep-zone topics appear once the deep: industry categories are approved." : "")
+    + section("Most similar research", simpleList(links(b, n.id, "fld", 3)))
+    + (n.keywords && n.keywords.length ? "<h3>Keywords</h3><p>" + n.keywords.map(esc).join(", ") + "</p>" : "")
+    + (n.level === 2 && n.description ? "<h3>About</h3><p>" + esc(n.description) + "</p>" : "")
+    + section(n.level === 0 ? "Largest subfields" : "Largest topics", subs);
 }
 
 export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void): void {
@@ -49,51 +63,51 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
   const items = new Map<string, HTMLButtonElement>();
   const key = () => ({ ind: "employment", fld: state.researchMeasure });
   const sizeText = (n: NodeRec) => n.type === "ind" ? fmtJobs(n.size.employment) : state.researchMeasure === "rd" ? fmtDollars(n.size.rd) : fmtWorks(n.size.works);
-  const sorted = (type: "ind" | "fld") => b.nodes.filter((n) => n.type === type)
-    .sort((a, c) => (c.size[key()[type]] ?? 0) - (a.size[key()[type]] ?? 0));
+  const query = () => search.value.trim().toLowerCase();
+  // With no query the lists show the nodes drawn at the current level; a query searches every loaded level.
+  const pool = (type: "ind" | "fld") => {
+    const q = query();
+    return b.nodes.filter((n) => n.type === type && (q ? n.label.toLowerCase().includes(q) || n.title.toLowerCase().includes(q) : state.visibleIds.has(n.id)))
+      .sort((a, c) => (c.size[key()[type]] ?? 0) - (a.size[key()[type]] ?? 0));
+  };
 
   const build = () => {
+    items.clear();
+    let shown = 0;
     for (const type of ["ind", "fld"] as const) {
       lists[type].innerHTML = "";
-      for (const n of sorted(type)) {
+      for (const n of pool(type)) {
         const li = document.createElement("li"), btn = document.createElement("button");
-        btn.type = "button"; btn.innerHTML = "<span>" + esc(n.label) + "</span><small>" + sizeText(n) + "</small>";
+        btn.type = "button";
+        btn.innerHTML = "<span>" + (n.provenance === "estimated" ? "\u2248 " : "") + esc(n.label) + (query() ? " <small>L" + n.level + "</small>" : "") + "</span><small>" + sizeText(n) + "</small>";
         btn.addEventListener("click", () => onPick(n));
         btn.addEventListener("pointerenter", () => state.setHover(n));
         btn.addEventListener("pointerleave", () => state.setHover(null));
         btn.addEventListener("focus", () => state.setHover(n));
         btn.addEventListener("blur", () => state.setHover(null));
-        li.appendChild(btn); lists[type].appendChild(li); items.set(n.id, btn);
+        li.appendChild(btn); lists[type].appendChild(li); items.set(n.id, btn); shown++;
       }
     }
-    filter();
+    el("search-count").textContent = query() ? shown + " match" + (shown === 1 ? "" : "es") : "";
   };
-  const filter = () => {
-    const q = search.value.trim().toLowerCase(); let shown = 0;
-    for (const n of b.nodes) {
-      const hit = !q || n.label.toLowerCase().includes(q) || n.title.toLowerCase().includes(q);
-      items.get(n.id)!.parentElement!.hidden = !hit; if (hit) shown++;
-    }
-    el("search-count").textContent = q ? shown + " match" + (shown === 1 ? "" : "es") : "";
-  };
-  search.addEventListener("input", filter);
+  search.addEventListener("input", build);
   search.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
-    const first = b.nodes.find((n) => !items.get(n.id)!.parentElement!.hidden && state.isVisible(n))
-      ?? b.nodes.find((n) => !items.get(n.id)!.parentElement!.hidden);
+    const first = b.nodes.find((n) => items.has(n.id) && state.isVisible(n)) ?? b.nodes.find((n) => items.has(n.id));
     if (first) onPick(first);
   });
 
-  let lastMeasure = state.researchMeasure;
+  let lastMeasure = state.researchMeasure, lastLevel = -1;
   const render = () => {
-    if (state.researchMeasure !== lastMeasure) { lastMeasure = state.researchMeasure; build(); }
+    if (state.researchMeasure !== lastMeasure || state.level !== lastLevel) { lastMeasure = state.researchMeasure; lastLevel = state.level; build(); }
     el("group-ind").hidden = !state.showsIndustry(); el("group-fld").hidden = !state.showsResearch();
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
-    if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Peaks (▲) are industry sectors, valleys (▼) are research fields.</p>"; return; }
+    if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Peaks (\u25B2) are industry sectors, valleys (\u25BC) are research fields. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
     details.innerHTML = n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n);
   };
-  build(); state.subscribe(render); render();
+  state.subscribe(render); render();
+
 
   const src = b.meta.sources[0], br = b.meta.bridge;
   el("source").textContent = "Industry: " + src.name + ", " + src.release + ". Research: OpenAlex US-affiliated works 2021-25, NSF HERD FY 2024. Retrieved " + src.retrieved + "."

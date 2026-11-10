@@ -53,7 +53,9 @@
   }
  ],
  "levels": [
-  0
+  0,
+  1,
+  2
  ],
  "sources": [
   {
@@ -71,10 +73,15 @@
   "seed": 20261109
  },
  "terrain": {
-  "grid_size": 96,
+  "grid_size": 128,
   "margin": 0.25,
   "bandwidth_level0": 0.12,
   "bandwidth_per_level": 0.5
  },
- "display_name_source": "config/site.yaml"
+ "display_name_source": "config/site.yaml",
+ "level_notes": {
+  "1": "industries: BLS Line items plus remainder nodes; research: OpenAlex subfields",
+  "2": "research: topics replace their deep-zone subfield; industry: unchanged until deep: categories are approved",
+  "rd_below_field": "R&D dollars are not published below field level; subfield and topic values are allocated pro rata by US works (estimate)"
+ }
 }

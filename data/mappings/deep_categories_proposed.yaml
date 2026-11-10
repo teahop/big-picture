@@ -1,0 +1,97 @@
+# PROPOSED custom `deep:` industry categories (SPEC 5.3). NOT YET USED: awaiting owner review.
+# Edit freely: delete a category, rename it, change members, or change the size proxy.
+# Every deep: node carries provenance "estimated" and splits an OFFICIAL Level 1 parent total,
+# so a zone's categories always add up to the BLS employment of the industries they sit under.
+#
+# Size proxy hierarchy (first available wins; the node records which one was used):
+#   1. official share: a published official employment split that matches the category
+#      (QCEW 6-digit NAICS employment, NCES IPEDS staff counts by institution type)
+#   2. headcount share: published headcounts of the listed member companies (SEC 10-K "employees",
+#      or the company's own published figure), scaled to the parent's BLS total
+#   3. equal share: only if nothing above exists (flagged "weak" in the node)
+# No numbers are filled in yet; the build fetches them after you approve the list.
+#
+# Public sources behind the category lists (retrieved 2026-11-09):
+#   AI stack layers: Social Capital "The AI stack" (https://research.socialcapital.com/p/the-ai-stack),
+#     Hustle Fund AI market map (https://www.hustlefund.vc/post/ai-market-map), Coatue (https://www.coatue.com/blog/perspective/ai-is-expanding-across-the-stack)
+#   Streaming/social: NAICS 516210 definition; IBISWorld US category 2040 (https://www.ibisworld.com/united-states/industry/media-streaming-social-networks-and-other-content-providers-in-the-us/2040/)
+#   Global health actors: KFF "Key Implementers of U.S. Global Health Efforts" (https://www.kff.org/global-health-policy/key-implementers-of-u-s-global-health-efforts/),
+#     Devex "Intermediaries in the health market" (https://www.devex.com/news/devexplains-intermediaries-in-the-health-market-88893)
+#   Consulting segments: Notre Dame / McGill career-office "types of firms"; frog "Strategy as a creative act II"
+# Member names below are well-known public organisations used only as examples of each category.
+
+zones:
+  - zone: "Software publishers and AI model developers"
+    parents: ["513200"]
+    note: "AI model developers have no NAICS line of their own; they are classed in software publishers or data processing (518000). Only 513200 is used as the parent."
+    categories:
+      - {slug: frontier-model-labs, label: "Frontier foundation-model labs", members: ["OpenAI", "Anthropic", "Google DeepMind", "Meta AI", "Mistral AI", "xAI"], proxy: headcount share}
+      - {slug: open-and-specialist-models, label: "Open-weight and specialist model developers", members: ["Cohere", "Hugging Face", "Stability AI", "AI21 Labs"], proxy: headcount share}
+      - {slug: enterprise-software, label: "Enterprise application software", members: ["Microsoft", "Oracle", "Salesforce", "Adobe", "Intuit", "Workday"], proxy: headcount share}
+      - {slug: ai-native-apps, label: "AI-native application and agent companies", members: ["Perplexity", "Harvey", "Glean", "Cursor (Anysphere)"], proxy: headcount share}
+      - {slug: developer-and-data-infra, label: "Developer tools, data and AI infrastructure software", members: ["Databricks", "Snowflake", "GitHub", "Datadog", "MongoDB"], proxy: headcount share}
+      - {slug: consumer-and-games, label: "Consumer software and games publishers", members: ["Electronic Arts", "Take-Two", "Duolingo", "Roblox"], proxy: headcount share}
+      - {slug: security-software, label: "Security and trust software", members: ["CrowdStrike", "Palo Alto Networks", "Okta", "Zscaler"], proxy: headcount share}
+
+  - zone: "Management, scientific and technical consulting; specialized design services"
+    parents: ["541600", "541400"]
+    categories:
+      - {slug: strategy-consulting, label: "Strategy and management consulting", parent: "541600", members: ["McKinsey", "Boston Consulting Group", "Bain", "Deloitte (US)", "Accenture (strategy arm)"], proxy: headcount share}
+      - {slug: technology-consulting, label: "Technology and digital transformation consulting", parent: "541600", members: ["Accenture", "IBM Consulting", "Slalom", "Thoughtworks"], proxy: headcount share}
+      - {slug: research-policy-consulting, label: "Research, policy and economic consulting", parent: "541600", members: ["RAND", "Mathematica", "ICF", "Abt Associates", "Navigant/Guidehouse"], proxy: headcount share}
+      - {slug: social-sector-consulting, label: "Social-sector and human-centered design consulting", parent: "541600", members: ["IDEO.org", "Dalberg", "FSG", "Bridgespan"], proxy: headcount share}
+      - {slug: independents, label: "Independent consultants and micro-firms", parent: "541600", members: [], proxy: "official share (QCEW establishment-size bands) if available, else equal share"}
+      - {slug: design-innovation-firms, label: "Design and innovation consultancies", parent: "541400", members: ["IDEO", "frog", "Fjord (Accenture Song)", "Pentagram", "Smart Design"], proxy: headcount share}
+      - {slug: specialized-design-trades, label: "Industrial, graphic, interior and other specialized design", parent: "541400", members: [], proxy: "official share: QCEW 5414xx NAICS detail"}
+
+  - zone: "Electronic shopping and online retail"
+    parents: ["455000"]
+    note: "NAICS 2022 removed electronic shopping as an industry; online sellers are now classed by merchandise line. General merchandise retailers (455000) is the closest parent, so these categories split that industry only."
+    categories:
+      - {slug: marketplaces, label: "Online marketplaces", members: ["Amazon", "eBay", "Etsy", "Walmart Marketplace"], proxy: headcount share}
+      - {slug: omnichannel-big-box, label: "Omnichannel big-box retailers", members: ["Walmart", "Target", "Costco", "Kroger (online)"], proxy: headcount share}
+      - {slug: direct-to-consumer, label: "Direct-to-consumer brands", members: ["Warby Parker", "Allbirds", "Glossier"], proxy: headcount share}
+      - {slug: subscription-and-delivery, label: "Subscription and delivery commerce", members: ["Chewy", "Instacart", "Stitch Fix"], proxy: headcount share}
+
+  - zone: "Media, streaming and social platforms"
+    parents: ["516210", "519000"]
+    note: "NAICS 516210 bundles media streaming, social networks and other media networks (IBISWorld category 2040)."
+    categories:
+      - {slug: video-streaming, label: "Video streaming services", parent: "516210", members: ["Netflix", "Disney (streaming)", "Warner Bros. Discovery (Max)", "Paramount+"], proxy: headcount share}
+      - {slug: audio-streaming, label: "Music, audio and podcast streaming", parent: "516210", members: ["Spotify (US)", "SiriusXM", "iHeartMedia"], proxy: headcount share}
+      - {slug: social-networks, label: "Social networks and messaging platforms", parent: "516210", members: ["Meta", "Snap", "Pinterest", "Reddit", "X"], proxy: headcount share}
+      - {slug: creator-and-live, label: "Creator and live-streaming platforms", parent: "516210", members: ["YouTube", "Twitch", "Patreon", "Substack"], proxy: headcount share}
+      - {slug: news-and-content-suppliers, label: "Digital news and content suppliers", parent: "516210", members: ["BuzzFeed", "Vox Media", "The Athletic"], proxy: headcount share}
+      - {slug: search-and-portals, label: "Search engines, portals and online reference", parent: "519000", members: ["Google Search", "Yahoo", "Wikimedia Foundation", "Internet Archive"], proxy: headcount share}
+
+  - zone: "Telecommunications"
+    parents: ["517000"]
+    categories:
+      - {slug: wireless-carriers, label: "Wireless carriers", members: ["Verizon Wireless", "T-Mobile", "AT&T Mobility"], proxy: "official share: QCEW 517112 wireless telecommunications"}
+      - {slug: wireline-and-fiber, label: "Wireline and fiber providers", members: ["Lumen", "Frontier", "Windstream"], proxy: "official share: QCEW 517111 wired telecommunications"}
+      - {slug: cable-broadband, label: "Cable and broadband operators", members: ["Comcast", "Charter", "Cox", "Altice USA"], proxy: headcount share}
+      - {slug: satellite-and-space-connectivity, label: "Satellite and space-based connectivity", members: ["Viasat", "EchoStar", "SpaceX (Starlink)"], proxy: "official share: QCEW 517410 satellite telecommunications"}
+      - {slug: network-infrastructure, label: "Towers, fiber transport and other network infrastructure", members: ["American Tower", "Crown Castle", "Zayo"], proxy: headcount share}
+
+  - zone: "Nonprofits, philanthropy and global health delivery"
+    parents: ["813200", "813300", "624200"]
+    categories:
+      - {slug: private-foundations, label: "Private and corporate foundations", parent: "813200", members: ["Gates Foundation", "Ford Foundation", "Hewlett Foundation", "Wellcome (US presence)"], proxy: headcount share}
+      - {slug: community-and-daf, label: "Community foundations and donor-advised fund sponsors", parent: "813200", members: ["Silicon Valley Community Foundation", "Fidelity Charitable", "Schwab Charitable"], proxy: headcount share}
+      - {slug: advocacy-and-policy, label: "Advocacy and policy organizations", parent: "813300", members: ["ACLU", "Sierra Club", "AARP (advocacy)", "Center for American Progress"], proxy: headcount share}
+      - {slug: global-health-implementers, label: "Global health NGOs and implementers", parent: "624200", members: ["PATH", "Partners In Health", "FHI 360", "Population Services International"], proxy: headcount share}
+      - {slug: humanitarian-relief, label: "Humanitarian and emergency relief", parent: "624200", members: ["American Red Cross", "International Rescue Committee", "Catholic Relief Services", "World Vision US"], proxy: headcount share}
+      - {slug: health-intermediaries, label: "Intermediaries and capacity builders", parent: "813300", members: ["Management Sciences for Health", "Results for Development", "Devex"], proxy: headcount share}
+
+  - zone: "Higher and adult education"
+    parents: ["61130P", "61130S", "61130L", "61120P", "61120S", "61120L", "61140P", "61140S", "61140L", "61150P", "61150S", "61150L", "61160P", "61160S", "61160L"]
+    note: "BLS already splits these by ownership (private, state, local); categories split by institution type using NCES IPEDS staff counts."
+    categories:
+      - {slug: research-universities, label: "Research universities", members: ["UC system", "Stanford", "MIT", "University of Michigan"], proxy: "official share: IPEDS employees, Carnegie R1/R2"}
+      - {slug: regional-public-universities, label: "Regional public universities and master's institutions", members: ["CSU system", "SUNY colleges"], proxy: "official share: IPEDS employees, Carnegie master's"}
+      - {slug: community-colleges, label: "Community and junior colleges", members: [], proxy: "official share: IPEDS employees, 2-year public"}
+      - {slug: liberal-arts-and-specialized, label: "Liberal arts and specialized colleges", members: [], proxy: "official share: IPEDS employees, baccalaureate and special-focus"}
+      - {slug: online-and-for-profit, label: "Online and for-profit providers", members: ["Western Governors University", "Southern New Hampshire University", "University of Phoenix"], proxy: "official share: IPEDS employees, for-profit"}
+      - {slug: workforce-and-bootcamps, label: "Workforce training, bootcamps and corporate learning", parent: "61140*", members: ["General Assembly", "Coursera (training arm)", "Skillsoft"], proxy: headcount share}
+      - {slug: trade-and-technical, label: "Technical and trade schools", parent: "61150*", members: [], proxy: "official share: IPEDS employees, less-than-2-year and technical"}
+      - {slug: lifelong-learning, label: "Continuing and lifelong learning providers", parent: "61160*", members: [], proxy: equal share (weak)}

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
 import pandas as pd
 
 from .common import interim_dir, load_config, public_dir, sha256
@@ -97,6 +98,73 @@ def field_edges(k: int = 4) -> pd.DataFrame:
                          for a, b in sorted(keep)])
 
 
+def _ok(x: float) -> float | None:
+    return None if x != x else round(float(x), 2)
+
+
+def level1_nodes(ch: dict) -> list[dict]:
+    lv, oa = interim_dir() / "levels", interim_dir() / "openalex"
+    ind = pd.read_csv(lv / "industry_l1.csv", dtype={"ind_code": str})
+    occ = pd.read_csv(lv / "industry_l1_occupations.csv", dtype={"ind_code": str, "occ_code": str})
+    onet = pd.read_csv(interim_dir() / "onet" / "occupations.csv", dtype={"soc": str}).set_index("soc")["title"]
+    occ = occ.astype({"emp_2025": float})
+    nodes = []
+    for r in ind.itertuples():
+        sub = occ[occ.ind_code == r.ind_code]
+        tot = sub["emp_2025"].sum() or 1.0
+        top = sub.sort_values(["emp_2025", "occ_code"], ascending=[False, True]).head(5)
+        nodes.append({"id": r.node_id, "label": r.label, "title": r.title, "type": "ind", "level": 1, "parent": r.parent_id,
+                      "naics_code": r.ind_code, "provenance": "official", "remainder": bool(r.remainder),
+                      "size": {"employment": round(float(r.emp_2025), 1), "employment_2035": round(float(r.emp_2035), 1)},
+                      "growth": round(float(r.growth), 2), "xy": ch[r.node_id],
+                      "top_occupations": [{"soc": o.occ_code, "title": onet.get(o.occ_code, o.occ_code), "share_pct": round(float(o.emp_2025 / tot * 100), 1)} for o in top.itertuples()]})
+    subs = pd.read_csv(lv / "subfields_l1.csv", dtype={"id": str, "field_id": str})
+    topics = pd.read_csv(oa / "topics.csv", dtype={"id": str, "subfield_id": str})
+    fields = pd.read_csv(oa / "fields.csv", dtype={"id": str}).set_index("id")["domain_name"]
+    for r in subs.itertuples():
+        top = topics[topics.subfield_id == r.id].sort_values("works_us", ascending=False).head(5)
+        nodes.append({"id": r.node_id, "label": r.name, "title": f"{r.name} ({r.field_name})", "type": "fld", "level": 1, "parent": r.parent_id,
+                      "domain": fields[r.field_id], "provenance": "official", "description": r.description if isinstance(r.description, str) else "",
+                      "size": {"works": int(r.works_us), "works_global": int(r.works_global), "rd": round(float(r.rd), 0)},
+                      "growth": _ok(r.growth), "xy": ch[r.node_id], "top_subfields": [{"name": t.name, "works_us": int(t.works_us)} for t in top.itertuples()]})
+    return nodes
+
+
+def level2_nodes(ch: dict) -> list[dict]:
+    lv = interim_dir() / "levels"
+    topics = pd.read_csv(lv / "topics_l2.csv", dtype={"id": str, "subfield_id": str})
+    return [{"id": r.node_id, "label": r.name, "title": f"{r.name} ({r.subfield_name})", "type": "fld", "level": 2, "parent": r.parent_id,
+             "domain": r.field_name, "provenance": "official", "description": r.description if isinstance(r.description, str) else "",
+             "keywords": (r.keywords if isinstance(r.keywords, str) else "").split("; ")[:8],
+             "size": {"works": int(r.works_us), "works_global": int(r.works_global), "rd": round(float(r.rd), 0)},
+             "growth": _ok(r.growth), "xy": ch[r.node_id]} for r in topics.itertuples()]
+
+
+def _topk_pairs(sim: pd.DataFrame, k: int) -> set[tuple[str, str]]:
+    keep: set[tuple[str, str]] = set()
+    arr = sim.to_numpy(); cols = list(sim.columns)
+    for i, a in enumerate(sim.index):
+        for j in [j for j in np.argsort(-arr[i], kind="stable") if cols[j] != a][:k]:
+            keep.add(tuple(sorted((a, cols[j]))))
+    return keep
+
+
+def level1_edges(k: int = 5) -> list[dict]:
+    g = interim_dir() / "graph_l1"
+    rd = lambda f: pd.read_csv(g / f, index_col=0).rename(index=str, columns=str)
+    isim, ssim, comb, occ, sem = rd("industry_similarity.csv"), rd("subfield_similarity.csv"), rd("bridge_combined.csv"), rd("bridge_occupational.csv"), rd("bridge_semantic.csv")
+    recs = [{"source": f"ind:{a}", "target": f"ind:{b}", "type": "ind-ind", "weight": round(float(isim.loc[a, b]), 4)} for a, b in sorted(_topk_pairs(isim, k))]
+    recs += [{"source": f"fld:{a}", "target": f"fld:{b}", "type": "fld-fld", "weight": round(float(ssim.loc[a, b]), 4)} for a, b in sorted(_topk_pairs(ssim, k))]
+    keep: set[tuple[str, str]] = set()
+    for sid in comb.index:
+        keep.update((sid, c) for c in comb.loc[sid].sort_values(ascending=False).head(k).index)
+    for c in comb.columns:
+        keep.update((sid, c) for sid in comb[c].sort_values(ascending=False).head(k).index)
+    recs += [{"source": f"fld:{sid}", "target": f"ind:{c}", "type": "fld-ind", "weight": round(float(comb.loc[sid, c]), 4),
+              "signals": {"occupational": round(float(occ.loc[sid, c]), 4), "semantic": round(float(sem.loc[sid, c]), 4)}} for sid, c in sorted(keep)]
+    return recs
+
+
 def run(target: str) -> int:
     if target != "public":
         print("imap export: only --target public exists in Phase 1 (private target arrives in Phase 4).")
@@ -126,7 +194,23 @@ def run(target: str) -> int:
             "display_name_source": "config/site.yaml"}
     (out / "nodes.json").write_text(json.dumps(nodes, indent=1) + "\n")
     (out / "edges.json").write_text(json.dumps(records, indent=1) + "\n")
-    (out / "grids.json").write_text(json.dumps(terrain["layers"], separators=(",", ":")) + "\n")
+    levels = terrain["levels"]
+    (out / "grids.json").write_text(json.dumps(levels["0"], separators=(",", ":")) + "\n")
+    have_l1 = (interim_dir() / "levels" / "industry_l1.csv").exists() and (out / "layout_children.json").exists()
+    if have_l1:
+        ch = json.loads((out / "layout_children.json").read_text())
+        n1, n2 = level1_nodes(ch["nodes"]), level2_nodes(ch["nodes"])
+        (out / "nodes_l1.json").write_text(json.dumps(n1, separators=(",", ":")) + "\n")
+        (out / "nodes_l2.json").write_text(json.dumps(n2, separators=(",", ":")) + "\n")
+        e1 = level1_edges()
+        (out / "edges_l1.json").write_text(json.dumps(e1, separators=(",", ":")) + "\n")
+        (out / "grids_l1.json").write_text(json.dumps(levels["1"], separators=(",", ":")) + "\n")
+        (out / "grids_l2.json").write_text(json.dumps(levels["2"], separators=(",", ":")) + "\n")
+        meta["levels"] = [0, 1, 2]
+        meta["level_notes"] = {"1": "industries: BLS Line items plus remainder nodes; research: OpenAlex subfields",
+                               "2": "research: topics replace their deep-zone subfield; industry: unchanged until deep: categories are approved",
+                               "rd_below_field": "R&D dollars are not published below field level; subfield and topic values are allocated pro rata by US works (estimate)"}
+        print(f"export levels: {len(n1)} Level 1 nodes, {len(n2)} Level 2 nodes, {len(e1)} Level 1 edges")
     (out / "meta.json").write_text(json.dumps(meta, indent=1) + "\n")
     print(f"export public: {len(nodes)} nodes, {len(records)} edges -> {out}")
     return 0

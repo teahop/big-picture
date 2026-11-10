@@ -1,7 +1,7 @@
-import { loadBundle, type ResearchMeasure } from "./data";
+import { ensureLevel, loadBundle, visibleAt, type NodeRec, type ResearchMeasure } from "./data";
 import { Map2D } from "./map2d";
 import { Scene3D, webglAvailable } from "./scene3d";
-import { State, type LayerMode } from "./state";
+import { State, type LayerMode, type LodSetting } from "./state";
 import { onThemeChange } from "./theme";
 import { buildPanel } from "./ui";
 
@@ -11,38 +11,62 @@ $("title").textContent = __DISPLAY_NAME__;
 async function start(): Promise<void> {
   const bundle = await loadBundle();
   const state = new State();
-  const map2d = new Map2D($("view-2d"), bundle, state);
   const gl = webglAvailable();
-  const scene3d = gl ? new Scene3D($("view-3d"), $("labels"), bundle, state) : null;
-
+  const maxLevel = Math.max(...bundle.meta.levels);
   let view: "3d" | "2d" = gl ? "3d" : "2d";
+
+  // ---- level of detail: manual override, otherwise driven by the camera distance in 3D (Level 1 in 2D)
+  let autoLevel = 0, applying = 0;
+  const wanted = (): number => state.lod !== "auto" ? Math.min(Number(state.lod), maxLevel) : view === "2d" ? Math.min(1, maxLevel) : Math.min(autoLevel, maxLevel);
+  const applyLevel = async (): Promise<void> => {
+    const level = wanted(), ticket = ++applying;
+    if (level === state.level && state.visibleIds.size) return;
+    if (!bundle.grids[level]) $("notice").textContent = "Loading level " + level + "...";
+    await ensureLevel(bundle, level);
+    if (ticket !== applying) return;                      // a newer request superseded this one
+    $("notice").textContent = "";
+    state.setLevel(level, new Set(visibleAt(bundle, level).map((n) => n.id)));
+  };
+  await ensureLevel(bundle, 0);
+  state.setLevel(0, new Set(visibleAt(bundle, 0).map((n) => n.id)));
+
+  const map2d = new Map2D($("view-2d"), bundle, state);
+  const scene3d = gl ? new Scene3D($("view-3d"), $("labels"), bundle, state) : null;
+  if (scene3d) scene3d.onAutoLevel = (l) => { autoLevel = l; void applyLevel(); };
+
   const toggle = $<HTMLButtonElement>("mode");
   const apply = () => {
     scene3d?.show(view === "3d"); map2d.show(view === "2d");
     toggle.textContent = view === "3d" ? "Switch to 2D map" : "Switch to 3D terrain";
     toggle.setAttribute("aria-pressed", String(view === "2d"));
+    void applyLevel();
   };
   toggle.disabled = !gl;
   if (!gl) $("notice").textContent = "WebGL is not available, so the 2D contour map is shown.";
   toggle.addEventListener("click", () => { view = view === "3d" ? "2d" : "3d"; apply(); });
   apply();
 
+  const lod = $<HTMLSelectElement>("lod");
+  lod.addEventListener("change", () => { state.setLod(lod.value as LodSetting); void applyLevel(); });
   for (const input of document.querySelectorAll<HTMLInputElement>("input[name=layer]")) {
     input.checked = input.value === state.mode;
     input.addEventListener("change", () => { if (input.checked) state.setMode(input.value as LayerMode); });
   }
   const research = $<HTMLSelectElement>("size-research");
   research.addEventListener("change", () => state.setResearchMeasure(research.value as ResearchMeasure));
-
-  buildPanel(bundle, state, (n) => {
-    if (!state.isVisible(n)) state.setMode(n.type === "ind" ? "industry" : "research"), syncRadios();
-    state.setSelected(n); scene3d?.focus(n);
-  });
   const syncRadios = () => document.querySelectorAll<HTMLInputElement>("input[name=layer]").forEach((i) => { i.checked = i.value === state.mode; });
   state.subscribe(syncRadios);
+
+  buildPanel(bundle, state, (n: NodeRec) => {
+    if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level); }
+    if (!state.isVisible(n)) state.setMode(n.type === "ind" ? "industry" : "research");
+    void applyLevel().then(() => { state.setSelected(n); scene3d?.focus(n); });
+  });
   onThemeChange(() => { scene3d?.applyTheme(); map2d.applyTheme(); });
   (window as unknown as { __viewer: object }).__viewer = {
-    state, bundle, setView: (v: "3d" | "2d") => { view = v; apply(); },
+    state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
+    setView: (v: "3d" | "2d") => { view = v; apply(); },
+    setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }
 

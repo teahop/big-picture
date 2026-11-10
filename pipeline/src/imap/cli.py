@@ -6,11 +6,12 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
-    "graph": "Build similarity graph and edges",
+    "levels": "Build Level 1 and Level 2 node tables",
+    "graph": "Build similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
     "layout": "Seeded layout of node positions (provisional Level 0 in Phase 1)",
     "terrain": "Height grids per layer and size measure",
     "export": "Write the public JSON bundle (--target public)",
@@ -27,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "graph":
             p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "herd", "cip-soc", "onet"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "herd", "cip-soc", "onet"], help="dataset to ingest")
         if name == "export":
             p.add_argument("--target", choices=["public", "private"], default="public")
     return parser
@@ -45,6 +46,9 @@ def run_stage(args: argparse.Namespace) -> int:
         if args.source == "openalex-taxonomy":
             from . import openalex
             return openalex.run()
+        if args.source == "openalex-levels":
+            from . import openalex
+            return openalex.run_levels()
         from . import ingest_files
         return ingest_files.run(args.source)
     if name == "graph":
@@ -54,10 +58,23 @@ def run_stage(args: argparse.Namespace) -> int:
             print(f"graph: wrote {len(out)} proposed field-to-CIP rows to {bridge.PROPOSED}")
             return 0
         graph.run()
-        return bridge.run()
+        bridge.run()
+        from .common import interim_dir
+        if (interim_dir() / "levels" / "industry_l1.csv").exists():
+            from . import graph_l1
+            return graph_l1.run()
+        return 0
+    if name == "levels":
+        from . import levels
+        return levels.run()
     if name == "layout":
         from . import layout
-        return layout.run()
+        rc = layout.run()
+        from .common import interim_dir
+        if rc == 0 and (interim_dir() / "graph_l1" / "bridge_combined.csv").exists():
+            from . import layout_anchored
+            return layout_anchored.run()
+        return rc
     if name == "terrain":
         from . import terrain
         return terrain.run()

@@ -36,3 +36,9 @@ and must be re-checked in a browser before a loader relies on them.
 | Embedding model | `BAAI/bge-small-en-v1.5` via fastembed (ONNX, local) | Downloaded once from Hugging Face | Used for CIP proposal and the semantic bridge signal |
 
 No download in this phase was blocked (BLS remains hand-downloaded, see the Phase 1 note).
+
+## Phase 3 build notes (retrieved 2026-11-09)
+
+- **OpenAlex, levels:** subfield co-assignment (one `group_by topics.subfield.id` query per subfield), yearly counts per subfield and per deep-zone topic, same US size filter as Level 0. About 1,000 API calls. Two subfields (Bioengineering under Chemical Engineering, Radiological and Ultrasound Technology) have zero works globally and are not drawn.
+- **NAICS 2022 and online retail:** the Employment Matrix is coded to NAICS 2022, which has no separate electronic shopping industry. A deep zone for online retail therefore attaches to General merchandise retailers (455000).
+- **Deep: category proposal:** public frameworks used for the category lists are cited in the header of `data/mappings/deep_categories_proposed.yaml`.

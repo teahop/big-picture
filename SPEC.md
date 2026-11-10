@@ -1,6 +1,6 @@
 # Industry Map — Specification
 
-Version 0.2, 2026-11-09 (0.2: source facts verified in Phase 0; see `data/SOURCES.md`). Owner: github.com/teahop.
+Version 0.3, 2026-11-09 (0.2: source facts verified in Phase 0; 0.3: Level 1/2 design decisions from Phase 3; see `data/SOURCES.md`). Owner: github.com/teahop.
 
 ## 1. Purpose
 
@@ -79,6 +79,13 @@ Three source differences from version 0.1 matter to the design: BEA value added 
 - Industry: the detailed industries of the Employment Matrix.
 - Research: OpenAlex subfields (252).
 
+Level 1 industries are the matrix's "Line item" rows. Where a sector's line items do not add up to
+the sector total, one "Other: <sector>" remainder node carries the difference (and a residual
+occupation mix), so Level 1 always reconciles with Level 0. NAICS 2022 has no separate electronic
+shopping industry, so a deep zone for online retail attaches to its closest parent (general
+merchandise retailers). Subfields with no works at all in OpenAlex are not drawn. R&D dollars are
+published only by field, so subfield and topic R&D is allocated pro rata by US works (an estimate).
+
 ### 5.3 Level 2 (Phase 3, deep zones only)
 - Research: OpenAlex topics under the subfields named in the private profile.
 - Industry: custom `deep:` categories under the industries named in the private
@@ -130,6 +137,12 @@ Sanity pairs that must rank highly before the bridge is accepted are listed in
 the Phase 2 handoff.
 
 ### 6.4 Terrain
+Deeper levels split a parent's terrain among its children so that the volume is preserved: the kernel
+narrows from parent to child by a fixed ratio, and the children share `amplitude_parent *
+(sigma_parent / sigma_child)^2` in proportion to `log(1 + size)`. Without this, many overlapping
+children stack far above their parent. A level of detail is a separate grid (Level 0, Level 1,
+Level 2), not a sum of levels; a child replaces its parent when the level is reached.
+
 For each layer, height at a point is a sum of Gaussian kernels centred on that
 layer's nodes: amplitude `log(1 + size)` scaled to a common range, bandwidth
 proportional to the node's level. Industry heights are positive. Research

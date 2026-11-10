@@ -1,4 +1,4 @@
-import { type Bundle, type Grid, type NodeRec, heightAt } from "./data";
+import { type Bundle, type Grid, type Measure, type NodeRec, heightAt, levelMaxSize } from "./data";
 import { BANDS, bandColour, readTheme, rgbOf } from "./theme";
 import type { State } from "./state";
 
@@ -20,7 +20,7 @@ export class Map2D {
     this.canvas.setAttribute("role", "img");
     this.canvas.setAttribute("aria-label", "Top-down contour map of industry sectors and research fields. Use the lists for keyboard selection.");
     host.appendChild(this.canvas);
-    const g = b.grids.employment;
+    const g = b.grids[0]!.employment;
     this.spanX = g.x[1] - g.x[0]; this.spanY = g.y[1] - g.y[0];
     this.canvas.addEventListener("pointermove", (e) => this.state.setHover(this.nodeAt(e)));
     this.canvas.addEventListener("pointerleave", () => this.state.setHover(null));
@@ -29,8 +29,9 @@ export class Map2D {
     new ResizeObserver(() => this.resize()).observe(host);
   }
 
-  private grid(layer: Layer): Grid { return layer === "ind" ? this.b.grids.employment : this.b.grids[this.state.researchMeasure]; }
-  private maxAbs(layer: Layer): number { return layer === "ind" ? this.b.maxAbs.employment : this.b.maxAbs[this.state.researchMeasure]; }
+  private measure(layer: Layer): Measure { return layer === "ind" ? "employment" : this.state.researchMeasure; }
+  private grid(layer: Layer): Grid { return this.b.grids[this.state.level]![this.measure(layer)]; }
+  private maxAbs(layer: Layer): number { return this.b.maxAbs[this.state.level]![this.measure(layer)]; }
 
   private panels(): Panel[] {
     const w = this.canvas.width, h = this.canvas.height, m = this.state.mode;
@@ -43,7 +44,7 @@ export class Map2D {
     return { s, ox: p.x + (p.w - this.spanX * s) / 2, oy: p.y + (p.h - this.spanY * s) / 2 };
   }
   private px(p: Panel, n: NodeRec): [number, number] {
-    const { s, ox, oy } = this.geom(p), g = this.b.grids.employment;
+    const { s, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
     return [ox + (n.xy[0] - g.x[0]) * s, oy + (g.y[1] - n.xy[1]) * s]; // north (+y) is up
   }
 
@@ -52,7 +53,7 @@ export class Map2D {
     const mx = (e.clientX - r.left) * this.dpr, my = (e.clientY - r.top) * this.dpr;
     let best: NodeRec | null = null, bd = 30 * this.dpr;
     for (const p of this.panels()) for (const n of this.b.nodes) {
-      if (!p.layers.includes(n.type)) continue;
+      if (!p.layers.includes(n.type) || !this.state.visibleIds.has(n.id)) continue;
       const [x, y] = this.px(p, n); const d = Math.hypot(x - mx, y - my);
       if (d < bd) { bd = d; best = n; }
     }
@@ -96,7 +97,7 @@ export class Map2D {
 
   draw(): void {
     if (!this.canvas.width) return;
-    const key = this.state.mode + "|" + this.state.researchMeasure;
+    const key = [this.state.mode, this.state.researchMeasure, this.state.level].join("|");
     if (!this.bg || key !== this.bgKey) {
       const off = document.createElement("canvas"); off.width = this.canvas.width; off.height = this.canvas.height;
       const c = off.getContext("2d")!;
@@ -108,18 +109,19 @@ export class Map2D {
     ctx.font = 12 * d + "px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
     const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
     for (const p of this.panels()) {
-      const nodes = this.b.nodes.filter((n) => p.layers.includes(n.type))
+      const nodes = this.b.nodes.filter((n) => p.layers.includes(n.type) && this.state.visibleIds.has(n.id))
         .sort((a, c) => this.rel(c) - this.rel(a));
       for (const n of nodes) {
         const [x, y] = this.px(p, n);
         const on = this.state.active?.id === n.id || this.state.selected?.id === n.id;
-        const r = (5 + 11 * Math.sqrt(this.rel(n))) * d;
+        const r = (3 + 11 * Math.sqrt(this.rel(n))) * d * (n.level === 0 ? 1 : n.level === 1 ? 0.8 : 0.65);
         ctx.lineWidth = (on ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : t.fg;
+        ctx.setLineDash(n.provenance === "estimated" ? [4 * d, 3 * d] : []);
         ctx.beginPath();
         if (n.type === "ind") ctx.arc(x, y, r, 0, Math.PI * 2);
         else { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
-        ctx.stroke();
-        const text = (n.type === "ind" ? "▲ " : "▼ ") + n.label, w = ctx.measureText(text).width, ly = y - r - 3 * d;
+        ctx.stroke(); ctx.setLineDash([]);
+        const text = (n.provenance === "estimated" ? "\u2248 " : "") + (n.type === "ind" ? "▲ " : "▼ ") + n.label, w = ctx.measureText(text).width, ly = y - r - 3 * d;
         const box = { x0: x - w / 2, x1: x + w / 2, y0: ly - 14 * d, y1: ly };
         if (!on && placed.some((q) => box.x0 < q.x1 && box.x1 > q.x0 && box.y0 < q.y1 && box.y1 > q.y0)) continue;
         placed.push(box);
@@ -131,7 +133,7 @@ export class Map2D {
 
   private rel(n: NodeRec): number {
     const m = n.type === "ind" ? "employment" : this.state.researchMeasure;
-    return (n.size[m] ?? 0) / this.b.maxSize[m];
+    return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
 
   private resize(): void {
