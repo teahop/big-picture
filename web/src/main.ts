@@ -4,6 +4,7 @@ import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type LayerMode, type LodSetting } from "./state";
 import { onThemeChange } from "./theme";
 import { buildPanel } from "./ui";
+import { loadOverlay, type Footprint } from "./overlay";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 $("title").textContent = __DISPLAY_NAME__;
@@ -11,6 +12,7 @@ $("title").textContent = __DISPLAY_NAME__;
 async function start(): Promise<void> {
   const bundle = await loadBundle();
   const state = new State();
+  state.overlay = await loadOverlay();        // null on the public site: the footprint control stays hidden
   const gl = webglAvailable();
   const maxLevel = Math.max(...bundle.meta.levels);
   let view: "3d" | "2d" = gl ? "3d" : "2d";
@@ -46,6 +48,8 @@ async function start(): Promise<void> {
   toggle.addEventListener("click", () => { view = view === "3d" ? "2d" : "3d"; apply(); });
   apply();
 
+  const fp = $<HTMLSelectElement>("footprint");
+  if (state.overlay) { $("footprint-wrap").hidden = false; fp.addEventListener("change", () => state.setFootprint(fp.value as Footprint)); }
   const lod = $<HTMLSelectElement>("lod");
   lod.addEventListener("change", () => { state.setLod(lod.value as LodSetting); void applyLevel(); });
   for (const input of document.querySelectorAll<HTMLInputElement>("input[name=layer]")) {
@@ -66,6 +70,7 @@ async function start(): Promise<void> {
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setView: (v: "3d" | "2d") => { view = v; apply(); },
+    setFootprint: (f: Footprint) => { fp.value = f; state.setFootprint(f); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }

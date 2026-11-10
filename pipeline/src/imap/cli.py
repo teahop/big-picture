@@ -6,7 +6,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "personal", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
@@ -16,7 +16,7 @@ STAGES: dict[str, str] = {
     "layout": "Seeded layout of node positions (provisional Level 0 in Phase 1)",
     "terrain": "Height grids per layer and size measure",
     "export": "Write the public JSON bundle (--target public)",
-    "personal": "Personal overlay from private inputs (Phase 4)",
+    "personal": "Personal overlay from private inputs (parts: roles, connections, skills, education, presence)",
     "score": "Where-next scoring (Phase 5)",
 }
 
@@ -30,6 +30,8 @@ def build_parser() -> argparse.ArgumentParser:
             p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
             p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "herd", "cip-soc", "onet"], help="dataset to ingest")
+        if name == "personal":
+            p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
         if name == "export":
             p.add_argument("--target", choices=["public", "private"], default="public")
     return parser
@@ -52,6 +54,9 @@ def run_stage(args: argparse.Namespace) -> int:
             return openalex.run_levels()
         from . import ingest_files
         return ingest_files.run(args.source)
+    if name == "personal":
+        from .personal import run_part
+        return run_part(args.part)
     if name == "deep":
         from . import deep_industry
         return deep_industry.run()

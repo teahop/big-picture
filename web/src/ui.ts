@@ -1,6 +1,14 @@
 import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtWorks, levelMaxSize, links } from "./data";
 import type { State } from "./state";
 
+function presence(state: State, n: NodeRec): string {
+  const o = state.overlay?.nodes[String(state.level)]?.[n.id];
+  if (!state.overlay) return "";
+  if (!o || !o.total) return "<p class='hint'>Your footprint: no presence at this node.</p>";
+  const f = (x: number) => x.toFixed(2);
+  return "<h3>Your footprint here (private)</h3><p>Total " + f(o.total) + " <small>tenure " + f(o.tenure) + " &middot; connections " + f(o.connections) + " &middot; skills and education " + f(o.skills) + "</small></p>";
+}
+
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const pct = (x: number) => Math.round(x * 100) + "%";
@@ -109,7 +117,8 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
     if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Peaks (\u25B2) are industry sectors, valleys (\u25BC) are research fields. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
-    details.innerHTML = n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n);
+    details.innerHTML = (n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n)) + presence(state, n)
+      + (state.overlay && state.footprint !== "off" ? "<p class='hint'>" + esc(state.overlay.caveat) + (state.overlay.centroid[String(state.level)]?.between_clusters ? " At this level the centroid does sit away from every occupied node." : "") + "</p>" : "");
   };
   state.subscribe(render); render();
 

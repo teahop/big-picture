@@ -1,4 +1,5 @@
 import type { NodeRec, ResearchMeasure } from "./data";
+import type { Footprint, OverlayData } from "./overlay";
 
 export type LayerMode = "industry" | "research" | "stacked" | "overlaid";
 export type LodSetting = "auto" | "0" | "1" | "2";
@@ -10,6 +11,8 @@ export class State {
   mode: LayerMode = "overlaid";
   researchMeasure: ResearchMeasure = "works";
   lod: LodSetting = "auto";
+  footprint: Footprint = "off";
+  overlay: OverlayData | null = null;   // private, only when present locally
   level = 0;                       // level of detail currently drawn
   visibleIds = new Set<string>();  // nodes drawn at that level
   private listeners: (() => void)[] = [];
@@ -19,6 +22,11 @@ export class State {
   setMode(m: LayerMode): void { this.mode = m; this.emit(); }
   setResearchMeasure(m: ResearchMeasure): void { this.researchMeasure = m; this.emit(); }
   setLod(l: LodSetting): void { this.lod = l; this.emit(); }
+  setFootprint(f: Footprint): void { this.footprint = f; this.emit(); }
+  /** Footprint heat grid for the level being drawn, or null when off or missing. */
+  heatGrid(): { max: number; values: number[] } | null {
+    return this.footprint === "off" || !this.overlay ? null : this.overlay.grids[String(this.level)]?.[this.footprint] ?? null;
+  }
   setLevel(level: number, ids: Set<string>): void { this.level = level; this.visibleIds = ids; this.emit(); }
   get active(): NodeRec | null { return this.hover ?? this.selected; }
   showsIndustry(): boolean { return this.mode !== "research"; }

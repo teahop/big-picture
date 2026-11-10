@@ -12,7 +12,7 @@ update this table, commit, then stop.
 | 1 | Coarse industry terrain and viewer skeleton | done (2026-11-09), awaiting owner OK | Reconciles exactly (sectors + self-employed = published total). Health care to Educational services fails the similarity-space sanity pair (passes in the layout). BEA value added deferred to Phase 3, so no size switch yet. Self-employed left off the map |
 | 2 | Coarse research layer, bridge, shared layout | done (2026-11-09), awaiting owner OK | Counts match OpenAlex exactly. CIP mapping owner-reviewed; all 5 bridge sanity pairs pass. In the joint layout Finance and Professional services sit farther apart than the median sector pair, and Economics ranks Finance 6th by layout distance. HERD mapping owner-reviewed; Energy R&D is an estimate (about $1.07B from general engineering lines); Veterinary has no HERD source |
 | 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | done (2026-11-09), awaiting owner OK | Level 1 (304 industries, 250 subfields), Level 2 research topics (501) and 43 estimated `deep:` industry nodes (owner-reviewed categories). Level 0 unchanged; children inside radius; deep nodes reconcile with their BLS parents to 1e-13; rebuild is byte-identical; Level 2 frame time 1.6 ms (all 1,107 nodes loaded). Open for the owner: deep-to-topic links, the headcount table, and 3 weak proxies (see notes below) |
-| 4 | Personal overlay | not started | |
+| 4 | Personal overlay | built (2026-11-09), awaiting owner review | `imap personal roles/connections/skills/education/presence` write only to `private/`; viewer footprint (all, tenure, connections, skills), centroid marker with caveat, local-only route for the private bundle. Public bundle byte-identical with and without personal inputs. Checks not yet met: contact coverage is 51% by count (target 90%), and the owner has not reviewed role mappings or the top-50 companies |
 | 5 | Where-next scoring and toggles | not started | |
 | 6 | Polish and publish | not started | |
 
@@ -31,6 +31,7 @@ update this table, commit, then stop.
 
 - ~~`data/mappings/deep_categories.yaml`~~: categories and proxies reviewed by the owner 2026-11-09, no changes. The machine-readable `calc:` and `parent:` keys added at build time are not yet reviewed.
 - `data/mappings/deep_headcounts.csv`: organisation headcounts behind the headcount-share proxies (about 20 organisations have none; many are third-party estimates; Accenture, IBM and Deloitte figures are global or unconfirmed and dominate the consulting split). Owner may correct any row; rerun `uv run imap deep`, then layout, terrain and export.
+- Phase 4 (all in `private/`, details in the Phase 4 report): `role_corrections.csv` (role dates and node shares), `company_corrections.csv` (company to node), the umbrella-overlap rule, the education degrees and CIP proposals and the presence parameters in `profile.local.yaml`.
 - `data/interim/reports/deep_topic_links.md`: top embedding links from each `deep:` node to Level 2 research topics (local report; the viewer marks them unreviewed).
 - `config/deep_zones.yaml`: which subfields and industries are deepened. Public file: it shows which zones were chosen.
 

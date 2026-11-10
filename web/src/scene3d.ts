@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type Grid, type Measure, type NodeRec, heightAt, levelMaxSize } from "./data";
 import { BANDS, bandColour, readTheme } from "./theme";
+import { blendHeat } from "./overlay";
 import type { State } from "./state";
 
 const SPAN = 12;      // world units across the layout
@@ -108,9 +109,11 @@ export class Scene3D {
     }
     pos.needsUpdate = true; geo.computeVertexNormals();
     const t = readTheme(), col = geo.getAttribute("color") as THREE.BufferAttribute, max = this.maxAbs(layer);
-    const overlaid = this.state.mode === "overlaid";
+    const overlaid = this.state.mode === "overlaid", heat = this.state.heatGrid();
     for (let k = 0; k < g.values.length; k++) {
-      const h01 = Math.abs(g.values[k]) / max, [r, gg, bb] = bandColour(t, layer === "ind" ? "ind" : "res", h01);
+      const h01 = Math.abs(g.values[k]) / max;
+      let [r, gg, bb] = bandColour(t, layer === "ind" ? "ind" : "res", h01);
+      if (heat && heat.values[k] > 0.02) [r, gg, bb] = blendHeat([r, gg, bb], heat.values[k]);
       col.setXYZW(k, r / 255, gg / 255, bb / 255, overlaid ? (h01 * BANDS < 1 ? 0 : 0.9) : 1);
     }
     col.needsUpdate = true;
@@ -164,16 +167,33 @@ export class Scene3D {
 
   // ---- state sync
   private sync(force: boolean): void {
-    const key = [this.state.mode, this.state.researchMeasure, this.state.level].join("|");
+    const key = [this.state.mode, this.state.researchMeasure, this.state.level, this.state.footprint].join("|");
     if (force || key !== this.key) {
       const prev = this.key.split("|");
       this.key = key;
       const modeChanged = force || prev[0] !== this.state.mode;
       this.refreshLayer("ind"); this.refreshLayer("fld");
       this.placeMarkers();
+      this.placeCentroid();
       if (modeChanged) this.applyMode();
     }
     this.refreshHighlight();
+  }
+
+  /** Weighted centroid of the footprint: a summary marker only (it can sit between clusters). */
+  private centroidMesh: THREE.Mesh | null = null;
+  private placeCentroid(): void {
+    const c = this.state.footprint !== "off" ? this.state.overlay?.centroid[String(this.state.level)] : null;
+    if (!c) { if (this.centroidMesh) this.centroidMesh.visible = false; return; }
+    if (!this.centroidMesh) {
+      this.centroidMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: 0xff5e14 }));
+      this.centroidMesh.name = "footprint-centroid"; this.scene.add(this.centroidMesh);
+    }
+    const layer: Layer = this.state.showsIndustry() ? "ind" : "fld";
+    const h = this.h(layer, heightAt(this.grid(layer), c.xy[0], c.xy[1]));
+    const p = this.local(c.xy[0], c.xy[1], h + 0.5);
+    p.y += this.groups[layer].position.y;
+    this.centroidMesh.position.copy(p); this.centroidMesh.visible = true;
   }
 
   private applyMode(): void {

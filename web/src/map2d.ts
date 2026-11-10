@@ -1,5 +1,6 @@
 import { type Bundle, type Grid, type Measure, type NodeRec, heightAt, levelMaxSize } from "./data";
 import { BANDS, bandColour, readTheme, rgbOf } from "./theme";
+import { blendHeat } from "./overlay";
 import type { State } from "./state";
 
 type Layer = "ind" | "fld";
@@ -66,6 +67,7 @@ export class Map2D {
     const t = readTheme(), { s, ox, oy } = this.geom(p);
     const w = Math.round(p.w), h = Math.round(p.h), img = c.createImageData(w, h);
     const bgRgb = rgbOf(t.bg), fg = rgbOf(t.fg), overlay = p.layers.length > 1;
+    const heat = this.state.heatGrid(), hg = heat ? { n: this.grid(p.layers[0]).n, x: this.grid(p.layers[0]).x, y: this.grid(p.layers[0]).y, values: heat.values } : null;
     const bands: Record<string, Int8Array> = {};
     for (const layer of p.layers) {
       const g = this.grid(layer), max = this.maxAbs(layer), arr = new Int8Array(w * h);
@@ -90,6 +92,10 @@ export class Map2D {
         else rgb = col;
         if (edge(bands[layer], i, px, py)) rgb = mix(rgb, fg, 0.4);
       }
+      if (hg) {
+        const x = hg.x[0] + (px + p.x - ox) / s, y = hg.y[1] - (py + p.y - oy) / s;
+        if (x >= hg.x[0] && x <= hg.x[1] && y >= hg.y[0] && y <= hg.y[1]) { const hv = heightAt(hg, x, y); if (hv > 0.02) rgb = blendHeat(rgb, hv); }
+      }
       img.data.set([rgb[0], rgb[1], rgb[2], 255], i * 4);
     }
     c.putImageData(img, Math.round(p.x), Math.round(p.y));
@@ -97,7 +103,7 @@ export class Map2D {
 
   draw(): void {
     if (!this.canvas.width) return;
-    const key = [this.state.mode, this.state.researchMeasure, this.state.level].join("|");
+    const key = [this.state.mode, this.state.researchMeasure, this.state.level, this.state.footprint].join("|");
     if (!this.bg || key !== this.bgKey) {
       const off = document.createElement("canvas"); off.width = this.canvas.width; off.height = this.canvas.height;
       const c = off.getContext("2d")!;
@@ -128,6 +134,22 @@ export class Map2D {
         ctx.lineWidth = 3 * d; ctx.strokeStyle = t.bg; ctx.strokeText(text, x, ly);
         ctx.fillStyle = on ? t.accent : t.fg; ctx.fillText(text, x, ly);
       }
+    }
+    this.drawCentroid(ctx, d);
+  }
+
+  private drawCentroid(ctx: CanvasRenderingContext2D, d: number): void {
+    const c = this.state.footprint !== "off" ? this.state.overlay?.centroid[String(this.state.level)] : null;
+    if (!c) return;
+    const t = readTheme();
+    for (const p of this.panels()) {
+      const { s, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
+      const x = ox + (c.xy[0] - g.x[0]) * s, y = oy + (g.y[1] - c.xy[1]) * s, r = 9 * d;
+      ctx.strokeStyle = "#ff5e14"; ctx.lineWidth = 3 * d;
+      ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
+      ctx.font = 12 * d + "px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.lineWidth = 3 * d; ctx.strokeStyle = t.bg; ctx.strokeText("centroid (a summary)", x + r + 4 * d, y);
+      ctx.fillStyle = t.fg; ctx.fillText("centroid (a summary)", x + r + 4 * d, y);
     }
   }
 
