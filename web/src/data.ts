@@ -4,19 +4,20 @@ export interface NodeRec {
   provenance: "official" | "estimated"; size: Record<string, number>; growth: number | null; xy: [number, number];
   naics_code?: string; top_occupations?: Occupation[]; remainder?: boolean;
   domain?: string; description?: string; keywords?: string[]; top_subfields?: { name: string; works_us: number }[];
-  size_proxy?: string; weak_proxy?: boolean; replaces?: string[]; zone?: string; members?: string[];
+  size_proxy?: string; value_added_basis?: string; weak_proxy?: boolean; replaces?: string[]; zone?: string; members?: string[];
 }
 export interface Edge {
   source: string; target: string; type: "ind-ind" | "fld-fld" | "fld-ind"; weight: number;
   signals?: { occupational?: number; semantic: number };
 }
 export interface Grid { n: number; x: [number, number]; y: [number, number]; values: number[] }
-export type Measure = "employment" | "works" | "rd";
-export type ResearchMeasure = "works" | "rd";
+export type IndustryMeasure = "employment" | "value_added" | "va_per_job";
+export type ResearchMeasure = "works" | "rd" | "rd_per_work";
+export type Measure = IndustryMeasure | ResearchMeasure;
 type Grids = Record<Measure, Grid>;
 interface RawGrids {
-  industry: { measures: { employment: Grid } };
-  research: { measures: { works: Grid; rd: Grid } };
+  industry: { measures: Record<IndustryMeasure, Grid> };
+  research: { measures: Record<ResearchMeasure, Grid> };
 }
 export interface Meta {
   sources: { name: string; release: string; url: string; retrieved: string }[];
@@ -41,9 +42,9 @@ async function getJson<T>(name: string): Promise<T> {
 const absMax = (g: Grid) => g.values.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
 
 function addGrids(b: Bundle, level: number, raw: RawGrids): void {
-  const grids: Grids = { employment: raw.industry.measures.employment, works: raw.research.measures.works, rd: raw.research.measures.rd };
+  const grids = { ...raw.industry.measures, ...raw.research.measures } as Grids;
   b.grids[level] = grids;
-  b.maxAbs[level] = { employment: absMax(grids.employment), works: absMax(grids.works), rd: absMax(grids.rd) };
+  b.maxAbs[level] = Object.fromEntries(Object.entries(grids).map(([k, g]) => [k, absMax(g)])) as Record<Measure, number>;
 }
 
 function addNodes(b: Bundle, nodes: NodeRec[]): void {
@@ -118,6 +119,18 @@ export function links(b: Bundle, id: string, otherType: "ind" | "fld", k = 5): L
   return out.sort((a, c) => c.weight - a.weight).slice(0, k);
 }
 
+/** Value of a size measure as text. Value added is in billions of dollars, per-job values in thousands, R&D in thousands. */
+export function fmtMeasure(measure: Measure, v: number | undefined): string {
+  if (v === undefined || v === null) return "n/a";
+  switch (measure) {
+    case "employment": return fmtJobs(v);
+    case "value_added": return v >= 1000 ? "$" + (v / 1000).toFixed(2) + " trillion" : v >= 1 ? "$" + v.toFixed(0) + " billion" : "$" + (v * 1000).toFixed(0) + " million";
+    case "va_per_job": return "$" + Math.round(v) + "k per job";
+    case "works": return fmtWorks(v);
+    case "rd": return fmtDollars(v);
+    case "rd_per_work": return v > 0 ? "$" + Math.round(v).toLocaleString("en-US") + " per paper" : "no R&D data";
+  }
+}
 export function fmtJobs(thousands: number): string {
   return thousands >= 1000 ? (thousands / 1000).toFixed(1) + " million" : Math.round(thousands) + " thousand";
 }

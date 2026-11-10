@@ -175,6 +175,30 @@ def deep_edges(k_deep: int = 5, k_topic: int = 2) -> list[dict]:
             for r in links.loc[sorted(keep)].sort_values(["deep_id", "topic_node"]).itertuples()]
 
 
+def add_dollar_measures(nodes: list[dict]) -> None:
+    """Value added ($ billions, BEA 2025, split to the map's industries by payroll: estimated below the sector), value added
+    per job ($ thousands), and R&D dollars per publication (R&D is only published by field; lower levels are pro rata)."""
+    lv = interim_dir() / "levels"
+    va: dict[str, float] = {}
+    if (lv / "industry_value.csv").exists():
+        v = pd.read_csv(lv / "industry_value.csv", dtype={"ind_code": str, "sector_code": str})
+        va.update(dict(zip(v["node_id"], v["value_added_usd_b"])))
+        va.update({f"ind:{s}": float(x) for s, x in v.groupby("sector_code")["value_added_usd_b"].sum().items()})
+        if (lv / "deep_industry_value.csv").exists():
+            d = pd.read_csv(lv / "deep_industry_value.csv")
+            va.update(dict(zip(d["node_id"], d["value_added_usd_b"])))
+    for n in nodes:
+        s = n["size"]
+        if n["type"] == "ind" and n["id"] in va and s.get("employment"):
+            s["value_added"] = round(va[n["id"]], 2)
+            s["va_per_job"] = round(va[n["id"]] * 1000.0 / s["employment"], 1)
+            n["value_added_basis"] = ("BEA value added by sector (government value added shared by payroll)" if n["level"] == 0 else
+                                      "estimated from the industry's parent industries" if n["id"].startswith("deep:") else
+                                      "estimated: BEA summary industry split by payroll")
+        elif n["type"] == "fld":
+            s["rd_per_work"] = round(s.get("rd", 0.0) * 1000.0 / s["works"], 0) if s.get("works") and s.get("rd") else 0
+
+
 def _topk_pairs(sim: pd.DataFrame, k: int) -> set[tuple[str, str]]:
     keep: set[tuple[str, str]] = set()
     arr = sim.to_numpy(); cols = list(sim.columns)
@@ -214,9 +238,9 @@ def run(target: str) -> int:
     records = ind_edges.to_dict("records") + field_edges().to_dict("records") + bridge_edges().to_dict("records")
     edges = pd.DataFrame(records)
     terrain = json.loads((interim_dir() / "terrain" / "terrain.json").read_text())
-    meta = {"schema": 2, "size_measures": {"industry": ["employment"], "research": ["works", "rd"]},
-            "measure_labels": {"employment": "Employment (jobs, 2025)", "works": "US publications 2021-25", "rd": "University R&D spending (FY 2024, estimated by field)"},
-            "deferred_measures": {"industry": {"value_added": "BEA has no bulk file; deferred to Phase 3"}},
+    meta = {"schema": 2, "size_measures": {"industry": ["employment", "value_added", "va_per_job"], "research": ["works", "rd", "rd_per_work"]},
+            "measure_labels": {"employment": "Employment (jobs, 2025)", "works": "US publications 2021-25", "rd": "University R&D spending (FY 2024, estimated by field)",
+                               "value_added": "Value added (2025, billions of dollars)", "va_per_job": "Value added per job (thousands of dollars)", "rd_per_work": "R&D dollars per publication"},
             "bridge": {"method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
                        "field_to_cip_reviewed": mapping_reviewed(), "herd_mapping_reviewed": herd_mapping_reviewed(), "signals_per_edge": ["occupational", "semantic"]},
             "research_sources": [
@@ -227,6 +251,7 @@ def run(target: str) -> int:
             "levels": [0], "sources": [{**SOURCE, "sha256": sha256(MATRIX_PATH)}],
             "layout": {"stage": layout["stage"], "seed": layout["seed"]}, "terrain": terrain["params"],
             "display_name_source": "config/site.yaml"}
+    add_dollar_measures(nodes)
     (out / "nodes.json").write_text(json.dumps(nodes, indent=1) + "\n")
     (out / "edges.json").write_text(json.dumps(records, indent=1) + "\n")
     levels = terrain["levels"]
@@ -235,6 +260,7 @@ def run(target: str) -> int:
     if have_l1:
         ch = json.loads((out / "layout_children.json").read_text())
         n1, n2 = level1_nodes(ch["nodes"]), level2_nodes(ch["nodes"]) + deep_nodes(ch["nodes"])
+        add_dollar_measures(n1); add_dollar_measures(n2)
         (out / "nodes_l1.json").write_text(json.dumps(n1, separators=(",", ":")) + "\n")
         (out / "nodes_l2.json").write_text(json.dumps(n2, separators=(",", ":")) + "\n")
         e1 = level1_edges()

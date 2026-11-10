@@ -37,12 +37,13 @@ def height_grid(xy: np.ndarray, amp: np.ndarray, levels: np.ndarray, *, n: int, 
 def height_grid_on(extent_xy: np.ndarray, xy: np.ndarray, amp: np.ndarray, levels: np.ndarray, **kw) -> dict:
     """Like height_grid, but the grid extent comes from `extent_xy` so layers share one grid."""
     n, margin, sigma0, per_level, sign = kw["n"], kw["margin"], kw["sigma0"], kw["per_level"], kw.get("sign", 1.0)
+    combine = np.maximum if kw.get("mode") == "max" else np.add     # ratio measures take the highest bump, so nothing piles up
     lo, hi = extent_xy.min(axis=0) - margin, extent_xy.max(axis=0) + margin
     gx, gy = np.meshgrid(np.linspace(lo[0], hi[0], n), np.linspace(lo[1], hi[1], n))
     z = np.zeros_like(gx)
     for (px, py), a, lv in zip(xy, amp, levels):
         sigma = sigma0 * (per_level ** int(lv))
-        z += a * np.exp(-((gx - px) ** 2 + (gy - py) ** 2) / (2 * sigma ** 2))
+        z = combine(z, a * np.exp(-((gx - px) ** 2 + (gy - py) ** 2) / (2 * sigma ** 2)))
     return {"n": n, "x": [float(lo[0]), float(hi[0])], "y": [float(lo[1]), float(hi[1])],
             "values": np.round(z * sign, DECIMALS).ravel().tolist()}
 
@@ -66,6 +67,60 @@ def level_layers(cfg: dict, extent: np.ndarray, ind: tuple, res: tuple) -> dict:
         for measure, a in amps.items():
             layers[layer]["measures"][measure] = height_grid_on(extent, xy, np.asarray(a, float), levels, sign=sign, **kw)
     return layers
+
+
+def ratio_amplitude(r: np.ndarray) -> np.ndarray:
+    """Heights for a ratio measure (dollars per job, R&D dollars per publication): log scaled to the level's largest ratio.
+    A ratio is not additive, so there is no volume split between a node and its children."""
+    r = np.nan_to_num(np.asarray(r, float), nan=0.0, posinf=0.0).clip(min=0)
+    return np.log1p(r) / np.log1p(r.max() or 1.0)
+
+
+def _put(levels: dict, level: str, layer: str, name: str, xy: np.ndarray, amp: np.ndarray, lv: np.ndarray, extent: np.ndarray, cfg: dict) -> None:
+    kw = dict(n=cfg["grid_size"], margin=cfg["margin"], sigma0=cfg["bandwidth_level0"], per_level=cfg["bandwidth_per_level"], mode="max" if name in ("va_per_job", "rd_per_work") else "sum")
+    levels[level][layer]["measures"][name] = height_grid_on(extent, xy, np.asarray(amp, float), lv, sign=1.0 if layer == "industry" else -1.0, **kw)
+
+
+def _dollar_measures(levels, cfg, extent, lv, totals, fields, rd, ind1, subs, topics, is_deep, ind_par, sub_par, ratio_sq, ch, ind_ids, fld_ids, layout, r_ids, r_lv) -> None:
+    """Value added (BEA, estimated split) and dollars per job for industries; R&D dollars per publication for research."""
+    xy = lambda ids, src: np.array([src[i] for i in ids])
+    val = lv / "industry_value.csv"
+    if val.exists():
+        v1 = pd.read_csv(val, dtype={"ind_code": str}).set_index("node_id")["value_added_usd_b"]
+        va1 = ind1["node_id"].map(v1).to_numpy(float)
+        va0 = pd.Series(va1).groupby(ind1["sector_code"].to_numpy()).sum().reindex(totals["ind_code"]).to_numpy(float)
+        emp1, emp0 = ind1["emp_2025"].to_numpy(float), totals["emp_2025"].to_numpy(float)
+        a0 = amplitudes(va0); a1 = split_amplitude(a0, ind_par, va1, ratio_sq)
+        dpath, cpath = lv / "deep_industry.csv", lv / "deep_industry_value_contrib.csv"
+        i_ids, i_amp, i_lv = list(ind1["node_id"]), a1, np.ones(len(ind1), int)
+        r1 = va1 * 1e6 / emp1; r_amp, r_node = ratio_amplitude(r1), r1
+        if dpath.exists() and cpath.exists():
+            deep_n = pd.read_csv(dpath); c = pd.read_csv(cpath, dtype={"parent_code": str})
+            dvn = pd.read_csv(lv / "deep_industry_value.csv").set_index("node_id")
+            row = {code: i for i, code in enumerate(ind1["ind_code"])}
+            a_deep = pd.Series(0.0, index=deep_n["node_id"])
+            for pcode, g in c.groupby("parent_code"):
+                w = np.log1p(g["value_added_usd_b"].to_numpy(float)); w = w / w.sum()
+                a_deep.loc[g["node_id"].to_numpy()] += a1[row[pcode]] * ratio_sq * w
+            gone = ind1["ind_code"].isin(set(c["parent_code"])).to_numpy()
+            i_ids = list(ind1["node_id"][~gone]) + list(deep_n["node_id"])
+            i_amp = np.concatenate([a1[~gone], a_deep.reindex(deep_n["node_id"]).to_numpy()])
+            i_lv = np.array([1] * int((~gone).sum()) + [2] * len(deep_n))
+            r_node = np.concatenate([r1[~gone], deep_n["node_id"].map(dvn["va_per_job_usd"]).to_numpy(float)]); r_amp = ratio_amplitude(r_node)
+        ind_xy = xy(list(ind1["node_id"]), ch)
+        _put(levels, "0", "industry", "value_added", xy(ind_ids, layout), a0, np.zeros(len(ind_ids), int), extent, cfg)
+        _put(levels, "1", "industry", "value_added", ind_xy, a1, np.ones(len(ind1), int), extent, cfg)
+        _put(levels, "2", "industry", "value_added", xy(i_ids, ch), i_amp, i_lv, extent, cfg)
+        _put(levels, "0", "industry", "va_per_job", xy(ind_ids, layout), ratio_amplitude(va0 * 1e6 / emp0), np.zeros(len(ind_ids), int), extent, cfg)
+        _put(levels, "1", "industry", "va_per_job", ind_xy, ratio_amplitude(r1), np.ones(len(ind1), int), extent, cfg)
+        _put(levels, "2", "industry", "va_per_job", xy(i_ids, ch), r_amp, i_lv, extent, cfg)
+    per = lambda rd_k, works: np.where(np.asarray(works, float) > 0, np.asarray(rd_k, float) * 1000.0 / np.maximum(np.asarray(works, float), 1.0), 0.0)
+    rdw0 = per(fields["id"].map(rd).fillna(0).to_numpy(float), fields["works_us"].to_numpy(float))
+    rdw1 = per(subs["rd"].to_numpy(float), subs["works_us"].to_numpy(float))
+    rdw2 = np.concatenate([rdw1[~is_deep], per(topics["rd"].to_numpy(float), topics["works_us"].to_numpy(float))])
+    _put(levels, "0", "research", "rd_per_work", xy(fld_ids, layout), ratio_amplitude(rdw0), np.zeros(len(fld_ids), int), extent, cfg)
+    _put(levels, "1", "research", "rd_per_work", xy(list(subs["node_id"]), ch), ratio_amplitude(rdw1), np.ones(len(subs), int), extent, cfg)
+    _put(levels, "2", "research", "rd_per_work", xy(r_ids, ch), ratio_amplitude(rdw2), r_lv, extent, cfg)
 
 
 def run() -> int:
@@ -130,6 +185,7 @@ def run() -> int:
             i_lv = np.array([1] * int((~gone).sum()) + [2] * len(deep_n))
         levels["2"] = level_layers(cfg, extent, (xy(i_ids, ch), i_lv, {"employment": i_amp}),
             (xy(r_ids, ch), r_lv, {"works": a_w2, "rd": a_r2}))
+        _dollar_measures(levels, cfg, extent, lv, totals, fields, rd, ind1, subs, topics, is_deep, ind_par, sub_par, ratio_sq, ch, ind_ids, fld_ids, layout, r_ids, r_lv)
     out = interim_dir() / "terrain"; out.mkdir(parents=True, exist_ok=True)
     payload = {"levels": levels, "params": cfg,
                "reference": "Level 0: log(1+size) scaled so the largest node is 1. Deeper levels split the parent's amplitude among its children (volume-preserving, proportional to log(1+size))"}

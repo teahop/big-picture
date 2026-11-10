@@ -1,4 +1,4 @@
-import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtWorks, levelMaxSize, links } from "./data";
+import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtMeasure, fmtWorks, levelMaxSize, links } from "./data";
 import type { State } from "./state";
 
 function presence(state: State, n: NodeRec): string {
@@ -47,6 +47,7 @@ function industryDetails(b: Bundle, n: NodeRec): string {
     + "<p class='sub'>Industry &middot; " + esc(n.title) + (n.naics_code ? " &middot; NAICS " + esc(n.naics_code) : n.zone ? " &middot; zone: " + esc(n.zone) : "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>Employment 2025</dt><dd>" + fmtJobs(n.size.employment) + " jobs</dd>"
     + "<dt>Projected 2035</dt><dd>" + fmtJobs(n.size.employment_2035) + " jobs</dd>"
+    + (n.size.value_added !== undefined ? "<dt>Value added 2025</dt><dd>" + fmtMeasure("value_added", n.size.value_added) + " <small>(" + esc(n.value_added_basis ?? "") + ")</small></dd><dt>Per job</dt><dd>" + fmtMeasure("va_per_job", n.size.va_per_job) + "</dd>" : "")
     + "<dt>Projected growth</dt><dd>" + fmtGrowth(n.growth) + " over ten years</dd></dl>"
     + (unrev && links(b, n.id, "fld").length ? "<p class='hint'>" + unrev + "</p>" : "")
     + section("Strongest research links", bridgeList(links(b, n.id, "fld")), "No research links computed for this node.")
@@ -61,7 +62,7 @@ function fieldDetails(b: Bundle, n: NodeRec): string {
   return "<h2>▼ " + esc(n.label) + "</h2>" + lineage(b, n)
     + "<p class='sub'>Research &middot; " + esc(n.domain ?? "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>US publications</dt><dd>" + fmtWorks(n.size.works) + " <small>(2021-25)</small></dd>"
-    + "<dt>University R&amp;D</dt><dd>" + rd + "</dd>"
+    + "<dt>University R&amp;D</dt><dd>" + rd + "</dd>" + (n.size.rd_per_work ? "<dt>R&amp;D per paper</dt><dd>" + fmtMeasure("rd_per_work", n.size.rd_per_work) + "</dd>" : "")
     + "<dt>Publication growth</dt><dd>" + fmtGrowth(n.growth) + " <small>(2019 to 2024)</small></dd></dl>"
     + section("Strongest industry links", bridgeList(links(b, n.id, "ind")), n.level === 2 && b.meta.deep_topic_links_reviewed === false ? "Links from topics to industry categories are text-similarity only and not yet reviewed." : "")
     + section("Most similar research", simpleList(links(b, n.id, "fld", 3)))
@@ -74,8 +75,8 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
   const search = el<HTMLInputElement>("search"), details = el("details");
   const lists = { ind: el<HTMLUListElement>("list-ind"), fld: el<HTMLUListElement>("list-fld") };
   const items = new Map<string, HTMLButtonElement>();
-  const key = () => ({ ind: "employment", fld: state.researchMeasure });
-  const sizeText = (n: NodeRec) => n.type === "ind" ? fmtJobs(n.size.employment) : state.researchMeasure === "rd" ? fmtDollars(n.size.rd) : fmtWorks(n.size.works);
+  const key = () => ({ ind: state.industryMeasure, fld: state.researchMeasure });
+  const sizeText = (n: NodeRec) => fmtMeasure(n.type === "ind" ? state.industryMeasure : state.researchMeasure, n.size[n.type === "ind" ? state.industryMeasure : state.researchMeasure]);
   const query = () => search.value.trim().toLowerCase();
   // With no query the lists show the nodes drawn at the current level; a query searches every loaded level.
   const pool = (type: "ind" | "fld") => {
@@ -110,9 +111,9 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     if (first) onPick(first);
   });
 
-  let lastMeasure = state.researchMeasure, lastLevel = -1;
+  let lastMeasure = state.researchMeasure + state.industryMeasure, lastLevel = -1;
   const render = () => {
-    if (state.researchMeasure !== lastMeasure || state.level !== lastLevel) { lastMeasure = state.researchMeasure; lastLevel = state.level; build(); }
+    if (state.researchMeasure + state.industryMeasure !== lastMeasure || state.level !== lastLevel) { lastMeasure = state.researchMeasure + state.industryMeasure; lastLevel = state.level; build(); }
     el("group-ind").hidden = !state.showsIndustry(); el("group-fld").hidden = !state.showsResearch();
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));

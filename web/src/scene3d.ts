@@ -73,12 +73,12 @@ export class Scene3D {
 
   // ---- measures and heights
   private grids(): Record<Measure, Grid> { return this.b.grids[this.state.level]!; }
-  private grid(layer: Layer): Grid { return layer === "ind" ? this.grids().employment : this.grids()[this.state.researchMeasure]; }
-  private measure(layer: Layer): Measure { return layer === "ind" ? "employment" : this.state.researchMeasure; }
+  private grid(layer: Layer): Grid { return this.grids()[this.measure(layer)]; }
+  private measure(layer: Layer): Measure { return layer === "ind" ? this.state.industryMeasure : this.state.researchMeasure; }
   private maxAbs(layer: Layer): number { return this.b.maxAbs[this.state.level]![this.measure(layer)]; }
   private h(layer: Layer, v: number): number { return (v / this.maxAbs(layer)) * H_MAX; }
   private rel(n: NodeRec): number {
-    const m = n.type === "ind" ? "employment" : this.state.researchMeasure;
+    const m = n.type === "ind" ? this.state.industryMeasure : this.state.researchMeasure;
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
   private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale, h, (y - this.cy) * this.scale); }
@@ -167,7 +167,7 @@ export class Scene3D {
 
   // ---- state sync
   private sync(force: boolean): void {
-    const key = [this.state.mode, this.state.researchMeasure, this.state.level, this.state.footprint].join("|");
+    const key = [this.state.mode, this.state.researchMeasure, this.state.industryMeasure, this.state.level, this.state.footprint].join("|");
     if (force || key !== this.key) {
       const prev = this.key.split("|");
       this.key = key;

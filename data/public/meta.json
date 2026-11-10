@@ -2,22 +2,23 @@
  "schema": 2,
  "size_measures": {
   "industry": [
-   "employment"
+   "employment",
+   "value_added",
+   "va_per_job"
   ],
   "research": [
    "works",
-   "rd"
+   "rd",
+   "rd_per_work"
   ]
  },
  "measure_labels": {
   "employment": "Employment (jobs, 2025)",
   "works": "US publications 2021-25",
-  "rd": "University R&D spending (FY 2024, estimated by field)"
- },
- "deferred_measures": {
-  "industry": {
-   "value_added": "BEA has no bulk file; deferred to Phase 3"
-  }
+  "rd": "University R&D spending (FY 2024, estimated by field)",
+  "value_added": "Value added (2025, billions of dollars)",
+  "va_per_job": "Value added per job (thousands of dollars)",
+  "rd_per_work": "R&D dollars per publication"
  },
  "bridge": {
   "method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",

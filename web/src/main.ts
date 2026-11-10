@@ -1,4 +1,4 @@
-import { ensureLevel, loadBundle, visibleAt, type NodeRec, type ResearchMeasure } from "./data";
+import { ensureLevel, loadBundle, visibleAt, type IndustryMeasure, type NodeRec, type ResearchMeasure } from "./data";
 import { Map2D } from "./map2d";
 import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type LayerMode, type LodSetting } from "./state";
@@ -61,6 +61,8 @@ async function start(): Promise<void> {
     input.addEventListener("change", () => { if (input.checked) state.setMode(input.value as LayerMode); });
   }
   const research = $<HTMLSelectElement>("size-research");
+  const industry = $<HTMLSelectElement>("size-industry");
+  industry.addEventListener("change", () => state.setIndustryMeasure(industry.value as IndustryMeasure));
   research.addEventListener("change", () => state.setResearchMeasure(research.value as ResearchMeasure));
   const syncRadios = () => document.querySelectorAll<HTMLInputElement>("input[name=layer]").forEach((i) => { i.checked = i.value === state.mode; });
   state.subscribe(syncRadios);

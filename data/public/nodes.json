@@ -10,7 +10,9 @@
   "provenance": "official",
   "size": {
    "employment": 1462.4,
-   "employment_2035": 1484.1
+   "employment_2035": 1484.1,
+   "value_added": 255.9,
+   "va_per_job": 175.0
   },
   "growth": 1.48,
   "xy": [
@@ -43,7 +45,8 @@
     "title": "First-line supervisors of farming, fishing, and forestry workers",
     "share_pct": 2.8
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:210000",
@@ -56,7 +59,9 @@
   "provenance": "official",
   "size": {
    "employment": 573.5,
-   "employment_2035": 577.3
+   "employment_2035": 577.3,
+   "value_added": 398.7,
+   "va_per_job": 695.2
   },
   "growth": 0.66,
   "xy": [
@@ -89,7 +94,8 @@
     "title": "Operating engineers and other construction equipment operators",
     "share_pct": 4.4
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:220000",
@@ -102,7 +108,9 @@
   "provenance": "official",
   "size": {
    "employment": 601.3,
-   "employment_2035": 660.1
+   "employment_2035": 660.1,
+   "value_added": 507.7,
+   "va_per_job": 844.3
   },
   "growth": 9.78,
   "xy": [
@@ -135,7 +143,8 @@
     "title": "Electrical engineers",
     "share_pct": 3.7
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:230000",
@@ -148,7 +157,9 @@
   "provenance": "official",
   "size": {
    "employment": 8266.7,
-   "employment_2035": 8677.4
+   "employment_2035": 8677.4,
+   "value_added": 1340.0,
+   "va_per_job": 162.1
   },
   "growth": 4.97,
   "xy": [
@@ -181,7 +192,8 @@
     "title": "Plumbers, pipefitters, and steamfitters",
     "share_pct": 4.7
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:31-330",
@@ -194,7 +206,9 @@
   "provenance": "official",
   "size": {
    "employment": 12633.7,
-   "employment_2035": 12705.8
+   "employment_2035": 12705.8,
+   "value_added": 2930.1,
+   "va_per_job": 231.9
   },
   "growth": 0.57,
   "xy": [
@@ -227,7 +241,8 @@
     "title": "Packaging and filling machine operators and tenders",
     "share_pct": 2.4
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:420000",
@@ -240,7 +255,9 @@
   "provenance": "official",
   "size": {
    "employment": 6059.5,
-   "employment_2035": 6184.7
+   "employment_2035": 6184.7,
+   "value_added": 1952.4,
+   "va_per_job": 322.2
   },
   "growth": 2.07,
   "xy": [
@@ -273,7 +290,8 @@
     "title": "General and operations managers",
     "share_pct": 4.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:44-450",
@@ -286,7 +304,9 @@
   "provenance": "official",
   "size": {
    "employment": 15440.9,
-   "employment_2035": 15413.4
+   "employment_2035": 15413.4,
+   "value_added": 1810.4,
+   "va_per_job": 117.2
   },
   "growth": -0.18,
   "xy": [
@@ -319,7 +339,8 @@
     "title": "General and operations managers",
     "share_pct": 2.9
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:48-490",
@@ -332,7 +353,9 @@
   "provenance": "official",
   "size": {
    "employment": 6639.5,
-   "employment_2035": 6846.8
+   "employment_2035": 6846.8,
+   "value_added": 1008.9,
+   "va_per_job": 152.0
   },
   "growth": 3.12,
   "xy": [
@@ -365,7 +388,8 @@
     "title": "Industrial truck and tractor operators",
     "share_pct": 5.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:510000",
@@ -378,7 +402,9 @@
   "provenance": "official",
   "size": {
    "employment": 2861.9,
-   "employment_2035": 3012.9
+   "employment_2035": 3012.9,
+   "value_added": 1766.4,
+   "va_per_job": 617.2
   },
   "growth": 5.28,
   "xy": [
@@ -411,7 +437,8 @@
     "title": "General and operations managers",
     "share_pct": 3.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:520000",
@@ -424,7 +451,9 @@
   "provenance": "official",
   "size": {
    "employment": 6739.3,
-   "employment_2035": 6893.6
+   "employment_2035": 6893.6,
+   "value_added": 2687.6,
+   "va_per_job": 398.8
   },
   "growth": 2.29,
   "xy": [
@@ -457,7 +486,8 @@
     "title": "Claims adjusters, examiners, and investigators",
     "share_pct": 4.3
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:530000",
@@ -470,7 +500,9 @@
   "provenance": "official",
   "size": {
    "employment": 2456.7,
-   "employment_2035": 2539.7
+   "employment_2035": 2539.7,
+   "value_added": 1206.1,
+   "va_per_job": 490.9
   },
   "growth": 3.38,
   "xy": [
@@ -503,7 +535,8 @@
     "title": "General and operations managers",
     "share_pct": 4.3
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:540000",
@@ -516,7 +549,9 @@
   "provenance": "official",
   "size": {
    "employment": 10779.2,
-   "employment_2035": 11705.9
+   "employment_2035": 11705.9,
+   "value_added": 2465.2,
+   "va_per_job": 228.7
   },
   "growth": 8.6,
   "xy": [
@@ -549,7 +584,8 @@
     "title": "Management analysts",
     "share_pct": 3.3
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:550000",
@@ -562,7 +598,9 @@
   "provenance": "official",
   "size": {
    "employment": 2623.7,
-   "employment_2035": 2730.4
+   "employment_2035": 2730.4,
+   "value_added": 558.6,
+   "va_per_job": 212.9
   },
   "growth": 4.07,
   "xy": [
@@ -595,7 +633,8 @@
     "title": "Financial managers",
     "share_pct": 3.3
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:560000",
@@ -608,7 +647,9 @@
   "provenance": "official",
   "size": {
    "employment": 9013.1,
-   "employment_2035": 9093.5
+   "employment_2035": 9093.5,
+   "value_added": 919.9,
+   "va_per_job": 102.1
   },
   "growth": 0.89,
   "xy": [
@@ -641,7 +682,8 @@
     "title": "Customer service representatives",
     "share_pct": 4.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:610000",
@@ -654,7 +696,9 @@
   "provenance": "official",
   "size": {
    "employment": 14892.5,
-   "employment_2035": 14990.7
+   "employment_2035": 14990.7,
+   "value_added": 1574.4,
+   "va_per_job": 105.7
   },
   "growth": 0.66,
   "xy": [
@@ -687,7 +731,8 @@
     "title": "Janitors and cleaners, except maids and housekeeping cleaners",
     "share_pct": 2.9
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:620000",
@@ -700,7 +745,9 @@
   "provenance": "official",
   "size": {
    "employment": 24454.6,
-   "employment_2035": 26704.4
+   "employment_2035": 26704.4,
+   "value_added": 2519.36,
+   "va_per_job": 103.0
   },
   "growth": 9.2,
   "xy": [
@@ -733,7 +780,8 @@
     "title": "Medical assistants",
     "share_pct": 3.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:710000",
@@ -746,7 +794,9 @@
   "provenance": "official",
   "size": {
    "employment": 2681.7,
-   "employment_2035": 2834.8
+   "employment_2035": 2834.8,
+   "value_added": 321.3,
+   "va_per_job": 119.8
   },
   "growth": 5.71,
   "xy": [
@@ -779,7 +829,8 @@
     "title": "General and operations managers",
     "share_pct": 3.2
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:720000",
@@ -792,7 +843,9 @@
   "provenance": "official",
   "size": {
    "employment": 14202.1,
-   "employment_2035": 14809.5
+   "employment_2035": 14809.5,
+   "value_added": 965.3,
+   "va_per_job": 68.0
   },
   "growth": 4.28,
   "xy": [
@@ -825,7 +878,8 @@
     "title": "Cooks, fast food",
     "share_pct": 4.4
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:810000",
@@ -838,7 +892,9 @@
   "provenance": "official",
   "size": {
    "employment": 6575.7,
-   "employment_2035": 6822.6
+   "employment_2035": 6822.6,
+   "value_added": 629.7,
+   "va_per_job": 95.8
   },
   "growth": 3.75,
   "xy": [
@@ -871,7 +927,8 @@
     "title": "Childcare workers",
     "share_pct": 3.8
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "ind:900000",
@@ -884,7 +941,9 @@
   "provenance": "official",
   "size": {
    "employment": 11500.5,
-   "employment_2035": 11536.6
+   "employment_2035": 11536.6,
+   "value_added": 2015.13,
+   "va_per_job": 175.2
   },
   "growth": 0.31,
   "xy": [
@@ -917,7 +976,8 @@
     "title": "Business operations specialists, all other",
     "share_pct": 2.7
    }
-  ]
+  ],
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
  },
  {
   "id": "fld:33",
@@ -932,7 +992,8 @@
   "size": {
    "works": 383506,
    "works_global": 56604419,
-   "rd": 6252474.0
+   "rd": 6252474.0,
+   "rd_per_work": 16303.0
   },
   "growth": 0.56,
   "xy": [
@@ -975,7 +1036,8 @@
   "size": {
    "works": 136486,
    "works_global": 54868966,
-   "rd": 4589249.0
+   "rd": 4589249.0,
+   "rd_per_work": 33624.0
   },
   "growth": -2.15,
   "xy": [
@@ -1018,7 +1080,8 @@
   "size": {
    "works": 1193838,
    "works_global": 49308108,
-   "rd": 31467849.0
+   "rd": 31467849.0,
+   "rd_per_work": 26359.0
   },
   "growth": 5.52,
   "xy": [
@@ -1061,7 +1124,8 @@
   "size": {
    "works": 115616,
    "works_global": 44021650,
-   "rd": 1229220.0
+   "rd": 1229220.0,
+   "rd_per_work": 10632.0
   },
   "growth": -6.73,
   "xy": [
@@ -1104,7 +1168,8 @@
   "size": {
    "works": 135138,
    "works_global": 33252974,
-   "rd": 15357106.0
+   "rd": 15357106.0,
+   "rd_per_work": 113640.0
   },
   "growth": -0.84,
   "xy": [
@@ -1147,7 +1212,8 @@
   "size": {
    "works": 222763,
    "works_global": 29542137,
-   "rd": 15650243.0
+   "rd": 15650243.0,
+   "rd_per_work": 70255.0
   },
   "growth": -6.83,
   "xy": [
@@ -1190,7 +1256,8 @@
   "size": {
    "works": 124406,
    "works_global": 14683326,
-   "rd": 4218733.0
+   "rd": 4218733.0,
+   "rd_per_work": 33911.0
   },
   "growth": 24.4,
   "xy": [
@@ -1233,7 +1300,8 @@
   "size": {
    "works": 144370,
    "works_global": 13808373,
-   "rd": 1127157.0
+   "rd": 1127157.0,
+   "rd_per_work": 7807.0
   },
   "growth": -0.96,
   "xy": [
@@ -1276,7 +1344,8 @@
   "size": {
    "works": 60708,
    "works_global": 12448974,
-   "rd": 1349055.0
+   "rd": 1349055.0,
+   "rd_per_work": 22222.0
   },
   "growth": 4.8,
   "xy": [
@@ -1319,7 +1388,8 @@
   "size": {
    "works": 231179,
    "works_global": 11773409,
-   "rd": 9209553.0
+   "rd": 9209553.0,
+   "rd_per_work": 39837.0
   },
   "growth": -12.96,
   "xy": [
@@ -1362,7 +1432,8 @@
   "size": {
    "works": 76780,
    "works_global": 9562847,
-   "rd": 4407449.0
+   "rd": 4407449.0,
+   "rd_per_work": 57404.0
   },
   "growth": -17.68,
   "xy": [
@@ -1405,7 +1476,8 @@
   "size": {
    "works": 66519,
    "works_global": 9254362,
-   "rd": 780462.0
+   "rd": 780462.0,
+   "rd_per_work": 11733.0
   },
   "growth": -6.18,
   "xy": [
@@ -1440,7 +1512,8 @@
   "size": {
    "works": 84866,
    "works_global": 8379061,
-   "rd": 1490003.0
+   "rd": 1490003.0,
+   "rd_per_work": 17557.0
   },
   "growth": -15.99,
   "xy": [
@@ -1483,7 +1556,8 @@
   "size": {
    "works": 51730,
    "works_global": 8243992,
-   "rd": 2517853.0
+   "rd": 2517853.0,
+   "rd_per_work": 48673.0
   },
   "growth": -17.14,
   "xy": [
@@ -1526,7 +1600,8 @@
   "size": {
    "works": 141447,
    "works_global": 8224385,
-   "rd": 1730944.0
+   "rd": 1730944.0,
+   "rd_per_work": 12237.0
   },
   "growth": 5.58,
   "xy": [
@@ -1569,7 +1644,8 @@
   "size": {
    "works": 75591,
    "works_global": 4789335,
-   "rd": 841736.0
+   "rd": 841736.0,
+   "rd_per_work": 11135.0
   },
   "growth": 0.23,
   "xy": [
@@ -1612,7 +1688,8 @@
   "size": {
    "works": 96299,
    "works_global": 3911267,
-   "rd": 3836295.0
+   "rd": 3836295.0,
+   "rd_per_work": 39837.0
   },
   "growth": -8.94,
   "xy": [
@@ -1655,7 +1732,8 @@
   "size": {
    "works": 58748,
    "works_global": 3616180,
-   "rd": 2340363.0
+   "rd": 2340363.0,
+   "rd_per_work": 39837.0
   },
   "growth": -10.06,
   "xy": [
@@ -1698,7 +1776,8 @@
   "size": {
    "works": 65133,
    "works_global": 3488130,
-   "rd": 1716812.0
+   "rd": 1716812.0,
+   "rd_per_work": 26359.0
   },
   "growth": 3.56,
   "xy": [
@@ -1741,7 +1820,8 @@
   "size": {
    "works": 27511,
    "works_global": 2996515,
-   "rd": 1070695.0
+   "rd": 1070695.0,
+   "rd_per_work": 38919.0
   },
   "growth": 3.52,
   "xy": [
@@ -1784,7 +1864,8 @@
   "size": {
    "works": 28986,
    "works_global": 2495070,
-   "rd": 322771.0
+   "rd": 322771.0,
+   "rd_per_work": 11135.0
   },
   "growth": -1.91,
   "xy": [
@@ -1823,7 +1904,8 @@
   "size": {
    "works": 26438,
    "works_global": 1869644,
-   "rd": 696868.0
+   "rd": 696868.0,
+   "rd_per_work": 26359.0
   },
   "growth": -14.34,
   "xy": [
@@ -1862,7 +1944,8 @@
   "size": {
    "works": 20430,
    "works_global": 1832322,
-   "rd": 538505.0
+   "rd": 538505.0,
+   "rd_per_work": 26359.0
   },
   "growth": 6.83,
   "xy": [
@@ -1901,7 +1984,8 @@
   "size": {
    "works": 20128,
    "works_global": 1531736,
-   "rd": 530545.0
+   "rd": 530545.0,
+   "rd_per_work": 26359.0
   },
   "growth": 2.15,
   "xy": [
@@ -1940,7 +2024,8 @@
   "size": {
    "works": 12687,
    "works_global": 1301513,
-   "rd": 1409387.0
+   "rd": 1409387.0,
+   "rd_per_work": 111089.0
   },
   "growth": -8.0,
   "xy": [
@@ -1983,7 +2068,8 @@
   "size": {
    "works": 9634,
    "works_global": 462750,
-   "rd": 0.0
+   "rd": 0.0,
+   "rd_per_work": 0
   },
   "growth": -7.92,
   "xy": [

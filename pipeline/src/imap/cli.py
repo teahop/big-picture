@@ -6,12 +6,13 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "personal", "score", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "score", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
     "levels": "Build Level 1 and Level 2 node tables",
     "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
+    "value": "Industry value added in dollars (BEA), allocated to the map nodes",
     "graph": "Build similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
     "layout": "Seeded layout of node positions (provisional Level 0 in Phase 1)",
     "terrain": "Height grids per layer and size measure",
@@ -29,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "graph":
             p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "openalex-geo", "qcew", "oews", "herd", "cip-soc", "onet"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "openalex-geo", "qcew", "oews", "bea", "herd", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
             p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
         if name == "export":
@@ -49,6 +50,9 @@ def run_stage(args: argparse.Namespace) -> int:
         if args.source == "openalex-taxonomy":
             from . import openalex
             return openalex.run()
+        if args.source == "bea":
+            from . import bea
+            return bea.fetch()
         if args.source in ("qcew", "oews", "openalex-geo"):
             from . import geo
             if args.source == "oews":
@@ -62,6 +66,9 @@ def run_stage(args: argparse.Namespace) -> int:
     if name == "personal":
         from .personal import run_part
         return run_part(args.part)
+    if name == "value":
+        from . import bea
+        return bea.run()
     if name == "score":
         from . import score
         return score.run()

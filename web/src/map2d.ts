@@ -35,7 +35,7 @@ export class Map2D {
     new ResizeObserver(() => this.resize()).observe(host);
   }
 
-  private measure(layer: Layer): Measure { return layer === "ind" ? "employment" : this.state.researchMeasure; }
+  private measure(layer: Layer): Measure { return layer === "ind" ? this.state.industryMeasure : this.state.researchMeasure; }
   private grid(layer: Layer): Grid { return this.b.grids[this.state.level]![this.measure(layer)]; }
   private maxAbs(layer: Layer): number { return this.b.maxAbs[this.state.level]![this.measure(layer)]; }
 
@@ -108,7 +108,7 @@ export class Map2D {
 
   draw(): void {
     if (!this.canvas.width) return;
-    const key = [this.state.mode, this.state.researchMeasure, this.state.level, this.state.footprint, this.k.toFixed(3), this.cx.toFixed(4), this.cy.toFixed(4)].join("|");
+    const key = [this.state.mode, this.state.researchMeasure, this.state.industryMeasure, this.state.level, this.state.footprint, this.k.toFixed(3), this.cx.toFixed(4), this.cy.toFixed(4)].join("|");
     if (!this.bg || key !== this.bgKey) {
       const off = document.createElement("canvas"); off.width = this.canvas.width; off.height = this.canvas.height;
       const c = off.getContext("2d")!;
@@ -221,7 +221,7 @@ export class Map2D {
   }
 
   private rel(n: NodeRec): number {
-    const m = n.type === "ind" ? "employment" : this.state.researchMeasure;
+    const m = n.type === "ind" ? this.state.industryMeasure : this.state.researchMeasure;
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
 

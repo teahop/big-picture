@@ -18,12 +18,17 @@
         <label><input type="radio" name="layer" value="overlaid" /> <span>Overlaid</span></label>
       </fieldset>
       <label class="size">Industry size
-        <select id="size-industry" aria-describedby="size-note"><option>Employment</option></select>
+        <select id="size-industry" aria-describedby="size-note">
+          <option value="employment">Employment</option>
+          <option value="value_added">Value added ($)</option>
+          <option value="va_per_job">Value added per job</option>
+        </select>
       </label>
       <label class="size">Research size
         <select id="size-research">
           <option value="works">Publications</option>
           <option value="rd">R&amp;D dollars</option>
+          <option value="rd_per_work">R&amp;D per publication</option>
         </select>
       </label>
       <label class="size">Detail
@@ -53,7 +58,7 @@
       <button id="theme" type="button" aria-label="Switch between light and dark">Dark mode</button>
       <button id="panel-toggle" type="button" aria-pressed="false">Hide panel</button>
     </header>
-    <p id="size-note" class="sr">Industry value added is planned for a later phase, so employment is the only industry size measure.</p>
+    <p id="size-note" class="sr">Value added is the Bureau of Economic Analysis figure for each industry; below the sector level it is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status"></p>
     <main>
       <section class="map" aria-label="Terrain map">

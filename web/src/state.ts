@@ -1,4 +1,4 @@
-import type { NodeRec, ResearchMeasure } from "./data";
+import type { IndustryMeasure, NodeRec, ResearchMeasure } from "./data";
 import type { Footprint, OverlayData } from "./overlay";
 
 export type LayerMode = "industry" | "research" | "stacked" | "overlaid";
@@ -10,6 +10,7 @@ export class State {
   selected: NodeRec | null = null;
   mode: LayerMode = "overlaid";
   researchMeasure: ResearchMeasure = "works";
+  industryMeasure: IndustryMeasure = "employment";
   lod: LodSetting = "auto";
   footprint: Footprint = "off";
   ranked = new Set<string>();       // top where-next candidates, highlighted on the map (private)
@@ -22,6 +23,7 @@ export class State {
   setSelected(n: NodeRec | null): void { this.selected = n; this.emit(); }
   setMode(m: LayerMode): void { this.mode = m; this.emit(); }
   setResearchMeasure(m: ResearchMeasure): void { this.researchMeasure = m; this.emit(); }
+  setIndustryMeasure(m: IndustryMeasure): void { this.industryMeasure = m; this.emit(); }
   setLod(l: LodSetting): void { this.lod = l; this.emit(); }
   setRanked(ids: Set<string>): void { this.ranked = ids; this.emit(); }
   setFootprint(f: Footprint): void { this.footprint = f; this.emit(); }
