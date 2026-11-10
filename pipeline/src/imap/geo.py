@@ -125,12 +125,29 @@ def run_openalex_geo() -> int:
 
 
 def check_oews() -> int:
-    """OEWS needs a hand download: bls.gov refuses scripted requests (403), as it did for the Employment Matrix."""
+    """OEWS needs a hand download: bls.gov refuses scripted requests (403), as it did for the Employment Matrix.
+    Reads the May 2025 national industry files (3-digit, 4-digit and 5/6-digit NAICS) into one table of median annual
+    wage by industry and detailed occupation."""
+    from .common import interim_dir
     d = raw_dir() / "oews"
-    found = sorted(d.glob("oesm*in4*")) if d.exists() else []
+    found = sorted(d.glob("oesm*in4*.zip")) if d.exists() else []
     if not found:
         print("oews: no file found. Download the May 2025 industry-specific 4-digit NAICS file (oesm25in4.zip) from "
               "https://www.bls.gov/oes/tables.htm and save it in data/raw/oews/")
         return 1
-    print(f"oews: found {found[0].name}; the loader is written once the file layout has been checked")
+    frames = []
+    with zipfile.ZipFile(found[0]) as z:
+        for name in ("nat3d_M2025_dl.xlsx", "nat4d_M2025_dl.xlsx", "nat5d_6d_M2025_dl.xlsx"):
+            member = next(n for n in z.namelist() if n.endswith(name))
+            with z.open(member) as f:
+                x = pd.read_excel(f, dtype=str, usecols=["NAICS", "NAICS_TITLE", "OCC_CODE", "OCC_TITLE", "O_GROUP", "TOT_EMP", "A_MEDIAN"])
+            frames.append(x[x["O_GROUP"] == "detailed"])
+    df = pd.concat(frames, ignore_index=True)
+    df["topcoded"] = df["A_MEDIAN"] == "#"                       # '#' means at or above the top code ($239,200 a year in 2025)
+    df["a_median"] = pd.to_numeric(df["A_MEDIAN"].replace("#", "239200"), errors="coerce")   # '*' (not available) becomes missing
+    df["tot_emp"] = pd.to_numeric(df["TOT_EMP"], errors="coerce")
+    out = df[["NAICS", "NAICS_TITLE", "OCC_CODE", "OCC_TITLE", "tot_emp", "a_median", "topcoded"]].rename(columns=str.lower)
+    path = interim_dir() / "oews"; path.mkdir(parents=True, exist_ok=True)
+    out.to_csv(path / "industry_occ_wages.csv", index=False)
+    print(f"oews: {len(out)} industry-by-occupation rows from {found[0].name}; {int(out['a_median'].isna().sum())} without a median, {int(out['topcoded'].sum())} top-coded")
     return 0

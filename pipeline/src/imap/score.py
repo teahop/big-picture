@@ -109,6 +109,48 @@ def deep_lq(nodes: NodeTable, lq_by_code: dict[str, float], contrib: pd.DataFram
     return out
 
 
+def industry_pay(nodes: NodeTable, contrib: pd.DataFrame, cand: pd.DataFrame) -> tuple[dict[str, float], dict[str, float]]:
+    """Typical annual pay per industry for the person's nearest occupations (private/pay_occupations.csv, in words):
+    the weighted mean of OEWS median annual wages over the occupations present in the industry (at least 40% of the weight),
+    deep: nodes take the employment-weighted mean over the industries they split."""
+    wages_path, occ_path = interim_dir() / "oews" / "industry_occ_wages.csv", private_dir() / "pay_occupations.csv"
+    if not (wages_path.exists() and occ_path.exists()):
+        return {}, {}
+    wages = pd.read_csv(wages_path, dtype={"naics": str})
+    occ = pd.read_csv(occ_path)
+    want = occ.set_index("occupation")["weight"].astype(float)
+    sub = wages[wages["occ_title"].isin(want.index) & wages["a_median"].notna()]
+    unknown = sorted(set(want.index) - set(wages["occ_title"]))
+    if unknown:
+        raise ValueError(f"pay_occupations.csv: not an OEWS occupation title: {unknown}")
+    table = {n: g.set_index("occ_title")["a_median"] for n, g in sub.groupby("naics")}
+
+    def pay(code: str) -> tuple[float | None, float]:
+        base = code[:-1] if code[-1:] in "PSL" and code[:-1].isdigit() else code
+        key = base.ljust(6, "0") if base.isdigit() else base
+        cells = table.get(key)
+        if cells is None:
+            return None, 0.0
+        have = want[want.index.isin(cells.index)]
+        cov = float(have.sum() / want.sum())
+        return (float((have * cells[have.index]).sum() / have.sum()), cov) if cov >= 0.4 else (None, cov)
+
+    usd: dict[str, float] = {}; cov_out: dict[str, float] = {}
+    by_code = {str(r.naics_code): r.id for r in nodes.df[(nodes.df["type"] == "ind") & (nodes.df["level"] == 1)].itertuples()}
+    parent_pay = {code: pay(code) for code in by_code}
+    for code, node in by_code.items():
+        v, c = parent_pay[code]
+        if v is not None:
+            usd[node] = v; cov_out[node] = c
+    for node_id, g in contrib.groupby("node_id"):
+        known = [(r.emp_2025, parent_pay.get(r.parent_code, (None, 0))[0]) for r in g.itertuples()]
+        known = [(e, v) for e, v in known if v is not None]
+        w = sum(e for e, _ in known)
+        if w:
+            usd[node_id] = sum(e * v for e, v in known) / w
+    return usd, cov_out
+
+
 def run() -> int:
     profile = load_profile()
     wn = profile["where_next"]
@@ -201,24 +243,31 @@ def run() -> int:
     cand = pd.concat(rows, ignore_index=True)
     w = wn["weights"]
     cand["base"] = (w["adjacency"] * cand["adjacency"] + w["growth"] * cand["growth_c"] + w["size"] * cand["size_c"] + w["novelty"] * cand["novelty"])
-    cand["pay_pct"] = None                       # filled when the OEWS file has been loaded (hand download needed)
+    pay_usd, pay_cov = industry_pay(nodes, contrib, cand)
+    cand["pay_usd"] = cand["id"].map(pay_usd)
+    cand["pay_pct"] = [None] * len(cand)
+    isi = (cand["type"] == "ind") & cand["pay_usd"].notna()
+    if isi.any():
+        cand.loc[isi, "pay_pct"] = percentile(cand.loc[isi, "pay_usd"]).to_numpy()
+    pay_ok = bool(isi.any())
 
-    out = {"weights": w, "toggles": wn["toggles"], "multiplier_range": [MULT_LO, MULT_HI], "pay_available": False,
+    out = {"weights": w, "toggles": wn["toggles"], "multiplier_range": [MULT_LO, MULT_HI], "pay_available": pay_ok,
            "nodes": [{"id": r.id, "type": r.type, "label": r.label, "level": int(r.level),
                       "components": {"adjacency": round(r.adjacency, 4), "growth": round(r.growth_c, 4), "size": round(r.size_c, 4), "novelty": round(r.novelty, 4)},
                       "growth_pct": None if r.growth != r.growth else round(r.growth, 1), "presence": round(r.presence, 3),
                       "lq": None if r.lq is None or r.lq != r.lq else round(r.lq, 2), "lq_how": r.lq_how, "geo_pct": round(r.geo_pct, 4),
+                      "pay_usd": None if r.pay_usd != r.pay_usd else round(float(r.pay_usd)), "pay_pct": None if r.pay_pct is None or r.pay_pct != r.pay_pct else round(float(r.pay_pct), 4),
                       "tag": r.tag, "tag_source": r.tag_source, "near": r.near, "base": round(r.base, 4)} for r in cand.itertuples()]}
     (priv / "score.json").write_text(json.dumps(out, separators=(",", ":"), allow_nan=False) + "\n")   # strict JSON: the viewer parses it
 
     def board(df: pd.DataFrame, toggles: dict) -> pd.DataFrame:
         d = df.copy()
-        d["score"] = [apply_toggles(r.base, {"geo_pct": r.geo_pct, "pay_pct": None, "tag": r.tag}, toggles) for r in d.itertuples()]
+        d["score"] = [apply_toggles(r.base, {"geo_pct": r.geo_pct, "pay_pct": r.pay_pct, "tag": r.tag}, toggles) for r in d.itertuples()]
         return d.sort_values("score", ascending=False)
     lines = ["# where-next scores (private)", "",
              f"- weights: {w}; {len(cand)} candidates ({int((cand.type == 'ind').sum())} industries, {int((cand.type == 'fld').sum())} research nodes)",
              "- own footprint seeds the adjacency (tenure, education, skills); connections are not used",
-             f"- pay toggle: not available (needs the OEWS file, see `imap ingest oews`)",
+             f"- pay toggle: {'available for ' + str(int(isi.sum())) + ' industries (typical annual pay for your occupations there; research nodes stay neutral); pay floor in the profile is $' + format(int(wn['toggles']['pay'].get('floor_usd', 0)), ',') + ', and ' + str(int((cand['pay_usd'] >= wn['toggles']['pay'].get('floor_usd', 0)).sum())) + ' industries reach it' if pay_ok else 'not available (needs the OEWS file)'}",
              f"- geography: {int(cand['lq'].notna().sum())} of {len(cand)} candidates have a location quotient; the rest are neutral",
              f"- mission tags: {int((cand['tag_source'] == 'owner').sum())} owner, {int((cand['tag_source'] == 'field-map seed').sum())} weak seed", ""]
     off = {k: {"enabled": False} for k in ("pay", "mission", "geography")}

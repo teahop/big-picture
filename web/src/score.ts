@@ -4,7 +4,7 @@ export interface ScoreNode {
   id: string; type: "ind" | "fld"; label: string; level: number;
   components: { adjacency: number; growth: number; size: number; novelty: number };
   growth_pct: number | null; presence: number; lq: number | null; lq_how: string; geo_pct: number;
-  tag: number; tag_source: string; near: string; base: number;
+  pay_usd: number | null; pay_pct: number | null; tag: number; tag_source: string; near: string; base: number;
 }
 export interface ScoreData {
   weights: Record<string, number>; toggles: Record<string, { enabled: boolean }>;
@@ -26,6 +26,7 @@ export function scoreOf(n: ScoreNode, d: ScoreData, t: Toggles, tags: Map<string
   const c = n.components, w = d.weights;
   let s = w.adjacency * c.adjacency + w.growth * c.growth + w.size * c.size + w.novelty * c.novelty;
   if (t.geography) s *= mult(n.geo_pct, d.multiplier_range);
+  if (t.pay && n.pay_pct !== null) s *= mult(n.pay_pct, d.multiplier_range);
   if (t.mission) s *= 1 + 0.25 * (tags.get(n.id) ?? n.tag);
   return s;
 }
@@ -45,6 +46,7 @@ export function reason(n: ScoreNode, d: ScoreData, t: Toggles, tags: Map<string,
   const top = parts.sort((a, b) => b[0] - a[0]).slice(0, 2).map((p) => p[1]);
   const extra: string[] = [];
   if (t.geography && n.lq !== null) extra.push("local concentration " + n.lq.toFixed(1) + "x");
+  if (t.pay && n.pay_usd !== null) extra.push("typical pay about $" + Math.round(n.pay_usd / 1000) + "k");
   if (t.mission) { const tag = tags.get(n.id) ?? n.tag; if (tag) extra.push("mission tag " + (tag > 0 ? "+" : "") + tag); }
   return [...top, ...extra].join(", ");
 }
