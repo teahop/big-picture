@@ -10,7 +10,7 @@ update this table, commit, then stop.
 |---|---|---|---|
 | 0 | Setup and guards | done (2026-11-09), awaiting owner OK | Hook proven; scaffolds run; SOURCES.md has spec differences to review (O*NET 31.0, OpenAlex key rule, BEA bulk file, Reliance on Science is non-commercial) |
 | 1 | Coarse industry terrain and viewer skeleton | done (2026-11-09), awaiting owner OK | Reconciles exactly (sectors + self-employed = published total). Health care to Educational services fails the similarity-space sanity pair (passes in the layout). BEA value added deferred to Phase 3, so no size switch yet. Self-employed left off the map |
-| 2 | Coarse research layer, bridge, shared layout | done (2026-11-09), awaiting owner OK | Counts match OpenAlex exactly. CIP mapping owner-reviewed; all 5 bridge sanity pairs pass. In the joint layout Finance and Professional services sit farther apart than the median sector pair, and Economics ranks Finance 6th by layout distance. HERD mapping still unreviewed; Energy has no HERD source |
+| 2 | Coarse research layer, bridge, shared layout | done (2026-11-09), awaiting owner OK | Counts match OpenAlex exactly. CIP mapping owner-reviewed; all 5 bridge sanity pairs pass. In the joint layout Finance and Professional services sit farther apart than the median sector pair, and Economics ranks Finance 6th by layout distance. HERD mapping owner-reviewed; Energy R&D is an estimate (about $1.07B from general engineering lines); Veterinary has no HERD source |
 | 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | not started | |
 | 4 | Personal overlay | not started | |
 | 5 | Where-next scoring and toggles | not started | |
@@ -26,7 +26,7 @@ update this table, commit, then stop.
 ## Owner review to-do (deferred, not blocking)
 
 - ~~`data/mappings/field_to_cip.csv`~~: reviewed by the owner 2026-11-09 (180 of 208 proposed rows accepted).
-- `data/mappings/herd_to_openalex.csv`: every row `reviewed=no`; Veterinary placement unsure.
+- ~~`data/mappings/herd_to_openalex.csv`~~: reviewed by the owner 2026-11-09 (Veterinary moved out of Health sciences, Communication mapped to Computer Science). Three Energy rows are an estimate (split of Electrical, Mechanical, Engineering nec) and stay `reviewed=no`. Veterinary now has no HERD source ($0); decide whether Agricultural sciences should also feed it.
 - Phase 1: Health care and Educational services fail the occupation-similarity sanity pair; owner considers them related (care sectors), so left as is.
 
 ## Phases

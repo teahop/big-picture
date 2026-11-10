@@ -9,6 +9,7 @@ from .common import interim_dir, load_config, public_dir, sha256
 from .bls import MATRIX_PATH
 from .sectors import SECTOR_CODES, SHORT_LABEL
 from .bridge import mapping_reviewed
+from .ingest_files import herd_mapping_reviewed
 from .openalex import SIZE_FILTER
 
 SOURCE = {
@@ -114,7 +115,7 @@ def run(target: str) -> int:
             "measure_labels": {"employment": "Employment (jobs, 2025)", "works": "US publications 2021-25", "rd": "University R&D spending (FY 2024, estimated by field)"},
             "deferred_measures": {"industry": {"value_added": "BEA has no bulk file; deferred to Phase 3"}},
             "bridge": {"method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
-                       "field_to_cip_reviewed": mapping_reviewed(), "herd_mapping_reviewed": False, "signals_per_edge": ["occupational", "semantic"]},
+                       "field_to_cip_reviewed": mapping_reviewed(), "herd_mapping_reviewed": herd_mapping_reviewed(), "signals_per_edge": ["occupational", "semantic"]},
             "research_sources": [
                 {"name": "OpenAlex", "url": "https://api.openalex.org", "retrieved": "2026-11-09", "filter": SIZE_FILTER, "note": "topic classifier replaced October 2026"},
                 {"name": "NSF NCSES HERD FY 2024, Table 10", "url": "https://ncses.nsf.gov/pubs/nsf26304/assets/data-tables/tables/nsf26304-tab010.xlsx", "retrieved": "2026-11-09"},

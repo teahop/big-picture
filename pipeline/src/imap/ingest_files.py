@@ -68,6 +68,12 @@ def allocate_herd(herd: pd.DataFrame, mapping: pd.DataFrame, works_us: pd.Series
     return alloc, unalloc
 
 
+def herd_mapping_reviewed() -> bool:
+    """True when every row of the HERD-to-OpenAlex mapping carries reviewed=yes."""
+    m = pd.read_csv(repo_root() / "data" / "mappings" / "herd_to_openalex.csv", dtype=str)
+    return bool((m["reviewed"].str.lower() == "yes").all())
+
+
 def run_herd() -> int:
     path = fetch(HERD_URL, raw_dir() / "herd" / "nsf26304-tab010.xlsx")
     herd = parse_herd(path)
@@ -90,7 +96,7 @@ def run_herd() -> int:
              f"- allocated to OpenAlex fields {by_field.sum():,.0f}k; unallocated {unalloc.rd_thousands.sum():,.0f}k "
              f"({unalloc.rd_thousands.sum() / leaf_sum * 100:.1f}%): " + ", ".join(unalloc.herd_field),
              f"- OpenAlex fields with no HERD source (R&D = 0): " + ", ".join(out.loc[out.rd_thousands == 0, "name"]),
-             "- method: leaf HERD dollars split across mapped OpenAlex fields by US works share; mapping unreviewed",
+             "- method: leaf HERD dollars split across mapped OpenAlex fields by US works share; mapping " + ("owner-reviewed" if herd_mapping_reviewed() else "owner-reviewed except rows marked reviewed=no (estimates added at the owner's request, e.g. Energy)"),
              "", "| OpenAlex field | R&D (thousand USD) |", "|---|---|"]
     for r in out.sort_values("rd_thousands", ascending=False).itertuples():
         lines.append(f"| {r.name} | {r.rd_thousands:,.0f} |")
