@@ -4,7 +4,7 @@ seed: 20261109
 terrain:
   grid_size: 128           # cells per side
   margin: 0.25             # padding around the node bounding box (layout units)
-  bandwidth_level0: 0.12   # Gaussian sigma for Level 0 nodes (layout units)
+  bandwidth_level0: 0.07   # Gaussian sigma for Level 0 nodes (layout units); nodes sit about 0.16 apart
   bandwidth_per_level: 0.5 # sigma multiplier for each deeper level (level 1 = x0.5)
   research_relative_height: 1.0  # peak of the largest Level 0 field relative to the largest Level 0 industry
 
@@ -12,3 +12,13 @@ bridge:
   weight_occupational: 0.6
   weight_semantic: 0.4
   exclude_postsecondary_teaching: true
+
+layout:                    # joint layout of industries and research (pipeline/src/imap/layout_joint.py)
+  weight_occupational: 0.6 # shared-occupation similarity (TF-IDF weighted)
+  weight_semantic: 0.4     # text-embedding similarity
+  level0: {k_same: 4, k_cross: 6, far_weight: 0.02}   # nearest same- and other-type neighbours held at full weight;
+  level1: {k_same: 5, k_cross: 3, far_weight: 0.005}   # far_weight: every other pair (keeps the global shape)
+  anchor: 0.3              # Level 1 pull toward the Level 0 parent, relative to a node's neighbour weight
+  min_sep_level1: 0.02     # Level 1 nodes are pushed apart to at least this (layout units)
+  iters: 400
+

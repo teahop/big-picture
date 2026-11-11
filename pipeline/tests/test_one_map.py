@@ -91,10 +91,18 @@ def _v1(path: str) -> bytes | None:
         return None
 
 
-@pytest.mark.parametrize("name", ["layout.json", "layout_children.json", "nodes.json", "nodes_l1.json", "nodes_l2.json",
-                                  "edges.json", "edges_l1.json", "edges_l2.json"])
-def test_positions_nodes_and_edges_are_unchanged_from_v1(name):
+@pytest.mark.parametrize("name", ["edges.json", "edges_l1.json", "edges_l2.json"])
+def test_edges_are_unchanged_from_v1(name):
     old = _v1(f"data/public/{name}")
     if old is None:
         pytest.skip("v1.0 tag not available")
     assert (public_dir() / name).read_bytes() == old
+
+
+@pytest.mark.parametrize("name", ["nodes.json", "nodes_l1.json", "nodes_l2.json"])
+def test_nodes_are_unchanged_from_v1_apart_from_position(name):
+    old = _v1(f"data/public/{name}")
+    if old is None:
+        pytest.skip("v1.0 tag not available")
+    strip = lambda ns: [{k: v for k, v in n.items() if k != "xy"} for n in ns]
+    assert strip(json.loads((public_dir() / name).read_text())) == strip(json.loads(old))

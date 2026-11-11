@@ -4,7 +4,7 @@
 
 Version 2.0 draft, 2026-11-10. Owner: github.com/teahop.
 The v1 specification, plan and handoffs are archived in `docs/v1/`. Anything this
-document does not change (data sources, node IDs, similarity, anchored layout,
+document does not change (data sources, node IDs,
 levels of detail, deep zones) still works as v1 section numbers describe; this
 document refers to them as "v1 §n".
 
@@ -33,7 +33,7 @@ career has been.
 | 5 | The footprint is redrawn so it is clear: touched Level 0 areas are highlighted and the user can step down into Levels 1 and 2 | 6 |
 | 6 | New: download one JPG of the map with the footprint | 8 |
 
-Unchanged: the public data pipeline, the node graph, the shared anchored layout,
+Unchanged: the public data pipeline, the node graph,
 the three levels of detail, the deep zones, the privacy rules, static hosting.
 
 ## 3. Name

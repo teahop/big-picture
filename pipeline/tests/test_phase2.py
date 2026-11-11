@@ -18,15 +18,6 @@ def test_pct_rank_spans_zero_to_one_and_orders():
     assert r.min() == 0 and r.max() == 1 and r[1] > r[2] > r[0]
 
 
-def test_joint_distance_shape_symmetry_and_cross_block():
-    ss = np.array([[1, .9, .1], [.9, 1, .2], [.1, .2, 1]])
-    ff = np.array([[1, .5], [.5, 1]])
-    sf = np.array([[.9, .1], [.8, .2], [.1, .9]])        # sectors x fields
-    d = layout.joint_distance(ss, ff, sf)
-    assert d.shape == (5, 5) and np.allclose(d, d.T) and np.allclose(np.diag(d), 0)
-    assert d[0, 3] < d[0, 4]                               # sector 0 is closer to field 0 than field 1
-
-
 def test_minmax_rows_and_combine_weights():
     sem = pd.DataFrame([[1.0, 3.0]], index=["f"], columns=["x", "y"])
     occ = pd.DataFrame([[10.0, 0.0]], index=["f"], columns=["x", "y"])

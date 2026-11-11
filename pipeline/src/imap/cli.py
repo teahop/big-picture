@@ -14,7 +14,7 @@ STAGES: dict[str, str] = {
     "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
     "value": "Industry value added in dollars (BEA), allocated to the map nodes",
     "graph": "Build similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
-    "layout": "Seeded layout of node positions (provisional Level 0 in Phase 1)",
+    "layout": "Joint layout of industries and research at every level (shared occupations and text)",
     "terrain": "Height grids per layer and size measure",
     "export": "Write the public JSON bundle (--target public)",
     "personal": "Personal overlay from private inputs (parts: roles, connections, skills, education, presence)",
@@ -88,13 +88,8 @@ def run_stage(args: argparse.Namespace) -> int:
         from . import levels
         return levels.run()
     if name == "layout":
-        from . import layout
-        rc = layout.run()
-        from .common import interim_dir
-        if rc == 0 and (interim_dir() / "graph_l1" / "bridge_combined.csv").exists():
-            from . import layout_anchored
-            return layout_anchored.run()
-        return rc
+        from . import layout_joint
+        return layout_joint.run()
     if name == "terrain":
         from . import terrain
         return terrain.run()

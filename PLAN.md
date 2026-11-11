@@ -16,7 +16,7 @@ live site, so `main` is not touched until Phase 4.
 |---|---|---|---|
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
-| 1 | One map | built 2026-11-10, awaiting owner design decision | One mesh, height and share grids per level and setting; equal Level 0 peaks; positions, nodes and edges byte-identical to v1; Level 2 frame 0.34-0.44 ms (v1: 1.6 ms). Footprint control hidden until Phase 2 |
+| 1 | One map | built 2026-11-10, layout reworked, awaiting owner design decision | One mesh, height and share grids per level and setting; equal Level 0 peaks. Joint layout (`layout_joint.py`): shared occupations (TF-IDF) plus text, balanced neighbours; research nodes next to a top-3 industry 50% -> 81% at Level 0 and 8% -> 26% at Level 1 (`data/interim/reports/layout_joint.md`). Level 0 kernel 0.07. Footprint control hidden until Phase 2 |
 | 2 | Clear footprint | not started | Owner chooses between variants |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
@@ -66,7 +66,7 @@ Checks:
   setting; the old per-layer grids are gone.
 - The largest Level 0 industry and the largest Level 0 field have equal peak
   height; scaling constants are in `meta.json`.
-- Node positions are unchanged from v1 at every level.
+- Node positions may change: the joint layout is being reworked so industry and research mix (owner, 2026-11-10).
 - Type is readable without colour (label marks), in light and dark.
 - Emphasis control (Both, Industry, Research) and size switch (Activity,
   Dollars) work; frame time at Level 2 is no worse than v1.

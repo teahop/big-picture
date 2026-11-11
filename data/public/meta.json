@@ -14,8 +14,8 @@
  },
  "terrain_scale": {
   "activity": {
-   "industry": 0.97338,
-   "research": 0.565424,
+   "industry": 0.999974,
+   "research": 0.924416,
    "largest_industry": "ind:620000",
    "largest_field": "fld:27",
    "industry_peak": 1.0,
@@ -26,8 +26,8 @@
    }
   },
   "dollars": {
-   "industry": 0.532437,
-   "research": 0.550268,
+   "industry": 0.802711,
+   "research": 0.91516,
    "largest_industry": "ind:31-330",
    "largest_field": "fld:27",
    "industry_peak": 1.0,
@@ -117,7 +117,7 @@
  "terrain": {
   "grid_size": 128,
   "margin": 0.25,
-  "bandwidth_level0": 0.12,
+  "bandwidth_level0": 0.07,
   "bandwidth_per_level": 0.5,
   "research_relative_height": 1.0
  },

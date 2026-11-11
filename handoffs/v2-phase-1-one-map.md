@@ -1,7 +1,7 @@
 # v2 Phase 1 kickoff — One map
 
 Read `CLAUDE.md`, `SPEC.md` section 5 and `PLAN.md`. Work on branch `v2`.
-Layout positions must not change in this phase.
+Layout positions may change (owner, 2026-11-10): the joint layout is being reworked so industry and research mix.
 
 1. Terrain (`pipeline/src/imap/terrain.py`, `config/pipeline.yaml`): for each
    level and each size setting (Activity: employment with publications;
@@ -27,7 +27,7 @@ Layout positions must not change in this phase.
    footprint control for now; Phase 2 rebuilds it.
 5. Tests: equal peak height for the two largest Level 0 nodes; share grid is
    within 0..1 and is 1 over a lone industry, 0 over a lone field; rebuild is
-   byte-identical; node positions unchanged from v1.
+   byte-identical.
 6. Measure frame time at Level 2 with all nodes loaded and compare with the v1
    figure in `docs/v1/PLAN.md`.
 

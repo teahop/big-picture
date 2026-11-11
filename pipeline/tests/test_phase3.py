@@ -1,5 +1,4 @@
 """Phase 3 tests on small synthetic tables (no real or personal data)."""
-import json
 
 import numpy as np
 import pandas as pd
@@ -7,7 +6,7 @@ import pytest
 
 from imap import layout_anchored as la
 from imap import levels, terrain
-from imap.common import public_dir, sha256
+
 
 
 def test_split_amplitude_preserves_volume_and_shares_by_log_size():
@@ -76,11 +75,3 @@ def test_growth_needs_a_minimum_base():
     yc = pd.DataFrame({"level": "subfield", "id": ["a", "a", "b", "b"], "year": [2019, 2024, 2019, 2024], "works_us": [100, 150, 5, 50]})
     g = levels.growth_from_counts(yc, "subfield")
     assert g["a"] == pytest.approx(50.0) and np.isnan(g["b"])
-
-
-def test_level0_layout_is_frozen_when_children_are_placed():
-    """Skips on a clean clone before the pipeline has run."""
-    child = public_dir() / "layout_children.json"
-    if not child.exists():
-        pytest.skip("layout_children.json not built")
-    assert json.loads(child.read_text())["frozen_level0_sha256"] == sha256(public_dir() / "layout.json")
