@@ -56,10 +56,11 @@
       <span id="search-count" aria-live="polite"></span>
       <button id="mode" type="button" aria-pressed="false">Switch to 2D map</button>
       <button id="theme" type="button" aria-label="Switch between light and dark">Dark mode</button>
+      <button id="about-open" type="button" aria-haspopup="dialog">About the data</button>
       <button id="panel-toggle" type="button" aria-pressed="false">Hide panel</button>
     </header>
     <p id="size-note" class="sr">Value added is the Bureau of Economic Analysis figure for each industry; below the sector level it is estimated by splitting each BEA industry by payroll.</p>
-    <p id="notice" role="status"></p>
+    <p id="notice" role="status">Loading the map…</p>
     <main>
       <section class="map" aria-label="Terrain map">
         <div id="view-3d" class="view"></div>
@@ -74,6 +75,26 @@
         <p id="source" class="source"></p>
       </aside>
     </main>
+    <dialog id="about" aria-labelledby="about-title">
+      <form method="dialog"><button class="close" aria-label="Close">Close</button></form>
+      <h2 id="about-title">About the data</h2>
+      <p>The map places US industries (peaks) and research fields (valleys) in one shared space, so that nearby things are similar. It is built only from public data. Values marked <b>&asymp;</b> are estimates made for this map.</p>
+      <h3>What the position means</h3>
+      <p>East-west and north-south have no meaning of their own. Industries are close when they employ a similar mix of occupations. Research fields are close when their descriptions are semantically similar. An industry and a field are close when the occupations their graduates fill, and the text of their descriptions, link them. Distances are approximate: a high-dimensional similarity is squeezed into two dimensions, and nodes are nudged apart so labels stay readable. Height shows the selected size measure.</p>
+      <h3>Sources</h3>
+      <ul>
+        <li><b>Industries, employment, growth:</b> BLS National Employment Matrix, 2025 and projected 2035 (NAICS 2022).</li>
+        <li><b>Value added:</b> BEA GDP by Industry, 2025. The sector figures are BEA's; below the sector level each BEA industry is split by payroll (BLS QCEW, 2025), so those figures are &asymp; estimates. Owner-occupied housing is excluded. Federal value added is mostly government pay and has no uniformed military in the job counts, so its value per job reads high.</li>
+        <li><b>Research volume:</b> OpenAlex, works with a US-affiliated author, 2021&ndash;25. OpenAlex changed its topic classifier in October 2026, so counts depend on that version.</li>
+        <li><b>Research dollars:</b> NSF Higher Education R&amp;D Survey, FY 2024, mapped to OpenAlex fields by hand and split to subfields by publications (&asymp;). Veterinary has no source. R&amp;D per publication is only meaningful at the field level.</li>
+        <li><b>Linking research to industry:</b> NCES CIP-to-SOC crosswalk, O*NET 31.0 occupations, and text-embedding similarity.</li>
+        <li><b>Deep zones (Level 2 industries):</b> a few industries are split finer than any official table. Sizes come from QCEW 2025 employment, IPEDS 2023 completions and published headcounts, all &asymp; estimates. Their links to research topics are computed by text similarity and have not been reviewed.</li>
+      </ul>
+      <h3>Levels</h3>
+      <p>Level 0 shows 20 industry sectors and 26 research fields. Zoom in, or use the Detail control, for 304 industries and 252 subfields (Level 1), and then research topics and the deep zones (Level 2). Finer nodes replace their parent; they never move it.</p>
+      <h3>Limits</h3>
+      <p>This is a descriptive map of the present, not a forecast or advice. Classification boundaries, estimates and similarity scores all carry error; the sources and rules are in the project's repository (<code>data/SOURCES.md</code>, <code>SPEC.md</code>).</p>
+    </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

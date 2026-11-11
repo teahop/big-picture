@@ -265,7 +265,11 @@ export class Scene3D {
   private resize(): void {
     const w = this.host.clientWidth, h = this.host.clientHeight;
     if (!w || !h) return;
-    this.renderer.setSize(w, h); this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h); this.camera.aspect = w / h;
+    // narrow screens (phones): widen the vertical field of view so the whole map still fits across the width
+    const narrow = Math.max(1, 1.3 / this.camera.aspect);
+    this.camera.fov = Math.min(100, (2 * Math.atan(Math.tan((45 * Math.PI) / 360) * narrow) * 180) / Math.PI);
+    this.camera.updateProjectionMatrix();
   }
 
   private frame = (): void => {

@@ -14,6 +14,9 @@ $("title").textContent = __DISPLAY_NAME__;
 
 async function start(): Promise<void> {
   const bundle = await loadBundle();
+  const about = $<HTMLDialogElement>("about");
+  $("about-open").addEventListener("click", () => about.showModal());
+  about.addEventListener("click", (e) => { if (e.target === about) about.close(); });
   const state = new State();
   state.overlay = await loadOverlay();        // null on the public site: the footprint control stays hidden
   const gl = webglAvailable();
@@ -51,6 +54,7 @@ async function start(): Promise<void> {
   if (!gl) $("notice").textContent = "WebGL is not available, so the 2D contour map is shown.";
   toggle.addEventListener("click", () => { view = view === "3d" ? "2d" : "3d"; apply(); });
   apply();
+  if (gl) $("notice").textContent = "";
 
   const fp = $<HTMLSelectElement>("footprint");
   if (state.overlay) { $("footprint-wrap").hidden = false; fp.addEventListener("change", () => state.setFootprint(fp.value as Footprint)); }

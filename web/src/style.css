@@ -64,8 +64,11 @@ dt { color: var(--muted); } dd { margin: 0; }
 .source { font-size: 12px; margin-top: 14px; }
 @media (max-width: 720px) {
   main { flex-direction: column; }
-  aside { width: auto; border-left: 0; border-top: 1px solid var(--line); max-height: 45%; }
-  input { width: 140px; }
+  html, body { height: auto; min-height: 100%; }
+  header { padding: 8px 12px; gap: 8px; }
+  .map { flex: none; height: 62vh; }                       /* the map gets most of the first screen; the page scrolls to the panel */
+  aside { width: auto; border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  label.search { flex: 1 1 100%; } label.search input { width: 100%; }
 }
 
 fieldset.layers { display: flex; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 2px; margin: 0; }
@@ -98,3 +101,9 @@ aside strong { color: var(--accent); }
 aside[hidden] { display: none; }
 .zoomctl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
 .zoomctl button { width: 32px; height: 32px; padding: 0; font-size: 18px; line-height: 1; }
+
+/* about dialog */
+#about { max-width: min(680px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 20px 24px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg); }
+#about::backdrop { background: rgb(0 0 0 / .5); }
+#about h2 { margin: 0 0 8px; } #about h3 { margin: 16px 0 4px; font-size: 1rem; } #about p, #about li { line-height: 1.5; } #about ul { padding-left: 20px; }
+#about form { float: right; margin: 0; }

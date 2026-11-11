@@ -1,0 +1,63 @@
+# Builds the static viewer from the tracked public bundle and deploys it to GitHub Pages.
+# It does nothing until Pages is enabled in the repository settings (Settings > Pages > Source: GitHub Actions).
+name: Deploy viewer to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "data/public/**", "config/site.yaml", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the viewer
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+      - name: Guard - the build must hold only the public bundle
+        run: |
+          set -eu
+          # A clean clone has no private/ or Personal Data/, so none of it can be in the build; check the output anyway.
+          if find web/dist -type f \( -name 'overlay.json' -o -name 'score.json' -o -name '*.local.yaml' -o -name '.env' \) | grep -q .; then
+            echo "Private-looking file in web/dist"; exit 1
+          fi
+          if find web/dist -type f | grep -qiE '(^|/)(private|Personal Data)(/|$)'; then
+            echo "Private path in web/dist"; exit 1
+          fi
+          # Only these data files are expected beside the page
+          expected="edges.json edges_l1.json edges_l2.json grids.json grids_l1.json grids_l2.json layout.json layout_children.json meta.json nodes.json nodes_l1.json nodes_l2.json"
+          for f in $(find web/dist -maxdepth 1 -type f -name '*.json' -printf '%f\n'); do
+            case " $expected " in *" $f "*) ;; *) echo "Unexpected data file in build: $f"; exit 1;; esac
+          done
+          echo "web/dist looks like the public bundle only"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

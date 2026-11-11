@@ -21,3 +21,12 @@ scripts/setup.sh          # install the pre-commit hook (once per clone)
 cd pipeline && uv run imap --help
 cd web && npm install && npm run dev
 ```
+
+## Publishing
+
+The site is a static build of `web/` from the tracked public bundle in `data/public/`
+(`cd web && npm run build`). `.github/workflows/pages.yml` builds and deploys it to
+GitHub Pages and refuses to deploy a build that holds anything other than that bundle.
+Pages must be switched on by the owner (Settings, Pages, Source: GitHub Actions).
+The footprint, where-next and pay controls appear only on a local machine that has the
+private files; the published site shows the base map only.
