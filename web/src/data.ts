@@ -23,14 +23,14 @@ export const SETTING_MEASURES: Record<SizeSetting, { ind: IndustryMeasure; fld: 
 };
 /** One level's terrain: a combined height grid and the industry share of each cell (0 research .. 1 industry). */
 export interface LevelGrids { n: number; x: [number, number]; y: [number, number]; settings: Record<SizeSetting, { height: number[]; share: number[] }> }
-export interface TerrainScale { industry: number; research: number; largest_industry: string; largest_field: string; industry_peak: number; research_peak: number }
+export interface TerrainScale { industry: number; research: number; largest_industry: string; largest_research: string; industry_peak: number; research_peak: number }
 export interface Meta {
   sources: { name: string; release: string; url: string; retrieved: string }[];
   research_sources: { name: string; url: string; retrieved: string }[];
   measure_labels: Record<string, string>;
   bridge: { field_to_cip_reviewed: boolean; herd_mapping_reviewed: boolean };
   levels: number[]; level_notes?: Record<string, string>; deep_topic_links_reviewed?: boolean;
-  terrain_scale: Record<SizeSetting, TerrainScale>;
+  terrain_scale: Record<string, Record<SizeSetting, TerrainScale>>;   // by level
 }
 export interface Bundle {
   nodes: NodeRec[]; edges: Edge[]; meta: Meta; byId: Map<string, NodeRec>;

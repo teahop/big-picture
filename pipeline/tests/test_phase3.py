@@ -5,17 +5,8 @@ import pandas as pd
 import pytest
 
 from imap import layout_anchored as la
-from imap import levels, terrain
+from imap import levels
 
-
-
-def test_split_amplitude_preserves_volume_and_shares_by_log_size():
-    parent = np.array([0.8, 0.4])
-    idx = np.array([0, 0, 0, 1])
-    sizes = np.array([100.0, 100.0, 9999.0, 50.0])
-    a = terrain.split_amplitude(parent, idx, sizes, 4.0)
-    assert a[:3].sum() == pytest.approx(0.8 * 4.0) and a[3] == pytest.approx(0.4 * 4.0)
-    assert a[2] > a[0] == pytest.approx(a[1])
 
 
 def test_place_children_stay_inside_radius_and_are_deterministic():

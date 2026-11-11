@@ -6,6 +6,8 @@ terrain:
   margin: 0.25             # padding around the node bounding box (layout units)
   bandwidth_level0: 0.07   # Gaussian sigma for Level 0 nodes (layout units); nodes sit about 0.16 apart
   bandwidth_per_level: 0.5 # sigma multiplier for each deeper level (level 1 = x0.5)
+  combine: max             # max: each point takes the tallest node's kernel (peaks show their own size); sum: kernels add up
+  height_exponent: 0.5     # peak height = (size / largest at that level) ** this; 1 = proportional, 0.5 = square root
   research_relative_height: 1.0  # peak of the largest Level 0 field relative to the largest Level 0 industry
 
 bridge:

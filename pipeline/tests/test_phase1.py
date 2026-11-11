@@ -67,9 +67,10 @@ def test_layout_is_deterministic_and_keeps_similar_nodes_close():
     assert np.abs(xy1).max() == pytest.approx(1.0)
 
 
-def test_amplitude_is_log_scaled_with_max_one():
-    amp = terrain.amplitudes(np.array([0.0, 99.0, 999.0]))
-    assert amp[0] == 0 and amp[2] == pytest.approx(1.0) and 0 < amp[1] < 1
+def test_amplitude_comes_from_own_size_with_max_one():
+    amp = terrain.size_amplitude(np.array([0.0, 25.0, 100.0, np.nan]), 0.5)
+    assert amp[0] == 0 and amp[2] == pytest.approx(1.0) and amp[1] == pytest.approx(0.5) and amp[3] == 0
+    assert terrain.size_amplitude(np.array([25.0, 100.0]), 1.0)[0] == pytest.approx(0.25)
 
 
 def test_height_grid_peaks_at_node_and_deeper_levels_are_narrower():

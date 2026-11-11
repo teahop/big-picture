@@ -57,24 +57,35 @@ built = pytest.mark.skipif(not (interim_dir() / "terrain" / "terrain.json").exis
 
 
 @built
-def test_largest_level0_industry_and_field_have_equal_peak_height():
+def test_largest_industry_and_research_node_have_equal_peak_height_at_every_level():
     cfg = load_config()["terrain"]
     layers, _ = terrain.build_layers(cfg)
     scale = json.loads((interim_dir() / "terrain" / "terrain.json").read_text())["scale"]
     s0, pl = cfg["bandwidth_level0"], cfg["bandwidth_per_level"]
     rel = float(cfg.get("research_relative_height", 1.0))
-    for s, t in layers["0"].items():
-        peaks = []
-        for typ, key in (("industry", "largest_industry"), ("research", "largest_field")):
-            lay = t[typ]; i = lay.ids.index(scale[s][key])
-            peaks.append(scale[s][typ] * terrain.kernel_sum(lay.xy[i, :1], lay.xy[i, 1:], lay, s0, pl)[0])
-        assert peaks[0] == pytest.approx(1.0, rel=1e-5) and peaks[1] == pytest.approx(rel, rel=1e-5), s
+    for level, by_setting in layers.items():
+        for s, t in by_setting.items():
+            peaks = []
+            for typ, key in (("industry", "largest_industry"), ("research", "largest_research")):
+                lay = t[typ]; i = lay.ids.index(scale[level][s][key])
+                peaks.append(scale[level][s][typ] * terrain.kernel_sum(lay.xy[i, :1], lay.xy[i, 1:], lay, s0, pl, cfg.get("combine", "sum"))[0])
+            assert peaks[0] == pytest.approx(1.0, rel=1e-5) and peaks[1] == pytest.approx(rel, rel=1e-5), (level, s)
+
+
+@built
+def test_heights_follow_size_not_sibling_count():
+    """Regression: a sector's only child must not tower over larger industries that have many siblings."""
+    layers, _ = terrain.build_layers(load_config()["terrain"])
+    lay = layers["1"]["activity"]["industry"]
+    amp = dict(zip(lay.ids, lay.amp))
+    assert amp["ind:722511"] > amp["ind:551000"]          # restaurants (5.4M jobs) over management of companies (2.6M)
+    assert lay.ids[int(np.argmax(lay.amp))] != "ind:551000"
 
 
 @built
 def test_public_grids_hold_one_height_and_one_share_grid_per_setting():
     meta = json.loads((public_dir() / "meta.json").read_text())
-    assert set(meta["terrain_scale"]) == {"activity", "dollars"}
+    assert set(meta["terrain_scale"]) == {"0", "1", "2"} and set(meta["terrain_scale"]["0"]) == {"activity", "dollars"}
     for name in ("grids.json", "grids_l1.json", "grids_l2.json"):
         g = json.loads((public_dir() / name).read_text())
         assert set(g) == {"n", "x", "y", "settings"} and set(g["settings"]) == {"activity", "dollars"}

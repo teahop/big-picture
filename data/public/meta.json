@@ -13,28 +13,82 @@
   }
  },
  "terrain_scale": {
-  "activity": {
-   "industry": 0.999974,
-   "research": 0.924416,
-   "largest_industry": "ind:620000",
-   "largest_field": "fld:27",
-   "industry_peak": 1.0,
-   "research_peak": 1.0,
-   "measures": {
-    "industry": "employment",
-    "research": "works"
+  "0": {
+   "activity": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:620000",
+    "largest_research": "fld:27",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "employment",
+     "research": "works"
+    }
+   },
+   "dollars": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:31-330",
+    "largest_research": "fld:27",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "value_added",
+     "research": "rd"
+    }
    }
   },
-  "dollars": {
-   "industry": 0.802711,
-   "research": 0.91516,
-   "largest_industry": "ind:31-330",
-   "largest_field": "fld:27",
-   "industry_peak": 1.0,
-   "research_peak": 1.0,
-   "measures": {
-    "industry": "value_added",
-    "research": "rd"
+  "1": {
+   "activity": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:61110L",
+    "largest_research": "fld:1312",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "employment",
+     "research": "works"
+    }
+   },
+   "dollars": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:999100",
+    "largest_research": "fld:1312",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "value_added",
+     "research": "rd"
+    }
+   }
+  },
+  "2": {
+   "activity": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:61110L",
+    "largest_research": "fld:1312",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "employment",
+     "research": "works"
+    }
+   },
+   "dollars": {
+    "industry": 1.0,
+    "research": 1.0,
+    "largest_industry": "ind:999100",
+    "largest_research": "fld:1312",
+    "industry_peak": 1.0,
+    "research_peak": 1.0,
+    "measures": {
+     "industry": "value_added",
+     "research": "rd"
+    }
    }
   }
  },
@@ -119,6 +173,8 @@
   "margin": 0.25,
   "bandwidth_level0": 0.07,
   "bandwidth_per_level": 0.5,
+  "combine": "max",
+  "height_exponent": 0.5,
   "research_relative_height": 1.0
  },
  "display_name_source": "config/site.yaml",
