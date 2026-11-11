@@ -16,6 +16,19 @@
           <option value="dollars">Dollars: value added</option>
         </select>
       </label>
+      <label class="size" id="fp-wrap" hidden>Footprint
+        <select id="fp-mode">
+          <option value="career">Career</option>
+          <option value="network" hidden>Network (private)</option>
+          <option value="off">Off</option>
+        </select>
+      </label>
+      <label class="size" id="fp-look-wrap" hidden>Look (trial)
+        <select id="fp-look"><option value="outline">Outline</option><option value="flowers">Wildflowers</option></select>
+      </label>
+      <label class="size" id="fp-fade-wrap" hidden>Fade (trial)
+        <select id="fp-fade"><option value="light">Light</option><option value="strong">Strong</option></select>
+      </label>
       <label class="size">Detail
         <select id="lod">
           <option value="auto">Auto (by zoom)</option>
@@ -40,6 +53,7 @@
         <div id="labels" class="labels" aria-hidden="true"></div>
       </section>
       <aside>
+        <div id="fp-panel" hidden></div>
         <div id="details" aria-live="polite"></div>
         <div id="group-ind"><h3 id="head-ind">Industry sectors by employment</h3><ul id="list-ind"></ul></div>
         <p id="source" class="source"></p>

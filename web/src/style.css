@@ -89,3 +89,20 @@ aside[hidden] { display: none; }
 #about::backdrop { background: rgb(0 0 0 / .5); }
 #about h2 { margin: 0 0 8px; } #about h3 { margin: 16px 0 4px; font-size: 1rem; } #about p, #about li { line-height: 1.5; } #about ul { padding-left: 20px; }
 #about form { float: right; margin: 0; }
+
+/* footprint (Phase 2) */
+:root, :root[data-theme="light"] { --flower-1: #e8731c; --flower-2: #7652a8; --flower-3: #e9b520; --flower-4: #c9508a; }
+:root[data-theme="dark"] { --flower-1: #ff9a3d; --flower-2: #a487d6; --flower-3: #ffd34d; --flower-4: #ee7fb3; }
+.node-label.touched { font-weight: 600; border: 1px solid var(--footprint); }
+.node-label.receded { opacity: .35; }
+#fp-panel h3 { margin-top: 4px; }
+.crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12px; margin-bottom: 6px; }
+.crumbs button { border: 0; background: none; padding: 2px 4px; color: var(--accent); text-decoration: underline; }
+.crumbs span { color: var(--muted); }
+.fp-list { list-style: none; margin: 0 0 10px; padding: 0; }
+.fp-list button { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; width: 100%; border: 0; background: none; text-align: left; padding: 4px 6px; border-radius: 4px; }
+.fp-list button:hover, .fp-list button:focus-visible { background: color-mix(in srgb, var(--footprint) 14%, transparent); }
+.fp-bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--fg) 12%, transparent); }
+.fp-bar i { display: block; height: 100%; border-radius: 3px; background: var(--footprint); }
+.fp-step { margin: 6px 0 10px; }
+.fp-why li { margin-bottom: 4px; }

@@ -1,6 +1,8 @@
 import { ensureLevel, loadBundle, visibleAt, type NodeRec, type SizeSetting } from "./data";
 import { Scene3D, webglAvailable } from "./scene3d";
-import { State, type LodSetting } from "./state";
+import { State, type Fade, type FootprintMode, type LodSetting, type Look } from "./state";
+import { compute, hierarchy, loadFootprint } from "./footprint";
+import { buildFootprintPanel, touchedChildren } from "./fpui";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
 
@@ -47,7 +49,47 @@ async function start(): Promise<void> {
     if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level); }
     void applyLevel().then(() => { state.setSelected(n); scene3d?.focus(n); });
   };
-  buildPanel(bundle, state, pick);
+  // ---- footprint (the owner's private file on a local server, or the synthetic sample in development)
+  const fpData = await loadFootprint();
+  let extra: ((n: NodeRec) => string) | undefined;
+  if (fpData) {
+    await ensureLevel(bundle, 2);                         // weights roll up across every level
+    const h = hierarchy(bundle.nodes), cfg = __VIEWER__.footprint;
+    const set = (m: FootprintMode) => {
+      const c = m === "off" ? null : compute(fpData, h, cfg, m);
+      if (c?.unknown.length) $("notice").textContent = "Some footprint entries name industries that are not on the map: " + c.unknown.slice(0, 3).join(", ");
+      state.setFocus([]); state.setFootprint(m, c);
+    };
+    const mode = $<HTMLSelectElement>("fp-mode"), look = $<HTMLSelectElement>("fp-look"), fade = $<HTMLSelectElement>("fp-fade");
+    for (const id of ["fp-wrap", "fp-look-wrap", "fp-fade-wrap"]) $(id).hidden = false;
+    (mode.querySelector("option[value=network]") as HTMLOptionElement).hidden = !Object.keys(fpData.layers?.connections ?? {}).length;
+    mode.addEventListener("change", () => set(mode.value as FootprintMode));
+    look.addEventListener("change", () => state.setLook(look.value as Look));
+    fade.addEventListener("change", () => state.setFade(fade.value as Fade));
+    const goLevel = async (level: number, auto = false) => {
+      state.setLod(auto ? "auto" : String(level) as LodSetting); lod.value = auto ? "auto" : String(level);
+      await applyLevel();
+    };
+    const stepInto = async (n: NodeRec) => {
+      const kids = touchedChildren(state, h, n.id, n.level);
+      state.setFocus([...state.focus.slice(0, n.level), n.id]);
+      await goLevel(n.level + 1);
+      state.setSelected(null);
+      scene3d?.frameNodes(kids.length ? kids : [n.id]);
+    };
+    const stepTo = async (depth: number) => {
+      const path = state.focus.slice(0, depth);
+      state.setFocus(path); state.setSelected(null);
+      if (!depth) { await goLevel(0, true); scene3d?.frameAll(); return; }
+      await goLevel(depth);
+      const id = path[depth - 1];
+      scene3d?.frameNodes(touchedChildren(state, h, id, depth - 1));
+    };
+    extra = buildFootprintPanel(bundle, state, h, { stepInto: (n) => void stepInto(n), stepTo: (d) => void stepTo(d), select: pick });
+    set("career");
+    (window as unknown as { __fp: object }).__fp = { stepInto, stepTo, set, data: fpData };
+  }
+  buildPanel(bundle, state, pick, extra);
   onThemeChange(() => { scene3d?.applyTheme(); syncTheme(); });
   const themeBtn = $<HTMLButtonElement>("theme");
   const syncTheme = () => { themeBtn.textContent = effectiveTheme() === "dark" ? "Light mode" : "Dark mode"; };
@@ -58,6 +100,8 @@ async function start(): Promise<void> {
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },
+    setLook: (v: Look) => { ($("fp-look") as HTMLSelectElement).value = v; state.setLook(v); },
+    setFade: (v: Fade) => { ($("fp-fade") as HTMLSelectElement).value = v; state.setFade(v); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }

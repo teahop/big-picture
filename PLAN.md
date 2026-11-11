@@ -17,7 +17,7 @@ live site, so `main` is not touched until Phase 4.
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
-| 2 | Clear footprint | in progress: data done, waiting on owner confirmation of education mapping and weights | Entry-list footprint (`private/footprint.json`), weights module, synthetic footprint, dev-only route; viewer next |
+| 2 | Clear footprint | variants built 2026-11-10, waiting on owner's choice | Education mapping and weights confirmed by owner. Viewer: weights in the page, recede, footprint list, step-down with breadcrumb, entries behind a node. Trial looks: Outline or Wildflowers, fade Light or Strong |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 

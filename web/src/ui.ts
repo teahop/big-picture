@@ -33,7 +33,7 @@ function details(b: Bundle, n: NodeRec): string {
     + section("Largest occupations", occ);
 }
 
-export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void): void {
+export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void, extra: (n: NodeRec) => string = () => ""): void {
   const search = el<HTMLInputElement>("search"), panel = el("details"), list = el<HTMLUListElement>("list-ind");
   const items = new Map<string, HTMLButtonElement>();
   const query = () => search.value.trim().toLowerCase();
@@ -73,7 +73,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
     if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added under Dollars); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
-    panel.innerHTML = details(b, n);
+    panel.innerHTML = extra(n) + details(b, n);
   };
   state.subscribe(render); render();
 

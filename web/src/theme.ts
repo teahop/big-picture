@@ -44,3 +44,4 @@ export function setTheme(t: ThemeChoice): void {
 export function restoreTheme(): void {
   try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch { /* optional */ }
 }
+export function rgbOf(css: string): RGB { return hex(css); }
