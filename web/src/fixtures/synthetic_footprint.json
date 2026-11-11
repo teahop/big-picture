@@ -1,0 +1,13 @@
+{
+ "schema": 1,
+ "note": "A made-up career for tests, development and screenshots. No real person.",
+ "as_of": 2026.75,
+ "entries": [
+  {"kind": "role", "label": "Server, Example Bistro", "years": 2.0, "end_year": 2010.5, "nodes": {"ind:722511": 1.0}},
+  {"kind": "role", "label": "Analyst, Example Credit Union", "years": 4.0, "end_year": 2015.0, "nodes": {"ind:5220A1": 0.8, "deep:strategy-consulting": 0.2}},
+  {"kind": "role", "label": "Software engineer, Example Systems", "years": 5.0, "end_year": 2021.0, "nodes": {"ind:541500": 0.7, "deep:frontier-model-labs": 0.3}},
+  {"kind": "role", "label": "Researcher, Example AI Lab", "years": 3.5, "end_year": 2026.75, "nodes": {"deep:frontier-model-labs": 1.0}},
+  {"kind": "role", "label": "Volunteer, Example Clinic", "years": 0.3, "end_year": 2012.0, "nodes": {"ind:62210P": 1.0}},
+  {"kind": "degree", "label": "BSc Computer Science (example)", "nodes": {"ind:541500": 0.6, "deep:frontier-model-labs": 0.4}}
+ ]
+}

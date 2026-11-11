@@ -16,8 +16,8 @@ live site, so `main` is not touched until Phase 4.
 |---|---|---|---|
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
-| 1 | One map | rebuilt 2026-11-10 as an industry-only terrain, awaiting owner review | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
-| 2 | Clear footprint | not started | Owner chooses between variants |
+| 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
+| 2 | Clear footprint | in progress: data done, waiting on owner confirmation of education mapping and weights | Entry-list footprint (`private/footprint.json`), weights module, synthetic footprint, dev-only route; viewer next |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 
@@ -41,10 +41,9 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 - Private: the education mapping and presence weights were left to confirm at
   the end of v1 Phase 4. Phase 2 uses them, so confirm them there.
 - The v1 to-dos about where-next, pay and geography are closed by removal.
-- Research fields were removed in Phase 1. The private footprint still maps
-  education and skills onto research nodes (`personal/skills.py`), so the
-  `imap personal` stage will not run until Phase 2 re-targets them to
-  industries (degrees via CIP -> SOC -> industry; see SPEC 7.3).
+- Research fields were removed in Phase 1. Phase 2 re-targeted degrees to
+  industries (CIP -> SOC -> industry, SPEC 7.3) and dropped skills from the
+  footprint (entries are roles and degrees only).
 
 ## Phases
 

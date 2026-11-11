@@ -16,17 +16,17 @@ const siteName = (): Plugin => ({
   transformIndexHtml: (html) => html.replaceAll("%DISPLAY_NAME%", site.display_name).replaceAll("%SUBTITLE%", site.subtitle),
 });
 
-// Local-only route for the private footprint. It exists only on the dev and preview servers and reads
-// ../private/overlay.json when that file is there; `vite build` never copies it, so published output cannot contain it.
-const privateOverlay = (): Plugin => {
+// Local-only route for the owner's private footprint. It exists only on the dev and preview servers and reads
+// ../private/footprint.json when that file is there; `vite build` never copies it, so published output cannot contain it.
+const privateFootprint = (): Plugin => {
   const handler = (req: { url?: string }, res: { setHeader(k: string, v: string): void; end(b: string): void; statusCode: number }, next: () => void) => {
-    if (!req.url?.match(/^\/_private\/overlay\.json/)) return next();
-    const file = new URL("../private/overlay.json", import.meta.url);
+    if (!req.url?.match(/^\/_private\/footprint\.json/)) return next();
+    const file = new URL("../private/footprint.json", import.meta.url);
     if (!existsSync(file)) { res.statusCode = 404; return res.end("not found"); }
     res.setHeader("Content-Type", "application/json"); res.setHeader("Cache-Control", "no-store");
     res.end(readFileSync(file, "utf8"));
   };
-  return { name: "private-overlay", configureServer: (s) => { s.middlewares.use(handler as never); }, configurePreviewServer: (s) => { s.middlewares.use(handler as never); } };
+  return { name: "private-footprint", configureServer: (s) => { s.middlewares.use(handler as never); }, configurePreviewServer: (s) => { s.middlewares.use(handler as never); } };
 };
 
 export default defineConfig({
@@ -35,5 +35,5 @@ export default defineConfig({
   publicDir: "../data/public",
   server: { fs: { allow: [".."] } },
   define: { __VIEWER__: JSON.stringify(viewer) },
-  plugins: [siteName(), privateOverlay()],
+  plugins: [siteName(), privateFootprint()],
 });

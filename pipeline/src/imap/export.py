@@ -77,13 +77,16 @@ def deep_nodes(ch: dict) -> list[dict]:
         return []
     deep = pd.read_csv(lv / "deep_industry.csv")
     occ = pd.read_csv(lv / "deep_industry_occupations.csv", dtype={"occ_code": str})
+    contrib = pd.read_csv(lv / "deep_industry_contrib.csv", dtype={"parent_code": str})
+    # how each deep: node's weight divides over the Level 1 industries it replaces (its jobs drawn from each)
+    up = {d: {f"ind:{p}": round(float(e / g["emp_2025"].sum()), 4) for p, e in zip(g["parent_code"], g["emp_2025"])} for d, g in contrib.groupby("node_id")}
     onet = pd.read_csv(interim_dir() / "onet" / "occupations.csv", dtype={"soc": str}).set_index("soc")["title"]
     nodes = []
     for r in deep.itertuples():
         sub = occ[occ.node_id == r.node_id]; tot = sub["emp_2025"].sum() or 1.0
         top = sub.sort_values(["emp_2025", "occ_code"], ascending=[False, True]).head(5)
         nodes.append({"id": r.node_id, "label": r.label, "title": r.title, "type": "ind", "level": 2, "parent": r.parent_id,
-                      "replaces": [x for x in r.replaces.split(";") if x != r.parent_id], "provenance": "estimated",
+                      "replaces": [x for x in r.replaces.split(";") if x != r.parent_id], "replaces_share": up[r.node_id], "provenance": "estimated",
                       "size_proxy": r.size_proxy, "weak_proxy": bool(r.weak), "zone": r.zone,
                       "members": [m for m in (r.members.split("; ") if isinstance(r.members, str) else []) if m],
                       "size": {"employment": round(float(r.emp_2025), 1), "employment_2035": round(float(r.emp_2035), 1)},

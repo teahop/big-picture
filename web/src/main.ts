@@ -3,7 +3,6 @@ import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type LodSetting } from "./state";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
-import { loadOverlay } from "./overlay";
 
 restoreTheme();
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -14,7 +13,6 @@ async function start(): Promise<void> {
   $("about-open").addEventListener("click", () => about.showModal());
   about.addEventListener("click", (e) => { if (e.target === about) about.close(); });
   const state = new State();
-  state.overlay = await loadOverlay();        // private, local only; v2 Phase 2 brings back the footprint control
   const gl = webglAvailable();
   // Without WebGL there is no map: say so in one line and leave the lists, search and details working.
   const NO_GL = "This browser cannot show the 3D map (WebGL is off or unavailable). The lists below still work.";

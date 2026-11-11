@@ -1,14 +1,6 @@
 import { type Bundle, type Link, type NodeRec, fmtGrowth, fmtJobs, fmtMeasure, links } from "./data";
 import type { State } from "./state";
 
-function presence(state: State, n: NodeRec): string {
-  const o = state.overlay?.nodes[String(state.level)]?.[n.id];
-  if (!state.overlay) return "";
-  if (!o || !o.total) return "<p class='hint'>Your footprint: no presence at this node.</p>";
-  const f = (x: number) => x.toFixed(2);
-  return "<h3>Your footprint here (private)</h3><p>Own footprint " + f(o.total) + " <small>tenure " + f(o.tenure) + " &middot; education " + f(o.education) + " &middot; skills " + f(o.skills) + "</small></p><p>Network (connections, partial coverage) " + f(o.connections) + "</p>";
-}
-
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
@@ -81,7 +73,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
     if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added under Dollars); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
-    panel.innerHTML = details(b, n) + presence(state, n);
+    panel.innerHTML = details(b, n);
   };
   state.subscribe(render); render();
 

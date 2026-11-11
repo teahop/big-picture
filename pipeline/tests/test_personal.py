@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from imap.personal.connections import norm_name, tie_normalised
-from imap.personal.presence import expand, halo, tenure
+from imap.personal.footprint import expand, role_entries, year_of
 from imap.personal.roles import Role, allocate_months, mi, parse_dates, parse_duration
 
 AS_OF = date(2026, 11, 9)
@@ -65,14 +65,14 @@ def test_excluded_roles_carry_nothing():
     assert got == {}
 
 
-def test_recency_decay_halves_every_half_life():
+def test_role_entries_carry_years_after_the_umbrella_rule_and_skip_excluded_roles():
     roles = pd.DataFrame([
-        {"nodes": "deep:a:1.0", "person_months": 12.0, "end_years_before_as_of": 0.0},
-        {"nodes": "deep:b:1.0", "person_months": 12.0, "end_years_before_as_of": 8.0},
-        {"nodes": "deep:c:0.5;deep:d:0.5", "person_months": 24.0, "end_years_before_as_of": 16.0}])
-    got = tenure(roles, half_life=8.0)
-    assert got["deep:a"] == pytest.approx(1.0) and got["deep:b"] == pytest.approx(0.5)
-    assert got["deep:c"] == pytest.approx(0.25) and got["deep:d"] == pytest.approx(0.25)
+        {"title": "T1", "organisation": "Example A", "included": True, "person_months": 18.0, "end": "2020-06", "nodes": "deep:a:0.5;deep:b:0.5"},
+        {"title": "T2", "organisation": "Example B", "included": False, "person_months": 12.0, "end": "2019-01", "nodes": "deep:c:1.0"},
+        {"title": "T3", "organisation": "Example C", "included": True, "person_months": 0.0, "end": "2018-01", "nodes": "deep:d:1.0"}])
+    got = role_entries(roles)
+    assert len(got) == 1 and got[0]["years"] == pytest.approx(1.5) and got[0]["end_year"] == pytest.approx(2020.5)
+    assert got[0]["nodes"] == {"deep:a": 0.5, "deep:b": 0.5} and year_of(None) is None
 
 
 def test_tie_strength_is_log_scaled_into_unit_interval():
@@ -83,16 +83,8 @@ def test_tie_strength_is_log_scaled_into_unit_interval():
 
 def test_connection_specs_split_equally_or_by_employment():
     members = {"ind:S": pd.Series({"ind:x": 300.0, "ind:y": 100.0})}
-    assert expand("deep:a;deep:b", None, None, members) == {"deep:a": 0.5, "deep:b": 0.5}
-    got = expand("sector:S", None, None, {"ind:S": members["ind:S"]})
-    assert got == {"ind:x": 0.75, "ind:y": 0.25}
-
-
-def test_halo_passes_a_damped_share_to_neighbours_in_proportion_to_weight():
-    edges = [{"source": "a", "target": "b", "weight": 3.0}, {"source": "a", "target": "c", "weight": 1.0}]
-    out = halo({"a": 10.0}, edges, damping=0.3)
-    assert out["b"] == pytest.approx(2.25) and out["c"] == pytest.approx(0.75)
-    assert halo({"z": 5.0}, edges, 0.3) == {}                 # no neighbours, no halo
+    assert expand("deep:a;deep:b", members) == {"deep:a": 0.5, "deep:b": 0.5}
+    assert expand("sector:S", members) == {"ind:x": 0.75, "ind:y": 0.25}
 
 
 def test_company_name_normalisation_ignores_suffixes_and_case():
@@ -100,6 +92,6 @@ def test_company_name_normalisation_ignores_suffixes_and_case():
 
 
 def test_public_export_does_not_import_the_personal_package():
-    code = "import sys, imap.export, imap.terrain, imap.layout_anchored; print(any(m.startswith('imap.personal') for m in sys.modules))"
+    code = "import sys, imap.export, imap.terrain, imap.layout_joint, imap.footprint; print(any(m.startswith('imap.personal') for m in sys.modules))"
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True).stdout.strip()
     assert out == "False"

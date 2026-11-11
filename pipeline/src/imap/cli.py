@@ -17,7 +17,7 @@ STAGES: dict[str, str] = {
     "layout": "Industry layout at every level (shared occupations and text)",
     "terrain": "Height grids per level and size setting",
     "export": "Write the public JSON bundle (--target public)",
-    "personal": "Personal overlay from private inputs (parts: roles, connections, skills, education, presence)",
+    "personal": "Private footprint from personal inputs (parts: roles, connections, education, footprint)",
 }
 
 
@@ -31,7 +31,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "ingest":
             p.add_argument("source", choices=["bls-matrix", "qcew", "bea", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
-            p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
+            p.add_argument("part", choices=["roles", "connections", "education", "footprint", "all"], help="which personal stage to run")
         if name == "export":
             p.add_argument("--target", choices=["public", "private"], default="public")
     return parser

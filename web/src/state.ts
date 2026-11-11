@@ -1,5 +1,4 @@
 import { SETTING_MEASURE, type Measure, type NodeRec, type SizeSetting } from "./data";
-import type { OverlayData } from "./overlay";
 
 export type LodSetting = "auto" | "0" | "1" | "2";
 
@@ -9,7 +8,6 @@ export class State {
   selected: NodeRec | null = null;
   size: SizeSetting = "activity";
   lod: LodSetting = "auto";
-  overlay: OverlayData | null = null;   // private, only when present locally
   level = 0;                       // level of detail currently drawn
   visibleIds = new Set<string>();  // nodes drawn at that level
   private listeners: (() => void)[] = [];
