@@ -176,26 +176,9 @@ export class Scene3D {
       const modeChanged = force || prev[0] !== this.state.mode;
       this.refreshLayer("ind"); this.refreshLayer("fld");
       this.placeMarkers();
-      this.placeCentroid();
       if (modeChanged) this.applyMode();
     }
     this.refreshHighlight();
-  }
-
-  /** Weighted centroid of the footprint: a summary marker only (it can sit between clusters). */
-  private centroidMesh: THREE.Mesh | null = null;
-  private placeCentroid(): void {
-    const c = this.state.footprint !== "off" ? this.state.overlay?.centroid[String(this.state.level)] : null;
-    if (!c) { if (this.centroidMesh) this.centroidMesh.visible = false; return; }
-    if (!this.centroidMesh) {
-      this.centroidMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: readTheme().footprint }));
-      this.centroidMesh.name = "footprint-centroid"; this.scene.add(this.centroidMesh);
-    }
-    const layer: Layer = this.state.showsIndustry() ? "ind" : "fld";
-    const h = this.h(layer, heightAt(this.grid(layer), c.xy[0], c.xy[1]));
-    const p = this.local(c.xy[0], c.xy[1], h + 0.5);
-    p.y += this.groups[layer].position.y;
-    this.centroidMesh.position.copy(p); this.centroidMesh.visible = true;
   }
 
   private applyMode(): void {
@@ -215,17 +198,17 @@ export class Scene3D {
     this.refreshLayer("ind"); this.refreshLayer("fld"); this.refreshHighlight();
   }
 
-  /** Rings only mark the selected, hovered and top-ranked nodes; the terrain itself shows where the peaks are. */
-  private ringed(id: string): boolean { return this.state.active?.id === id || this.state.selected?.id === id || this.state.ranked.has(id); }
+  /** Rings only mark the selected and hovered nodes; the terrain itself shows where the peaks are. */
+  private ringed(id: string): boolean { return this.state.active?.id === id || this.state.selected?.id === id; }
 
   private refreshHighlight(): void {
     const t = readTheme(), act = this.state.active, sel = this.state.selected;
     for (const [id, m] of this.markers) {
-      const on = act?.id === id || sel?.id === id, top = this.state.ranked.has(id);
+      const on = act?.id === id || sel?.id === id;
       const mat = (m.ring as THREE.Mesh | THREE.LineLoop).material as THREE.MeshBasicMaterial | THREE.LineDashedMaterial;
-      mat.color.set(on ? t.accent : top ? t.footprint : t.fg);
-      m.ring.scale.setScalar(m.r * (on ? 1.5 : top ? 1.3 : 1));
-      m.ring.visible = this.state.visibleIds.has(id) && (on || top);
+      mat.color.set(on ? t.accent : t.fg);
+      m.ring.scale.setScalar(m.r * (on ? 1.5 : 1));
+      m.ring.visible = this.state.visibleIds.has(id) && on;
       m.label.classList.toggle("active", on);
     }
   }

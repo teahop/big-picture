@@ -1,14 +1,11 @@
 /** Optional private footprint (Phase 4). Present only when a local `private/overlay.json` exists and the dev server
  *  exposes it; the public build never contains it, so a published site simply has no footprint control. */
 export type Footprint = "off" | "total" | "tenure" | "connections" | "skills" | "education" | "all";
-export interface Centroid { xy: [number, number]; spread: number; nearest_occupied_node: number; between_clusters: boolean }
 export interface OverlayData {
   components: string[];
   extent: { x: [number, number]; y: [number, number]; n: number };
-  centroid: Record<string, Centroid>;
   nodes: Record<string, Record<string, Record<string, number>>>;
   grids: Record<string, Record<string, { max: number; values: number[] }>>;
-  caveat: string;
 }
 
 export async function loadOverlay(): Promise<OverlayData | null> {

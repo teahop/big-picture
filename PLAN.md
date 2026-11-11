@@ -15,7 +15,7 @@ live site, so `main` is not touched until Phase 4.
 | Phase | Name | Status | Notes |
 |---|---|---|---|
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
-| 0 | Rename and strip | not started | |
+| 0 | Rename and strip | done 2026-11-10, awaiting owner review | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | not started | Owner review of the prototype |
 | 2 | Clear footprint | not started | Owner chooses between variants |
 | 3 | Add your CV | not started | |

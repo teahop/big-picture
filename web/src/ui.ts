@@ -118,8 +118,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
     if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Peaks (\u25B2) are industry sectors, valleys (\u25BC) are research fields. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
-    details.innerHTML = (n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n)) + presence(state, n)
-      + (state.overlay && state.footprint !== "off" ? "<p class='hint'>" + esc(state.overlay.caveat) + (state.overlay.centroid[String(state.level)]?.between_clusters ? " At this level the centroid does sit away from every occupied node." : "") + "</p>" : "");
+    details.innerHTML = (n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n)) + presence(state, n);
   };
   state.subscribe(render); render();
 

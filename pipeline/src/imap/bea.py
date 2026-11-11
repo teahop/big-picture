@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from .common import interim_dir, raw_dir, repo_root, report_dir
-from .geo import USER_AGENT, load_area, qcew_codes
+from .qcew import USER_AGENT, qcew_codes
 
 BEA_YEAR = 2025
 CONCORDANCE_URL = "https://www.bea.gov/sites/default/files/2023-10/BEA-Industry-and-Commodity-Codes-and-NAICS-Concordance.xlsx"
@@ -151,7 +151,7 @@ def allocate() -> pd.DataFrame:
 
 def _us_with_wages() -> pd.DataFrame:
     import zipfile
-    from .geo import zip_path
+    from .qcew import zip_path
     with zipfile.ZipFile(zip_path()) as z:
         name = next(n for n in z.namelist() if "annual US000 " in n)
         with z.open(name) as f:

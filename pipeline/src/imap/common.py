@@ -44,3 +44,8 @@ def sha256(path: Path) -> str:
 
 def load_deep_zones() -> dict:
     return yaml.safe_load((repo_root() / "config" / "deep_zones.yaml").read_text())
+
+
+def load_site() -> dict:
+    """Display name and subtitle (config/site.yaml), the one place they are set."""
+    return yaml.safe_load((repo_root() / "config" / "site.yaml").read_text())

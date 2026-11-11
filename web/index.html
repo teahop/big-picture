@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="%DISPLAY_NAME%: industry and research terrain" />
-    <title>%DISPLAY_NAME%</title>
+    <meta name="description" content="%DISPLAY_NAME%: %SUBTITLE%. A terrain of US industries and research fields." />
+    <title>%DISPLAY_NAME%: %SUBTITLE%</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <header>
-      <h1 id="title"></h1>
+      <h1 id="title">%DISPLAY_NAME% <span class="subtitle">%SUBTITLE%</span></h1>
       <fieldset class="layers">
         <legend class="sr">Layer mode</legend>
         <label><input type="radio" name="layer" value="industry" /> <span>Industry</span></label>
@@ -54,7 +54,6 @@
         <input id="search" type="search" placeholder="Search" autocomplete="off" />
       </label>
       <span id="search-count" aria-live="polite"></span>
-      <button id="mode" type="button" aria-pressed="false">Switch to 2D map</button>
       <button id="theme" type="button" aria-label="Switch between light and dark">Dark mode</button>
       <button id="about-open" type="button" aria-haspopup="dialog">About the data</button>
       <button id="panel-toggle" type="button" aria-pressed="false">Hide panel</button>
@@ -62,14 +61,12 @@
     <p id="size-note" class="sr">Value added is the Bureau of Economic Analysis figure for each industry; below the sector level it is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status">Loading the map…</p>
     <main>
-      <section class="map" aria-label="Terrain map">
+      <section class="map" id="map" aria-label="Terrain map">
         <div id="view-3d" class="view"></div>
         <div id="labels" class="labels" aria-hidden="true"></div>
-        <div id="view-2d" class="view" hidden></div>
       </section>
       <aside>
         <div id="details" aria-live="polite"></div>
-        <div id="where-next" hidden></div>
         <div id="group-ind"><h3>Industry sectors by employment</h3><ul id="list-ind"></ul></div>
         <div id="group-fld"><h3>Research fields</h3><ul id="list-fld"></ul></div>
         <p id="source" class="source"></p>

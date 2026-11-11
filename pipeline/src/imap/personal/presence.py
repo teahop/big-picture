@@ -116,16 +116,6 @@ def kernel_grid(items: list[tuple[tuple[float, float], float, int]], extent: dic
     return z
 
 
-def centroid(items: list[tuple[tuple[float, float], float, int]]) -> dict:
-    xy = np.array([i[0] for i in items]); w = np.array([i[1] for i in items])
-    c = (xy * w[:, None]).sum(axis=0) / w.sum()
-    spread = float(np.sqrt((w * ((xy - c) ** 2).sum(axis=1)).sum() / w.sum()))
-    big = xy[w >= 0.05 * w.max()]
-    nearest = float(np.min(np.hypot(*(big - c).T)))
-    return {"xy": [round(float(c[0]), 4), round(float(c[1]), 4)], "spread": round(spread, 4), "nearest_occupied_node": round(nearest, 4),
-            "between_clusters": bool(nearest > 0.5 * spread)}
-
-
 def run() -> int:
     profile = load_profile(); pr = profile["presence"]
     nodes = NodeTable()
@@ -192,23 +182,21 @@ def run() -> int:
                     its.append((nodes.xy[base], float(v), lvl))
             items[lv][c] = its
 
-    grids, cents, node_vals = {}, {}, {}
+    grids, node_vals = {}, {}
     for lv in ("0", "1", "2"):
-        grids[lv], cents[lv] = {}, {}
+        grids[lv] = {}
         for c in comps_all:
             if not items[lv][c]:
                 continue
             z = kernel_grid(items[lv][c], extent, float(cfg["bandwidth_level0"]), float(cfg["bandwidth_per_level"]), n)
             m = float(z.max()) or 1.0
             grids[lv][c] = {"max": round(m, 4), "values": np.round(z / m, 3).ravel().tolist()}
-        cents[lv] = centroid(items[lv]["total"])
         node_vals[lv] = {k: {c: round(level_nodes[lv][c].get(k, 0.0), 3) for c in comps_all}
                          for k in set().union(*[set(level_nodes[lv][c]) for c in comps_all]) if not k.startswith("halo:")}
     overlay = {"schema": 1, "as_of": str(profile.get("as_of", "")), "extent": {**extent, "n": n}, "components": list(comps_all),
                "params": {"half_life_years": pr["tenure_half_life_years"], "k": pr["connection_weight_k"], "skill_weight": pr["skill_weight"],
                           "education_weight": pr.get("education_weight", 0), "halo_damping": damp},
-               "centroid": cents, "nodes": node_vals, "grids": grids,
-               "caveat": "The centroid is a summary of a spread-out footprint; with several separate clusters it can sit where there is no presence."}
+               "nodes": node_vals, "grids": grids}
     (priv / "overlay.json").write_text(json.dumps(overlay, separators=(",", ":")) + "\n")
 
     top = pd.DataFrame([{"node_id": k, "label": nodes.df.loc[k, "label"], **v} for k, v in node_vals["2"].items() if k in nodes.df.index]).sort_values("total", ascending=False)
@@ -218,7 +206,6 @@ def run() -> int:
         "# presence report (private)", "",
         "- component totals (finest nodes, before diffusion): " + "; ".join(f"{c} {v:.2f}" for c, v in tot.items()),
         f"- nodes with any presence: {len(node_vals['2'])} at Level 2, {len(node_vals['1'])} at Level 1, {len(node_vals['0'])} at Level 0",
-        f"- centroid per level: " + "; ".join(f"L{lv} between_clusters={c['between_clusters']}" for lv, c in cents.items()),
         "- 'total' = tenure + education + skills; connections are a separate layer; 'all' combines them",
         "- top 12 nodes at Level 2 (own footprint, without connections): " + "; ".join(f"{r.label} {r.total:.2f}" for r in top.head(12).itertuples())]) + "\n")
     print(f"presence: tenure {tot['tenure']:.1f}, connections {tot['connections']:.1f}, skills {tot['skills']:.2f}; wrote private/overlay.json")

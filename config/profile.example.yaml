@@ -13,15 +13,5 @@ presence:
   skill_weight: 0.3
   umbrella_rule: "children_first"  # see SPEC 7.2
 
-where_next:
-  weights: {adjacency: 0.4, growth: 0.3, size: 0.2, novelty: 0.1}
-  toggles:
-    pay:       {enabled: false, floor_usd: 150000}
-    mission:   {enabled: false}            # uses mission_tags below
-    geography: {enabled: false, metro: "Example Metro, ST"}
-
-mission_tags:      # owner-assigned, -2..+2, on any node id or deep-zone slug
-  "deep:example-category": 2
-
 publish:
   personal: "none"   # none | aggregate. Never contact-level data.

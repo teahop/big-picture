@@ -6,7 +6,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "score", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "graph", "layout", "terrain", "export"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
@@ -18,19 +18,20 @@ STAGES: dict[str, str] = {
     "terrain": "Height grids per layer and size measure",
     "export": "Write the public JSON bundle (--target public)",
     "personal": "Personal overlay from private inputs (parts: roles, connections, skills, education, presence)",
-    "score": "Where-next scoring (Phase 5)",
 }
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="imap", description="Industry map pipeline")
+    from .common import load_site
+    site = load_site()
+    parser = argparse.ArgumentParser(prog="imap", description=f"{site['display_name']} ({site['subtitle']}): data pipeline")
     sub = parser.add_subparsers(dest="stage", metavar="STAGE", required=True)
     for name, helptext in STAGES.items():
         p = sub.add_parser(name, help=helptext, description=helptext)
         if name == "graph":
             p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "openalex-geo", "qcew", "oews", "bea", "herd", "cip-soc", "onet"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "qcew", "bea", "herd", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
             p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
         if name == "export":
@@ -53,11 +54,9 @@ def run_stage(args: argparse.Namespace) -> int:
         if args.source == "bea":
             from . import bea
             return bea.fetch()
-        if args.source in ("qcew", "oews", "openalex-geo"):
-            from . import geo
-            if args.source == "oews":
-                return geo.check_oews()
-            return geo.download_qcew() if args.source == "qcew" else geo.run_openalex_geo()
+        if args.source == "qcew":
+            from . import qcew
+            return qcew.download_qcew()
         if args.source == "openalex-levels":
             from . import openalex
             return openalex.run_levels()
@@ -69,9 +68,6 @@ def run_stage(args: argparse.Namespace) -> int:
     if name == "value":
         from . import bea
         return bea.run()
-    if name == "score":
-        from . import score
-        return score.run()
     if name == "deep":
         from . import deep_industry
         return deep_industry.run()

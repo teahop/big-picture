@@ -36,7 +36,7 @@ jobs:
         run: |
           set -eu
           # A clean clone has no private/ or Personal Data/, so none of it can be in the build; check the output anyway.
-          if find web/dist -type f \( -name 'overlay.json' -o -name 'score.json' -o -name '*.local.yaml' -o -name '.env' \) | grep -q .; then
+          if find web/dist -type f \( -name 'overlay.json' -o -name '*.local.yaml' -o -name '.env' \) | grep -q .; then
             echo "Private-looking file in web/dist"; exit 1
           fi
           if find web/dist -type f | grep -qiE '(^|/)(private|Personal Data)(/|$)'; then
