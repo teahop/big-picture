@@ -1,9 +1,9 @@
-import { ensureLevel, loadBundle, visibleAt, type IndustryMeasure, type NodeRec, type ResearchMeasure } from "./data";
+import { ensureLevel, loadBundle, visibleAt, type NodeRec, type SizeSetting } from "./data";
 import { Scene3D, webglAvailable } from "./scene3d";
-import { State, type LayerMode, type LodSetting } from "./state";
+import { State, type Emphasis, type LodSetting } from "./state";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
-import { loadOverlay, type Footprint } from "./overlay";
+import { loadOverlay } from "./overlay";
 
 restoreTheme();
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -14,7 +14,7 @@ async function start(): Promise<void> {
   $("about-open").addEventListener("click", () => about.showModal());
   about.addEventListener("click", (e) => { if (e.target === about) about.close(); });
   const state = new State();
-  state.overlay = await loadOverlay();        // null on the public site: the footprint control stays hidden
+  state.overlay = await loadOverlay();        // private, local only; v2 Phase 2 brings back the footprint control
   const gl = webglAvailable();
   // Without WebGL there is no map: say so in one line and leave the lists, search and details working.
   const NO_GL = "This browser cannot show the 3D map (WebGL is off or unavailable). The lists below still work.";
@@ -40,24 +40,17 @@ async function start(): Promise<void> {
   $("map").hidden = !gl;
   $("notice").textContent = gl ? "" : NO_GL;
 
-  const fp = $<HTMLSelectElement>("footprint");
-  if (state.overlay) { $("footprint-wrap").hidden = false; fp.addEventListener("change", () => state.setFootprint(fp.value as Footprint)); }
   const lod = $<HTMLSelectElement>("lod");
   lod.addEventListener("change", () => { state.setLod(lod.value as LodSetting); void applyLevel(); });
-  for (const input of document.querySelectorAll<HTMLInputElement>("input[name=layer]")) {
-    input.checked = input.value === state.mode;
-    input.addEventListener("change", () => { if (input.checked) state.setMode(input.value as LayerMode); });
+  for (const input of document.querySelectorAll<HTMLInputElement>("input[name=emphasis]")) {
+    input.checked = input.value === state.emphasis;
+    input.addEventListener("change", () => { if (input.checked) state.setEmphasis(input.value as Emphasis); });
   }
-  const research = $<HTMLSelectElement>("size-research");
-  const industry = $<HTMLSelectElement>("size-industry");
-  industry.addEventListener("change", () => state.setIndustryMeasure(industry.value as IndustryMeasure));
-  research.addEventListener("change", () => state.setResearchMeasure(research.value as ResearchMeasure));
-  const syncRadios = () => document.querySelectorAll<HTMLInputElement>("input[name=layer]").forEach((i) => { i.checked = i.value === state.mode; });
-  state.subscribe(syncRadios);
+  const size = $<HTMLSelectElement>("size");
+  size.addEventListener("change", () => state.setSize(size.value as SizeSetting));
 
   const pick = (n: NodeRec) => {
     if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level); }
-    if (!state.isVisible(n)) state.setMode(n.type === "ind" ? "industry" : "research");
     void applyLevel().then(() => { state.setSelected(n); scene3d?.focus(n); });
   };
   buildPanel(bundle, state, pick);
@@ -70,7 +63,8 @@ async function start(): Promise<void> {
   panelBtn.addEventListener("click", () => { const hide = document.querySelector("aside")!.toggleAttribute("hidden"); panelBtn.textContent = hide ? "Show panel" : "Hide panel"; panelBtn.setAttribute("aria-pressed", String(hide)); });
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
-    setFootprint: (f: Footprint) => { fp.value = f; state.setFootprint(f); },
+    setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },
+    setEmphasis: (e: Emphasis) => { state.setEmphasis(e); document.querySelectorAll<HTMLInputElement>("input[name=emphasis]").forEach((i) => { i.checked = i.value === e; }); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }

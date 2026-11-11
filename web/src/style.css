@@ -8,24 +8,23 @@
 :root, :root[data-theme="light"] {
   --bg: var(--surface-page); --fg: var(--text-primary); --muted: var(--text-secondary); --panel: var(--surface-card); --line: var(--border-hairline);
   --accent: #1f7a63; --footprint: #19a98a;
-  --ramp-lo: var(--greige-200); --ramp-hi: var(--warm-brown);          /* industry peaks: greige up to warm brown */
-  --rramp-lo: #e4e9e1; --rramp-hi: #5f7f71;                            /* research valleys: a desaturated sage derived from the teal; warm-brown-to-greige reversed read as the same hue as the peaks */
+  /* One terrain: hue shows the industry share of the height (research teal, neutral greige, industry warm brown);
+     lightness shows height. Adjust the hues here; the neutral band and peak height are in config/viewer.yaml. */
+  --terrain-ground: var(--greige-100); --terrain-neutral: #a89a8b; --terrain-ind: #7a4a2e; --terrain-res: #2f7a66;
   color-scheme: light;
 }
 /* Dark theme derived from the same palette: warm brown surfaces, off-white text, soft teal accent. */
 :root[data-theme="dark"] {
   --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
-  --ramp-lo: var(--brown-700); --ramp-hi: var(--greige-200);
-  --rramp-lo: #202a25; --rramp-hi: #8fb3a3;
+  --terrain-ground: #241e1a; --terrain-neutral: #9a8d80; --terrain-ind: #e0a878; --terrain-res: #7cc8ae;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
-    --ramp-lo: var(--brown-700); --ramp-hi: var(--greige-200);
-    --rramp-lo: #202a25; --rramp-hi: #8fb3a3;
+    --terrain-ground: #241e1a; --terrain-neutral: #9a8d80; --terrain-ind: #e0a878; --terrain-res: #7cc8ae;
     color-scheme: dark;
   }
 }
@@ -98,3 +97,11 @@ aside[hidden] { display: none; }
 #about::backdrop { background: rgb(0 0 0 / .5); }
 #about h2 { margin: 0 0 8px; } #about h3 { margin: 16px 0 4px; font-size: 1rem; } #about p, #about li { line-height: 1.5; } #about ul { padding-left: 20px; }
 #about form { float: right; margin: 0; }
+
+/* one-terrain legend (industry share of the height) */
+.legend { position: absolute; left: 12px; bottom: 12px; display: grid; grid-template-columns: auto 120px auto; align-items: center; gap: 2px 8px;
+  padding: 6px 10px; font-size: 12px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 85%, transparent); pointer-events: none; }
+.legend i { display: block; height: 10px; border-radius: 2px;
+  background: linear-gradient(to right, var(--terrain-res), var(--terrain-neutral) 40%, var(--terrain-neutral) 60%, var(--terrain-ind)); }
+.legend small { grid-column: 1 / -1; }
+aside .faded { opacity: .55; }

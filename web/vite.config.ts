@@ -8,6 +8,9 @@ const site = parse(readFileSync(new URL("../config/site.yaml", import.meta.url),
   subtitle: string;
 };
 
+// Settings tuned by eye (peak height, neutral band, fade) live in ../config/viewer.yaml.
+const viewer = parse(readFileSync(new URL("../config/viewer.yaml", import.meta.url), "utf8")) as Record<string, number>;
+
 const siteName = (): Plugin => ({
   name: "site-name",
   transformIndexHtml: (html) => html.replaceAll("%DISPLAY_NAME%", site.display_name).replaceAll("%SUBTITLE%", site.subtitle),
@@ -31,5 +34,6 @@ export default defineConfig({
   // The viewer loads the tracked public bundle straight from data/public.
   publicDir: "../data/public",
   server: { fs: { allow: [".."] } },
+  define: { __VIEWER__: JSON.stringify(viewer) },
   plugins: [siteName(), privateOverlay()],
 });

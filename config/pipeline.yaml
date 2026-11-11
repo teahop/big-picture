@@ -6,6 +6,7 @@ terrain:
   margin: 0.25             # padding around the node bounding box (layout units)
   bandwidth_level0: 0.12   # Gaussian sigma for Level 0 nodes (layout units)
   bandwidth_per_level: 0.5 # sigma multiplier for each deeper level (level 1 = x0.5)
+  research_relative_height: 1.0  # peak of the largest Level 0 field relative to the largest Level 0 industry
 
 bridge:
   weight_occupational: 0.6

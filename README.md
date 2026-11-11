@@ -10,30 +10,29 @@ until the v2 release step.
 
 ## What exists now
 
-- **Industry terrain:** peaks for US industries, sized by employment (value added
-  and value added per job as alternatives). BLS Employment Matrix 2025, BEA GDP by
-  Industry 2025.
-- **Research terrain:** valleys for research fields, sized by US publications
-  (university R&D dollars as an alternative). OpenAlex, NSF HERD FY 2024.
-- **Shared layout:** both use one coordinate space, so nearby things are similar.
-  For now they are shown as separate layers (alone, stacked or overlaid).
+- **One terrain:** US industries and research fields raise one surface; height is
+  size. Each type is scaled so the largest sector and the largest field peak at the
+  same height, and colour shows how much of each place is industry or research.
+- **Two size settings:** Activity (jobs from the BLS Employment Matrix 2025, US
+  publications from OpenAlex) and Dollars (BEA value added 2025, NSF HERD FY 2024
+  university R&D). An emphasis control fades one type without changing heights.
+- **Shared layout:** nearby things are similar.
 - **Three levels of detail:** sectors and fields, detailed industries and
   subfields, then research topics and a few hand-built deep zones.
-- **Private footprint (local only):** on the owner's machine, a footprint from
-  tenure, education and skills drapes over the terrain. It is never published.
+- **Private footprint (local only):** its control is hidden while it is rebuilt
+  for the one terrain (next step). It is never published.
 
 Without WebGL the page shows a one-line message and the searchable node lists.
 
 ## Planned for v2
 
-1. One map: industry and research on a single terrain.
-2. A clearer footprint: touched areas highlighted, with steps down into finer levels.
-3. Add your CV: a visitor gets a footprint from a CV in the browser. Nothing is
+1. A clearer footprint: touched areas highlighted, with steps down into finer levels.
+2. Add your CV: a visitor gets a footprint from a CV in the browser. Nothing is
    stored or sent.
-4. Download one JPG of the map and footprint.
+3. Download one JPG of the map and footprint.
 
 Removed from v1: the "where next" score, the pay, mission and geography toggles,
-the 2D contour map and the footprint centroid marker.
+the 2D contour map, the footprint centroid marker and the four layer modes.
 
 Personal data never enters this repository. See `SPEC.md` and `CLAUDE.md`.
 

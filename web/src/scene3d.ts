@@ -1,22 +1,19 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { type Bundle, type Grid, type Measure, type NodeRec, heightAt, levelMaxSize } from "./data";
-import { BANDS, bandColour, readTheme } from "./theme";
-import { blendHeat } from "./overlay";
+import { type Bundle, type LevelGrids, type NodeRec, MARK, levelMaxSize, sampleAt } from "./data";
+import { mixPosition, readTheme, terrainColour } from "./theme";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
 const SPAN = 12;      // world units across the layout
-const H_MAX = 7.0;    // world height of the largest peak / depth of the deepest valley
-const GAP = 2.6;      // vertical gap between the two terrains in stacked mode
 const MAX_LABELS = 60; // labels drawn at once (largest first); the rest stay hidden until hover or select
 const PICK_PX = 30;   // screen-space radius for hover and click
 const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
 const AUTO_L2 = 7.0;  // ... and to Level 2
+const CFG = __VIEWER__;
 
-type Layer = "ind" | "fld";
-// Shared, low-poly marker geometry (one instance for every node)
-const GEO = { circle: new THREE.RingGeometry(0.82, 1, 24), diamond: new THREE.RingGeometry(0.78, 1, 4) };
+// Shared, low-poly marker geometry: a square for industry, a circle for research (the same marks as the labels)
+const GEO = { square: new THREE.RingGeometry(0.8, 1, 4, 1, Math.PI / 4), circle: new THREE.RingGeometry(0.82, 1, 24) };
 
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 
@@ -25,8 +22,8 @@ export class Scene3D {
   private scene = new THREE.Scene();
   private camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
   private controls: OrbitControls;
-  private groups: Record<Layer, THREE.Group> = { ind: new THREE.Group(), fld: new THREE.Group() };
-  private meshes = {} as Record<Layer, THREE.Mesh>;
+  private group = new THREE.Group();
+  private mesh!: THREE.Mesh;
   private markers = new Map<string, Marker>();   // created the first time a node is shown
   private scale: number; private cx: number; private cy: number;
   private flyTo: THREE.Vector3 | null = null;
@@ -43,28 +40,29 @@ export class Scene3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     const el = this.renderer.domElement;
     el.tabIndex = 0;
-    el.setAttribute("aria-label", "3D terrain of industry sectors (peaks) and research fields (valleys). Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
+    el.setAttribute("aria-label", "3D terrain of US industries and research fields on one surface. Height is size; colour shows how much of a mountain is industry or research. Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
     host.appendChild(el);
 
-    const g = b.grids[0]!.employment;
+    const g = b.grids[0]!;
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
 
-    this.camera.position.set(0, 9, 13);
+    this.camera.position.set(0, 11, 15);
     this.controls = new OrbitControls(this.camera, el);
     this.controls.enableDamping = true;
     this.controls.minDistance = 3; this.controls.maxDistance = 40;
+    this.controls.target.set(0, 1, 0);
     this.controls.listenToKeyEvents(el);
 
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 1.7));
     const sun = new THREE.DirectionalLight(0xffffff, 1.3); sun.position.set(-6, 12, 8); this.scene.add(sun);
-    this.scene.add(this.groups.ind, this.groups.fld);
+    this.scene.add(this.group);
     this.ground = new THREE.GridHelper(SPAN * 1.2, 24, 0x888888, 0x888888);
     (this.ground.material as THREE.Material).transparent = true; (this.ground.material as THREE.Material).opacity = 0.25;
-    this.ground.scale.set(STRETCH_X, 1, STRETCH_Z);
+    this.ground.scale.set(STRETCH_X, 1, STRETCH_Z); this.ground.position.y = -0.01;
     this.scene.add(this.ground);
 
-    for (const layer of ["ind", "fld"] as Layer[]) this.buildMesh(layer);
+    this.buildMesh();
     this.applyTheme();
     this.sync(true);
     this.bindPointer(el);
@@ -73,23 +71,22 @@ export class Scene3D {
     this.resize();
   }
 
-  // ---- measures and heights
-  private grids(): Record<Measure, Grid> { return this.b.grids[this.state.level]!; }
-  private grid(layer: Layer): Grid { return this.grids()[this.measure(layer)]; }
-  private measure(layer: Layer): Measure { return layer === "ind" ? this.state.industryMeasure : this.state.researchMeasure; }
-  private maxAbs(layer: Layer): number { return this.b.maxAbs[this.state.level]![this.measure(layer)]; }
-  private h(layer: Layer, v: number): number { return (v / this.maxAbs(layer)) * H_MAX; }
+  // ---- heights
+  private grid(): LevelGrids { return this.b.grids[this.state.level]!; }
+  private values(): { height: number[]; share: number[] } { return this.grid().settings[this.state.size]; }
+  private maxH(): number { return this.b.maxHeight[this.state.level]![this.state.size]; }
+  private h(v: number): number { return (v / this.maxH()) * CFG.peak_height; }
   private rel(n: NodeRec): number {
-    const m = n.type === "ind" ? this.state.industryMeasure : this.state.researchMeasure;
+    const m = this.state.measure(n.type);
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
   private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale * STRETCH_X, h, (y - this.cy) * this.scale * STRETCH_Z); }
 
-  private buildMesh(layer: Layer): void {
-    const n = this.b.grids[0]!.employment.n;
+  private buildMesh(): void {
+    const n = this.b.grids[0]!.n;
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * n * 3), 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * n * 4), 4));
+    geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * n * 3), 3));
     const idx: number[] = [];
     for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
       const a = j * n + i, b = a + 1, c = a + n, d = c + 1;
@@ -97,26 +94,27 @@ export class Scene3D {
     }
     geo.setIndex(idx);
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, side: THREE.DoubleSide });
-    this.meshes[layer] = new THREE.Mesh(geo, mat);
-    this.groups[layer].add(this.meshes[layer]);
+    this.mesh = new THREE.Mesh(geo, mat);
+    this.group.add(this.mesh);
   }
 
-  private refreshLayer(layer: Layer): void {
-    const g = this.grid(layer), n = g.n, geo = this.meshes[layer].geometry;
-    const pos = geo.getAttribute("position") as THREE.BufferAttribute;
+  private refreshHeights(): void {
+    const g = this.grid(), n = g.n, v = this.values().height, pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const x = g.x[0] + ((g.x[1] - g.x[0]) * i) / (n - 1), y = g.y[0] + ((g.y[1] - g.y[0]) * j) / (n - 1);
-      const p = this.local(x, y, this.h(layer, g.values[j * n + i]));
+      const p = this.local(x, y, this.h(v[j * n + i]));
       pos.setXYZ(j * n + i, p.x, p.y, p.z);
     }
-    pos.needsUpdate = true; geo.computeVertexNormals();
-    const t = readTheme(), col = geo.getAttribute("color") as THREE.BufferAttribute, max = this.maxAbs(layer);
-    const overlaid = this.state.mode === "overlaid", heat = this.state.heatGrid();
-    for (let k = 0; k < g.values.length; k++) {
-      const h01 = Math.abs(g.values[k]) / max;
-      let [r, gg, bb] = bandColour(t, layer === "ind" ? "ind" : "res", h01);
-      if (heat && heat.values[k] > 0.02) [r, gg, bb] = blendHeat([r, gg, bb], heat.values[k]);
-      col.setXYZW(k, r / 255, gg / 255, bb / 255, overlaid ? (h01 * BANDS < 1 ? 0 : 0.9) : 1);
+    pos.needsUpdate = true; this.mesh.geometry.computeVertexNormals();
+  }
+
+  private refreshColours(): void {
+    const t = readTheme(), { height, share } = this.values(), max = this.maxH();
+    const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
+    const fadeInd = this.state.faded("ind") ? CFG.fade : 0, fadeRes = this.state.faded("fld") ? CFG.fade : 0;
+    for (let k = 0; k < height.length; k++) {
+      const [r, g, b] = terrainColour(t, mixPosition(share[k], CFG.neutral_band, fadeInd, fadeRes), height[k] / max);
+      col.setXYZ(k, r / 255, g / 255, b / 255);
     }
     col.needsUpdate = true;
   }
@@ -127,20 +125,19 @@ export class Scene3D {
     if (m) return m;
     let ring: THREE.Object3D;
     const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    if (node.provenance === "estimated") {            // dashed outline marks estimated nodes
-      const pts = Array.from({ length: 49 }, (_, i) => new THREE.Vector3(Math.cos((i / 48) * Math.PI * 2), 0, Math.sin((i / 48) * Math.PI * 2)));
+    if (node.provenance === "estimated") {            // dashed outline marks estimated nodes, in the type's shape
+      const k = node.type === "ind" ? 4 : 48, off = node.type === "ind" ? Math.PI / 4 : 0;
+      const pts = Array.from({ length: k + 1 }, (_, i) => new THREE.Vector3(Math.cos(off + (i / k) * Math.PI * 2), 0, Math.sin(off + (i / k) * Math.PI * 2)));
       const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.18, gapSize: 0.12 }));
       line.computeLineDistances(); ring = line;
-    } else if (node.type === "ind") {
-      ring = new THREE.Mesh(GEO.circle, mat); ring.rotation.x = -Math.PI / 2;
     } else {
-      ring = new THREE.Mesh(GEO.diamond, mat); ring.rotation.x = -Math.PI / 2;
+      ring = new THREE.Mesh(node.type === "ind" ? GEO.square : GEO.circle, mat); ring.rotation.x = -Math.PI / 2;
     }
-    this.groups[node.type].add(ring);
+    this.group.add(ring);
     const btn = document.createElement("button");
     btn.className = "node-label " + node.type + (node.provenance === "estimated" ? " est" : "") + " lvl" + node.level;
     btn.type = "button"; btn.tabIndex = -1; btn.style.visibility = "hidden";
-    btn.textContent = (node.provenance === "estimated" ? "≈ " : "") + (node.type === "ind" ? "▲ " : "▼ ") + node.label;
+    btn.textContent = (node.provenance === "estimated" ? "≈ " : "") + MARK[node.type] + " " + node.label;
     btn.addEventListener("pointerenter", () => this.state.setHover(node));
     btn.addEventListener("pointerleave", () => this.state.setHover(null));
     btn.addEventListener("click", () => this.state.setSelected(node));
@@ -155,47 +152,43 @@ export class Scene3D {
   private placeMarkers(): void {
     for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on && this.ringed(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
     const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
+    const g = this.grid(), v = this.values().height;
     for (const node of visible) {
-      const m = this.marker(node), layer = node.type, [x, y] = node.xy;
-      const h = this.h(layer, heightAt(this.grid(layer), x, y));
+      const m = this.marker(node), [x, y] = node.xy;
+      const h = this.h(sampleAt(g, v, x, y));
       m.rel = this.rel(node);
       const r = (0.07 + 0.34 * Math.sqrt(m.rel)) * (node.level === 0 ? 1 : node.level === 1 ? 0.8 : 0.6);
-      m.ring.position.copy(this.local(x, y, h + (layer === "ind" ? 0.04 : -0.04)));
+      m.ring.position.copy(this.local(x, y, h + 0.04));
       m.r = r; m.ring.scale.setScalar(r);
       m.anchor.copy(this.local(x, y, h + 0.35 + r));
     }
     this.drawOrder = visible.map((node) => ({ id: node.id, node, m: this.markers.get(node.id)! })).sort((a, c) => c.m.rel - a.m.rel);
   }
 
+  private applyEmphasis(): void {
+    for (const [, m] of this.markers) {
+      const faded = m.label.classList.contains("ind") ? this.state.faded("ind") : this.state.faded("fld");
+      m.label.style.opacity = faded ? String(CFG.faded_label_opacity) : "";
+    }
+  }
+
   // ---- state sync
   private sync(force: boolean): void {
-    const key = [this.state.mode, this.state.researchMeasure, this.state.industryMeasure, this.state.level, this.state.footprint].join("|");
+    const shape = [this.state.size, this.state.level].join("|");
+    const key = [shape, this.state.emphasis].join("|");
     if (force || key !== this.key) {
-      const prev = this.key.split("|");
+      const shapeChanged = force || !this.key.startsWith(shape + "|");
       this.key = key;
-      const modeChanged = force || prev[0] !== this.state.mode;
-      this.refreshLayer("ind"); this.refreshLayer("fld");
-      this.placeMarkers();
-      if (modeChanged) this.applyMode();
+      if (shapeChanged) { this.refreshHeights(); this.placeMarkers(); }
+      this.refreshColours();
+      this.applyEmphasis();
     }
     this.refreshHighlight();
   }
 
-  private applyMode(): void {
-    const m = this.state.mode;
-    this.groups.ind.visible = this.state.showsIndustry(); this.groups.fld.visible = this.state.showsResearch();
-    this.groups.ind.position.y = m === "stacked" ? GAP : 0; this.groups.fld.position.y = 0;
-    for (const layer of ["ind", "fld"] as Layer[]) {
-      const mat = this.meshes[layer].material as THREE.MeshStandardMaterial;
-      mat.transparent = m === "overlaid"; mat.depthWrite = m !== "overlaid"; mat.needsUpdate = true;
-    }
-    const ty = m === "industry" ? 1.2 : m === "research" ? -1.2 : m === "stacked" ? GAP / 2 : 0;
-    this.flyTo = new THREE.Vector3(0, ty, 0);
-  }
-
   applyTheme(): void {
     this.scene.background = new THREE.Color(readTheme().bg);
-    this.refreshLayer("ind"); this.refreshLayer("fld"); this.refreshHighlight();
+    this.refreshColours(); this.refreshHighlight();
   }
 
   /** Rings only mark the selected and hovered nodes; the terrain itself shows where the peaks are. */
@@ -213,18 +206,14 @@ export class Scene3D {
     }
   }
 
-  // ---- interaction (screen-space picking works for every layer mode)
-  private worldAnchor(node: NodeRec): THREE.Vector3 {
-    const m = this.markers.get(node.id);
-    return (m ? m.anchor.clone() : new THREE.Vector3()).add(this.groups[node.type].position);
-  }
-
+  // ---- interaction (screen-space picking)
   private nodeNear(ev: PointerEvent): NodeRec | null {
     const rect = this.renderer.domElement.getBoundingClientRect(), v = new THREE.Vector3();
     let best: NodeRec | null = null, bd = PICK_PX;
     for (const n of this.b.nodes) {
-      if (!this.state.isVisible(n) || !this.markers.has(n.id)) continue;
-      v.copy(this.worldAnchor(n)).add(new THREE.Vector3(0, n.type === "ind" ? -0.5 : 0.5, 0)).project(this.camera);
+      const m = this.markers.get(n.id);
+      if (!this.state.isVisible(n) || !m) continue;
+      v.copy(m.anchor).add(new THREE.Vector3(0, -0.5, 0)).project(this.camera);
       if (v.z >= 1) continue;
       const d = Math.hypot((v.x + 1) / 2 * rect.width - (ev.clientX - rect.left), (1 - v.y) / 2 * rect.height - (ev.clientY - rect.top));
       if (d < bd) { bd = d; best = n; }
@@ -243,7 +232,10 @@ export class Scene3D {
     });
   }
 
-  focus(node: NodeRec): void { this.flyTo = this.worldAnchor(node).add(new THREE.Vector3(0, node.type === "ind" ? -0.6 : 0.6, 0)); }
+  focus(node: NodeRec): void {
+    const m = this.markers.get(node.id);
+    this.flyTo = (m ? m.anchor.clone() : new THREE.Vector3()).add(new THREE.Vector3(0, -0.6, 0));
+  }
 
   private resize(): void {
     const w = this.host.clientWidth, h = this.host.clientHeight;
@@ -282,7 +274,7 @@ export class Scene3D {
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
       m.ring.visible = this.ringed(n.id);
       if (placed.length >= MAX_LABELS && !active) { setVis(m, false); continue; }
-      v.copy(m.anchor).add(this.groups[n.type].position).project(this.camera);
+      v.copy(m.anchor).project(this.camera);
       if (v.z >= 1) { setVis(m, false); continue; }
       const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * h;
       if (!m.w) { m.w = m.label.offsetWidth || 120; m.h = m.label.offsetHeight || 20; }   // measured once, not every frame
@@ -319,7 +311,6 @@ export class Scene3D {
   }
 }
 
-export const BAND_COUNT = BANDS;
 export function webglAvailable(): boolean {
   try { return !!document.createElement("canvas").getContext("webgl2") || !!document.createElement("canvas").getContext("webgl"); }
   catch { return false; }

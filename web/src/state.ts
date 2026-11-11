@@ -1,18 +1,17 @@
-import type { IndustryMeasure, NodeRec, ResearchMeasure } from "./data";
-import type { Footprint, OverlayData } from "./overlay";
+import { SETTING_MEASURES, type Measure, type NodeRec, type SizeSetting } from "./data";
+import type { OverlayData } from "./overlay";
 
-export type LayerMode = "industry" | "research" | "stacked" | "overlaid";
+/** Which type the map emphasises. It fades the labels and tint of the other type; heights never change. */
+export type Emphasis = "both" | "industry" | "research";
 export type LodSetting = "auto" | "0" | "1" | "2";
 
 /** Shared view state; views subscribe and redraw. */
 export class State {
   hover: NodeRec | null = null;
   selected: NodeRec | null = null;
-  mode: LayerMode = "overlaid";
-  researchMeasure: ResearchMeasure = "works";
-  industryMeasure: IndustryMeasure = "employment";
+  emphasis: Emphasis = "both";
+  size: SizeSetting = "activity";
   lod: LodSetting = "auto";
-  footprint: Footprint = "off";
   overlay: OverlayData | null = null;   // private, only when present locally
   level = 0;                       // level of detail currently drawn
   visibleIds = new Set<string>();  // nodes drawn at that level
@@ -20,21 +19,15 @@ export class State {
   subscribe(cb: () => void): void { this.listeners.push(cb); }
   setHover(n: NodeRec | null): void { if (n !== this.hover) { this.hover = n; this.emit(); } }
   setSelected(n: NodeRec | null): void { this.selected = n; this.emit(); }
-  setMode(m: LayerMode): void { this.mode = m; this.emit(); }
-  setResearchMeasure(m: ResearchMeasure): void { this.researchMeasure = m; this.emit(); }
-  setIndustryMeasure(m: IndustryMeasure): void { this.industryMeasure = m; this.emit(); }
+  setEmphasis(e: Emphasis): void { this.emphasis = e; this.emit(); }
+  setSize(s: SizeSetting): void { this.size = s; this.emit(); }
   setLod(l: LodSetting): void { this.lod = l; this.emit(); }
-  setFootprint(f: Footprint): void { this.footprint = f; this.emit(); }
-  /** Footprint heat grid for the level being drawn, or null when off or missing. */
-  heatGrid(): { max: number; values: number[] } | null {
-    return this.footprint === "off" || !this.overlay ? null : this.overlay.grids[String(this.level)]?.[this.footprint] ?? null;
-  }
   setLevel(level: number, ids: Set<string>): void { this.level = level; this.visibleIds = ids; this.emit(); }
+  /** Size measure of a node type under the current size setting. */
+  measure(type: "ind" | "fld"): Measure { return SETTING_MEASURES[this.size][type]; }
+  /** True when the emphasis fades this type. */
+  faded(type: "ind" | "fld"): boolean { return this.emphasis === (type === "ind" ? "research" : "industry"); }
   get active(): NodeRec | null { return this.hover ?? this.selected; }
-  showsIndustry(): boolean { return this.mode !== "research"; }
-  showsResearch(): boolean { return this.mode !== "industry"; }
-  isVisible(n: NodeRec): boolean {
-    return this.visibleIds.has(n.id) && (n.type === "ind" ? this.showsIndustry() : this.showsResearch());
-  }
+  isVisible(n: NodeRec): boolean { return this.visibleIds.has(n.id); }
   private emit(): void { this.listeners.forEach((l) => l()); }
 }

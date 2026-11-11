@@ -80,5 +80,3 @@ def test_height_grid_peaks_at_node_and_deeper_levels_are_narrower():
     v0, v1 = np.array(g0["values"]), np.array(g1["values"])
     assert v0.max() == pytest.approx(1.0, abs=1e-3) and v0.min() >= 0
     assert (v1 > 0.05).sum() < (v0 > 0.05).sum()
-    neg = terrain.height_grid(xy, np.array([1.0]), np.array([0]), sign=-1.0, **kw)
-    assert max(neg["values"]) <= 0

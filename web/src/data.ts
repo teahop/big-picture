@@ -10,26 +10,32 @@ export interface Edge {
   source: string; target: string; type: "ind-ind" | "fld-fld" | "fld-ind"; weight: number;
   signals?: { occupational?: number; semantic: number };
 }
-export interface Grid { n: number; x: [number, number]; y: [number, number]; values: number[] }
+/** Type mark used on labels, lists and the panel: a square for industry, a circle for research. */
+export const MARK = { ind: "\u25A0", fld: "\u25CF" } as const;
 export type IndustryMeasure = "employment" | "value_added" | "va_per_job";
 export type ResearchMeasure = "works" | "rd" | "rd_per_work";
 export type Measure = IndustryMeasure | ResearchMeasure;
-type Grids = Record<Measure, Grid>;
-interface RawGrids {
-  industry: { measures: Record<IndustryMeasure, Grid> };
-  research: { measures: Record<ResearchMeasure, Grid> };
-}
+/** Size setting (SPEC 5.3): one switch for both types. */
+export type SizeSetting = "activity" | "dollars";
+export const SETTING_MEASURES: Record<SizeSetting, { ind: IndustryMeasure; fld: ResearchMeasure }> = {
+  activity: { ind: "employment", fld: "works" },
+  dollars: { ind: "value_added", fld: "rd" },
+};
+/** One level's terrain: a combined height grid and the industry share of each cell (0 research .. 1 industry). */
+export interface LevelGrids { n: number; x: [number, number]; y: [number, number]; settings: Record<SizeSetting, { height: number[]; share: number[] }> }
+export interface TerrainScale { industry: number; research: number; largest_industry: string; largest_field: string; industry_peak: number; research_peak: number }
 export interface Meta {
   sources: { name: string; release: string; url: string; retrieved: string }[];
   research_sources: { name: string; url: string; retrieved: string }[];
   measure_labels: Record<string, string>;
   bridge: { field_to_cip_reviewed: boolean; herd_mapping_reviewed: boolean };
   levels: number[]; level_notes?: Record<string, string>; deep_topic_links_reviewed?: boolean;
+  terrain_scale: Record<SizeSetting, TerrainScale>;
 }
 export interface Bundle {
   nodes: NodeRec[]; edges: Edge[]; meta: Meta; byId: Map<string, NodeRec>;
-  grids: Partial<Record<number, Grids>>;
-  maxAbs: Partial<Record<number, Record<Measure, number>>>;
+  grids: Partial<Record<number, LevelGrids>>;
+  maxHeight: Partial<Record<number, Record<SizeSetting, number>>>;
   childCount: Map<string, number>;
 }
 
@@ -39,12 +45,10 @@ async function getJson<T>(name: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-const absMax = (g: Grid) => g.values.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
-
-function addGrids(b: Bundle, level: number, raw: RawGrids): void {
-  const grids = { ...raw.industry.measures, ...raw.research.measures } as Grids;
-  b.grids[level] = grids;
-  b.maxAbs[level] = Object.fromEntries(Object.entries(grids).map(([k, g]) => [k, absMax(g)])) as Record<Measure, number>;
+function addGrids(b: Bundle, level: number, g: LevelGrids): void {
+  b.grids[level] = g;
+  const max = (v: number[]) => v.reduce((m, x) => Math.max(m, x), 0) || 1;
+  b.maxHeight[level] = { activity: max(g.settings.activity.height), dollars: max(g.settings.dollars.height) };
 }
 
 function addNodes(b: Bundle, nodes: NodeRec[]): void {
@@ -56,9 +60,9 @@ function addNodes(b: Bundle, nodes: NodeRec[]): void {
 
 export async function loadBundle(): Promise<Bundle> {
   const [nodes, edges, raw, meta] = await Promise.all([
-    getJson<NodeRec[]>("nodes.json"), getJson<Edge[]>("edges.json"), getJson<RawGrids>("grids.json"), getJson<Meta>("meta.json"),
+    getJson<NodeRec[]>("nodes.json"), getJson<Edge[]>("edges.json"), getJson<LevelGrids>("grids.json"), getJson<Meta>("meta.json"),
   ]);
-  const b: Bundle = { nodes: [], edges, meta, byId: new Map(), grids: {}, maxAbs: {}, childCount: new Map() };
+  const b: Bundle = { nodes: [], edges, meta, byId: new Map(), grids: {}, maxHeight: {}, childCount: new Map() };
   addNodes(b, nodes); addGrids(b, 0, raw);
   return b;
 }
@@ -71,7 +75,7 @@ export function ensureLevel(b: Bundle, level: number): Promise<void> {
     loading.set(level, (async () => {
       if (level === 2) await ensureLevel(b, 1);
       const sfx = "_l" + level;
-      const [nodes, raw] = await Promise.all([getJson<NodeRec[]>("nodes" + sfx + ".json"), getJson<RawGrids>("grids" + sfx + ".json")]);
+      const [nodes, raw] = await Promise.all([getJson<NodeRec[]>("nodes" + sfx + ".json"), getJson<LevelGrids>("grids" + sfx + ".json")]);
       addNodes(b, nodes);
       b.edges.push(...(await getJson<Edge[]>("edges_l" + level + ".json")));
       addGrids(b, level, raw);
@@ -94,14 +98,14 @@ export function levelMaxSize(b: Bundle, level: number, measure: string): number 
   return visibleAt(b, level).reduce((m, n) => Math.max(m, n.size[measure] ?? 0), 0) || 1;
 }
 
-/** Bilinear height at layout coordinates (x, y); signed (research is negative). */
-export function heightAt(g: Grid, x: number, y: number): number {
+/** Bilinear sample of a grid's `values` at layout coordinates (x, y). */
+export function sampleAt(g: LevelGrids, values: number[], x: number, y: number): number {
   const fx = ((x - g.x[0]) / (g.x[1] - g.x[0])) * (g.n - 1);
   const fy = ((y - g.y[0]) / (g.y[1] - g.y[0])) * (g.n - 1);
   const i = Math.min(Math.max(Math.floor(fx), 0), g.n - 2);
   const j = Math.min(Math.max(Math.floor(fy), 0), g.n - 2);
   const tx = Math.min(Math.max(fx - i, 0), 1), ty = Math.min(Math.max(fy - j, 0), 1);
-  const v = (a: number, c: number) => g.values[c * g.n + a];
+  const v = (a: number, c: number) => values[c * g.n + a];
   return (v(i, j) * (1 - tx) + v(i + 1, j) * tx) * (1 - ty) + (v(i, j + 1) * (1 - tx) + v(i + 1, j + 1) * tx) * ty;
 }
 

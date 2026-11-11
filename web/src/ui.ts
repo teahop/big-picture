@@ -1,4 +1,4 @@
-import { type Bundle, type Link, type NodeRec, fmtDollars, fmtGrowth, fmtJobs, fmtMeasure, fmtWorks, levelMaxSize, links } from "./data";
+import { type Bundle, type Link, type NodeRec, MARK, fmtDollars, fmtGrowth, fmtJobs, fmtMeasure, fmtWorks, levelMaxSize, links } from "./data";
 import type { State } from "./state";
 
 function presence(state: State, n: NodeRec): string {
@@ -23,7 +23,7 @@ function bridgeList(items: Link[]): string {
       ? "<small>score " + l.weight.toFixed(2) + " &middot; occupation match " + pct(s.occupational) + " &middot; text similarity " + s.semantic.toFixed(2) + "</small>"
       : s ? "<small>text similarity " + s.semantic.toFixed(2) + "</small>"
       : "<small>score " + l.weight.toFixed(2) + "</small>";
-    return "<li>" + (l.node.type === "ind" ? "▲ " : "▼ ") + esc(l.node.label) + "<br>" + detail + "</li>";
+    return "<li>" + MARK[l.node.type] + " " + esc(l.node.label) + "<br>" + detail + "</li>";
   }).join("");
 }
 function simpleList(items: Link[]): string {
@@ -43,8 +43,8 @@ function industryDetails(b: Bundle, n: NodeRec): string {
   const occ = (n.top_occupations ?? []).map((o) => "<li>" + esc(o.title) + " <small>" + o.share_pct.toFixed(1) + "%</small></li>").join("");
   const unrev = n.level === 2 && b.meta.deep_topic_links_reviewed === false ? "Text-similarity links to research topics; not yet reviewed by the owner." : "";
   const members = n.members && n.members.length ? "<h3>Example organisations</h3><p>" + n.members.map(esc).join(", ") + "</p>" : "";
-  return "<h2>" + (n.provenance === "estimated" ? "\u2248 " : "") + "▲ " + esc(n.label) + "</h2>" + lineage(b, n)
-    + "<p class='sub'>Industry &middot; " + esc(n.title) + (n.naics_code ? " &middot; NAICS " + esc(n.naics_code) : n.zone ? " &middot; zone: " + esc(n.zone) : "") + " &middot; " + n.provenance + "</p>"
+  return "<h2>" + (n.provenance === "estimated" ? "\u2248 " : "") + MARK.ind + " " + esc(n.label) + "</h2>" + lineage(b, n)
+    + "<p class='sub'><b>Industry</b> &middot; " + esc(n.title) + (n.naics_code ? " &middot; NAICS " + esc(n.naics_code) : n.zone ? " &middot; zone: " + esc(n.zone) : "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>Employment 2025</dt><dd>" + fmtJobs(n.size.employment) + " jobs</dd>"
     + "<dt>Projected 2035</dt><dd>" + fmtJobs(n.size.employment_2035) + " jobs</dd>"
     + (n.size.value_added !== undefined ? "<dt>Value added 2025</dt><dd>" + fmtMeasure("value_added", n.size.value_added) + " <small>(" + esc(n.value_added_basis ?? "") + ")</small></dd><dt>Per job</dt><dd>" + fmtMeasure("va_per_job", n.size.va_per_job) + "</dd>" : "")
@@ -59,8 +59,8 @@ function industryDetails(b: Bundle, n: NodeRec): string {
 function fieldDetails(b: Bundle, n: NodeRec): string {
   const subs = (n.top_subfields ?? []).map((s) => "<li>" + esc(s.name) + " <small>" + fmtWorks(s.works_us) + " works</small></li>").join("");
   const rd = n.size.rd > 0 ? fmtDollars(n.size.rd) + " <small>(estimated split of HERD)</small>" : "no HERD source";
-  return "<h2>▼ " + esc(n.label) + "</h2>" + lineage(b, n)
-    + "<p class='sub'>Research &middot; " + esc(n.domain ?? "") + " &middot; " + n.provenance + "</p>"
+  return "<h2>" + MARK.fld + " " + esc(n.label) + "</h2>" + lineage(b, n)
+    + "<p class='sub'><b>Research</b> &middot; " + esc(n.domain ?? "") + " &middot; " + n.provenance + "</p>"
     + "<dl><dt>US publications</dt><dd>" + fmtWorks(n.size.works) + " <small>(2021-25)</small></dd>"
     + "<dt>University R&amp;D</dt><dd>" + rd + "</dd>" + (n.size.rd_per_work ? "<dt>R&amp;D per paper</dt><dd>" + fmtMeasure("rd_per_work", n.size.rd_per_work) + "</dd>" : "")
     + "<dt>Publication growth</dt><dd>" + fmtGrowth(n.growth) + " <small>(2019 to 2024)</small></dd></dl>"
@@ -75,8 +75,8 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
   const search = el<HTMLInputElement>("search"), details = el("details");
   const lists = { ind: el<HTMLUListElement>("list-ind"), fld: el<HTMLUListElement>("list-fld") };
   const items = new Map<string, HTMLButtonElement>();
-  const key = () => ({ ind: state.industryMeasure, fld: state.researchMeasure });
-  const sizeText = (n: NodeRec) => fmtMeasure(n.type === "ind" ? state.industryMeasure : state.researchMeasure, n.size[n.type === "ind" ? state.industryMeasure : state.researchMeasure]);
+  const key = () => ({ ind: state.measure("ind"), fld: state.measure("fld") });
+  const sizeText = (n: NodeRec) => fmtMeasure(state.measure(n.type), n.size[state.measure(n.type)]);
   const query = () => search.value.trim().toLowerCase();
   // With no query the lists show the nodes drawn at the current level; a query searches every loaded level.
   const pool = (type: "ind" | "fld") => {
@@ -111,13 +111,15 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     if (first) onPick(first);
   });
 
-  let lastMeasure = state.researchMeasure + state.industryMeasure, lastLevel = -1;
+  let lastSize = state.size, lastLevel = -1;
   const render = () => {
-    if (state.researchMeasure + state.industryMeasure !== lastMeasure || state.level !== lastLevel) { lastMeasure = state.researchMeasure + state.industryMeasure; lastLevel = state.level; build(); }
-    el("group-ind").hidden = !state.showsIndustry(); el("group-fld").hidden = !state.showsResearch();
+    if (state.size !== lastSize || state.level !== lastLevel) { lastSize = state.size; lastLevel = state.level; build(); }
+    el("group-ind").classList.toggle("faded", state.faded("ind")); el("group-fld").classList.toggle("faded", state.faded("fld"));
+    el("head-ind").textContent = (state.level === 0 ? "Industry sectors" : "Industries") + " by " + (state.size === "activity" ? "employment" : "value added");
+    el("head-fld").textContent = (state.level === 0 ? "Research fields" : "Research subfields and topics") + " by " + (state.size === "activity" ? "publications" : "R&D dollars");
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
-    if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Peaks (\u25B2) are industry sectors, valleys (\u25BC) are research fields. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
+    if (!n) { details.innerHTML = "<p class='hint'>Hover or select a node. Industries (" + MARK.ind + ") and research fields (" + MARK.fld + ") share one terrain: height is size, and colour shows how much of each mountain is industry or research (see the legend on the map). Zoom in, or use the Detail control, for finer levels.</p>"; return; }
     details.innerHTML = (n.type === "ind" ? industryDetails(b, n) : fieldDetails(b, n)) + presence(state, n);
   };
   state.subscribe(render); render();

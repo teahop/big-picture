@@ -1,8 +1,6 @@
 type RGB = [number, number, number];
-export interface Theme { bg: string; fg: string; accent: string; footprint: string; ind: [RGB, RGB]; res: [RGB, RGB] }
-
-/** Footprint colour as RGB, refreshed by readTheme() so per-pixel blending never touches the DOM. */
-export let heatRgb: RGB = [25, 169, 138];
+/** Terrain colours: ground (flat), the two type hues and the neutral middle of the mix ramp. */
+export interface Theme { bg: string; fg: string; accent: string; footprint: string; ground: RGB; ind: RGB; res: RGB; neutral: RGB }
 
 function hex(s: string): RGB {
   const v = s.trim().replace("#", "");
@@ -12,21 +10,29 @@ function hex(s: string): RGB {
 export function readTheme(): Theme {
   const cs = getComputedStyle(document.documentElement);
   const get = (n: string) => cs.getPropertyValue(n).trim();
-  heatRgb = hex(get("--footprint"));
   return {
     bg: get("--bg"), fg: get("--fg"), accent: get("--accent"), footprint: get("--footprint"),
-    ind: [hex(get("--ramp-lo")), hex(get("--ramp-hi"))], res: [hex(get("--rramp-lo")), hex(get("--rramp-hi"))],
+    ground: hex(get("--terrain-ground")), ind: hex(get("--terrain-ind")), res: hex(get("--terrain-res")), neutral: hex(get("--terrain-neutral")),
   };
 }
 
 export const BANDS = 8;
-/** Terraced colour: one flat colour per band so contours read without relying on hue alone. */
-export function bandColour(t: Theme, layer: "ind" | "res", h01: number): RGB {
-  const band = Math.min(Math.floor(Math.max(h01, 0) * BANDS), BANDS - 1);
-  const f = band / (BANDS - 1), [lo, hi] = t[layer];
-  return [0, 1, 2].map((i) => lo[i] + (hi[i] - lo[i]) * f) as RGB;
+const mix = (a: RGB, b: RGB, f: number): RGB => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+
+/** Position on the two-hue ramp: -1 all research, 0 neutral, +1 all industry. Shares within `neutralBand` of an even
+ *  mix read as neutral; `fade` (0..1) pulls a faded type's side back toward neutral. */
+export function mixPosition(share: number, neutralBand: number, fadeInd = 0, fadeRes = 0): number {
+  const d = (share - 0.5) * 2, a = Math.abs(d);
+  const t = a <= neutralBand ? 0 : Math.sign(d) * Math.min(1, (a - neutralBand) / (1 - neutralBand));
+  return t * (1 - (t > 0 ? fadeInd : fadeRes));
 }
-export function rgbOf(css: string): RGB { return hex(css); }
+
+/** Terrain colour: hue from the mix, lightness from the height band (terraced, so contours read without hue). */
+export function terrainColour(t: Theme, mixPos: number, h01: number): RGB {
+  const band = Math.min(Math.floor(Math.max(h01, 0) * BANDS), BANDS - 1);
+  const hue = mixPos >= 0 ? mix(t.neutral, t.ind, mixPos) : mix(t.neutral, t.res, -mixPos);
+  return mix(t.ground, hue, 0.35 + 0.65 * (band / (BANDS - 1)));
+}
 
 const listeners: (() => void)[] = [];
 export function onThemeChange(cb: () => void): void {

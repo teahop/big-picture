@@ -10,25 +10,16 @@
   <body>
     <header>
       <h1 id="title">%DISPLAY_NAME% <span class="subtitle">%SUBTITLE%</span></h1>
-      <fieldset class="layers">
-        <legend class="sr">Layer mode</legend>
-        <label><input type="radio" name="layer" value="industry" /> <span>Industry</span></label>
-        <label><input type="radio" name="layer" value="research" /> <span>Research</span></label>
-        <label><input type="radio" name="layer" value="stacked" /> <span>Stacked</span></label>
-        <label><input type="radio" name="layer" value="overlaid" /> <span>Overlaid</span></label>
+      <fieldset class="layers" aria-describedby="emphasis-note">
+        <legend class="sr">Emphasis</legend>
+        <label><input type="radio" name="emphasis" value="both" checked /> <span>Both</span></label>
+        <label><input type="radio" name="emphasis" value="industry" /> <span>Industry</span></label>
+        <label><input type="radio" name="emphasis" value="research" /> <span>Research</span></label>
       </fieldset>
-      <label class="size">Industry size
-        <select id="size-industry" aria-describedby="size-note">
-          <option value="employment">Employment</option>
-          <option value="value_added">Value added ($)</option>
-          <option value="va_per_job">Value added per job</option>
-        </select>
-      </label>
-      <label class="size">Research size
-        <select id="size-research">
-          <option value="works">Publications</option>
-          <option value="rd">R&amp;D dollars</option>
-          <option value="rd_per_work">R&amp;D per publication</option>
+      <label class="size">Size
+        <select id="size" aria-describedby="size-note">
+          <option value="activity">Activity: jobs and publications</option>
+          <option value="dollars">Dollars: value added and university R&amp;D</option>
         </select>
       </label>
       <label class="size">Detail
@@ -39,17 +30,6 @@
           <option value="2">Level 2: deep zones</option>
         </select>
       </label>
-      <label class="size" id="footprint-wrap" hidden>Footprint
-        <select id="footprint">
-          <option value="off">Off</option>
-          <option value="total">You: tenure, education, skills</option>
-          <option value="tenure">Tenure only</option>
-          <option value="education">Education only</option>
-          <option value="skills">Skills only</option>
-          <option value="connections">Network: connections (separate layer)</option>
-          <option value="all">Everything combined</option>
-        </select>
-      </label>
       <label class="search"><span class="sr">Search nodes</span>
         <input id="search" type="search" placeholder="Search" autocomplete="off" />
       </label>
@@ -58,26 +38,30 @@
       <button id="about-open" type="button" aria-haspopup="dialog">About the data</button>
       <button id="panel-toggle" type="button" aria-pressed="false">Hide panel</button>
     </header>
-    <p id="size-note" class="sr">Value added is the Bureau of Economic Analysis figure for each industry; below the sector level it is estimated by splitting each BEA industry by payroll.</p>
+    <p id="emphasis-note" class="sr">Emphasis fades the labels and colour of the other type. It does not change heights.</p>
+    <p id="size-note" class="sr">Activity sizes industries by jobs and research by US publications. Dollars sizes industries by value added and research by university R&amp;D spending. Below the sector level value added is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status">Loading the map…</p>
     <main>
       <section class="map" id="map" aria-label="Terrain map">
         <div id="view-3d" class="view"></div>
         <div id="labels" class="labels" aria-hidden="true"></div>
+        <div class="legend" aria-hidden="true"><span>&#9679; Research</span><i></i><span>Industry &#9632;</span><small>Colour: share of the height. Height: size.</small></div>
       </section>
       <aside>
         <div id="details" aria-live="polite"></div>
-        <div id="group-ind"><h3>Industry sectors by employment</h3><ul id="list-ind"></ul></div>
-        <div id="group-fld"><h3>Research fields</h3><ul id="list-fld"></ul></div>
+        <div id="group-ind"><h3 id="head-ind">Industry sectors by employment</h3><ul id="list-ind"></ul></div>
+        <div id="group-fld"><h3 id="head-fld">Research fields by publications</h3><ul id="list-fld"></ul></div>
         <p id="source" class="source"></p>
       </aside>
     </main>
     <dialog id="about" aria-labelledby="about-title">
       <form method="dialog"><button class="close" aria-label="Close">Close</button></form>
       <h2 id="about-title">About the data</h2>
-      <p>The map places US industries (peaks) and research fields (valleys) in one shared space, so that nearby things are similar. It is built only from public data. Values marked <b>&asymp;</b> are estimates made for this map.</p>
+      <p>The map places US industries and research fields on one terrain, so that nearby things are similar. It is built only from public data. Values marked <b>&asymp;</b> are estimates made for this map.</p>
+      <h3>How to read it</h3>
+      <p>Every industry (&#9632;) and research field (&#9679;) raises the ground; height is size. Jobs and papers have different units, so each type is scaled on its own: the largest sector and the largest research field reach the same height. Colour shows how much of the height at a place comes from industry or from research, with a neutral colour where the two mix. The Size control switches both types together between activity (jobs, publications) and dollars (value added, university R&amp;D). Emphasis fades one type's labels and colour without changing heights.</p>
       <h3>What the position means</h3>
-      <p>East-west and north-south have no meaning of their own. Industries are close when they employ a similar mix of occupations. Research fields are close when their descriptions are semantically similar. An industry and a field are close when the occupations their graduates fill, and the text of their descriptions, link them. Distances are approximate: a high-dimensional similarity is squeezed into two dimensions, and nodes are nudged apart so labels stay readable. Height shows the selected size measure.</p>
+      <p>East-west and north-south have no meaning of their own. Industries are close when they employ a similar mix of occupations. Research fields are close when their descriptions are semantically similar. An industry and a field are close when the occupations their graduates fill, and the text of their descriptions, link them. Distances are approximate: a high-dimensional similarity is squeezed into two dimensions, and nodes are nudged apart so labels stay readable.</p>
       <h3>Sources</h3>
       <ul>
         <li><b>Industries, employment, growth:</b> BLS National Employment Matrix, 2025 and projected 2035 (NAICS 2022).</li>

@@ -5,7 +5,7 @@ name: Deploy viewer to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ["web/**", "data/public/**", "config/site.yaml", ".github/workflows/pages.yml"]
+    paths: ["web/**", "data/public/**", "config/site.yaml", "config/viewer.yaml", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:

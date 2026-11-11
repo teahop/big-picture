@@ -1,16 +1,42 @@
 {
- "schema": 2,
- "size_measures": {
-  "industry": [
-   "employment",
-   "value_added",
-   "va_per_job"
-  ],
-  "research": [
-   "works",
-   "rd",
-   "rd_per_work"
-  ]
+ "schema": 3,
+ "size_settings": {
+  "activity": {
+   "label": "Activity",
+   "industry": "employment",
+   "research": "works"
+  },
+  "dollars": {
+   "label": "Dollars",
+   "industry": "value_added",
+   "research": "rd"
+  }
+ },
+ "terrain_scale": {
+  "activity": {
+   "industry": 0.97338,
+   "research": 0.565424,
+   "largest_industry": "ind:620000",
+   "largest_field": "fld:27",
+   "industry_peak": 1.0,
+   "research_peak": 1.0,
+   "measures": {
+    "industry": "employment",
+    "research": "works"
+   }
+  },
+  "dollars": {
+   "industry": 0.532437,
+   "research": 0.550268,
+   "largest_industry": "ind:31-330",
+   "largest_field": "fld:27",
+   "industry_peak": 1.0,
+   "research_peak": 1.0,
+   "measures": {
+    "industry": "value_added",
+    "research": "rd"
+   }
+  }
  },
  "measure_labels": {
   "employment": "Employment (jobs, 2025)",
@@ -92,7 +118,8 @@
   "grid_size": 128,
   "margin": 0.25,
   "bandwidth_level0": 0.12,
-  "bandwidth_per_level": 0.5
+  "bandwidth_per_level": 0.5,
+  "research_relative_height": 1.0
  },
  "display_name_source": "config/site.yaml",
  "level_notes": {

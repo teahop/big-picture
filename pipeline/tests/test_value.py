@@ -5,7 +5,6 @@ import pytest
 
 from imap.bea import leaf_of
 from imap.common import interim_dir
-from imap.terrain import ratio_amplitude
 
 CONC = {"5415": "5415", "5411": "5411", "54194": "5412OP", "541990": "5412OP", "3111": "311FT", "3112": "311FT", "3254": "325"}
 
@@ -19,11 +18,6 @@ def test_leaf_follows_the_naics_prefix():
 
 def test_ownership_suffix_is_ignored_for_the_leaf():
     assert leaf_of("54150P", CONC) == "5415" or leaf_of("54150P", CONC) is None
-
-
-def test_ratio_amplitude_is_scaled_to_the_largest_and_never_piles_up():
-    a = ratio_amplitude(np.array([0.0, 10.0, 1000.0, np.nan]))
-    assert a[0] == 0 and a[2] == pytest.approx(1.0) and 0 < a[1] < 1 and a[3] == 0
 
 
 @pytest.mark.skipif(not (interim_dir() / "levels" / "industry_value.csv").exists(), reason="value stage not run")

@@ -1,4 +1,4 @@
-"""Write the public bundle: nodes, edges, height grids, metadata. No personal data."""
+"""Write the public bundle: nodes, edges, height and industry-share grids, metadata. No personal data."""
 from __future__ import annotations
 
 import json
@@ -12,6 +12,7 @@ from .sectors import SECTOR_CODES, SHORT_LABEL
 from .bridge import mapping_reviewed
 from .ingest_files import herd_mapping_reviewed
 from .openalex import SIZE_FILTER
+from .terrain import SETTINGS
 
 SOURCE = {
     "name": "BLS National Employment Matrix",
@@ -238,7 +239,8 @@ def run(target: str) -> int:
     records = ind_edges.to_dict("records") + field_edges().to_dict("records") + bridge_edges().to_dict("records")
     edges = pd.DataFrame(records)
     terrain = json.loads((interim_dir() / "terrain" / "terrain.json").read_text())
-    meta = {"schema": 2, "size_measures": {"industry": ["employment", "value_added", "va_per_job"], "research": ["works", "rd", "rd_per_work"]},
+    meta = {"schema": 3, "size_settings": {"activity": {"label": "Activity", **SETTINGS["activity"]}, "dollars": {"label": "Dollars", **SETTINGS["dollars"]}},
+            "terrain_scale": terrain["scale"],
             "measure_labels": {"employment": "Employment (jobs, 2025)", "works": "US publications 2021-25", "rd": "University R&D spending (FY 2024, estimated by field)",
                                "value_added": "Value added (2025, billions of dollars)", "va_per_job": "Value added per job (thousands of dollars)", "rd_per_work": "R&D dollars per publication"},
             "bridge": {"method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
