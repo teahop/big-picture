@@ -1,11 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
-import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
-import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
-import { readTheme, rgbOf, terrainColour } from "./theme";
-import { flowers, outline, owners, touchedMask, type Owners } from "./footprintLayer";
+import { readTheme, terrainColour } from "./theme";
+import { SPECIES, bloomCells, flowers, owners, touchedMask, type Owners } from "./footprintLayer";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -20,7 +17,7 @@ const CFG = __VIEWER__;
 const RING = new THREE.RingGeometry(0.82, 1, 24);
 
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
-const FADE = { light: 0.55, strong: 0.85 };   // how far untouched terrain recedes toward the ground colour (trial values)
+const RECEDE = 0.6;   // how far untouched hills move toward the dry-sage colour while a career is shown
 
 export class Scene3D {
   private renderer: THREE.WebGLRenderer;
@@ -36,6 +33,8 @@ export class Scene3D {
   private flyDir: THREE.Vector3 | null = null; // camera direction from the target to reach while flying
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
+  private hemi = new THREE.HemisphereLight(0xffffff, 0x777777, 1.7);
+  private sun = new THREE.DirectionalLight(0xffffff, 1.3);
   private running = false;
   private key = "";
   private ground!: THREE.GridHelper;
@@ -63,8 +62,7 @@ export class Scene3D {
     this.controls.target.set(0, 1, 0);
     this.controls.listenToKeyEvents(el);
 
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 1.7));
-    const sun = new THREE.DirectionalLight(0xffffff, 1.3); sun.position.set(-6, 12, 8); this.scene.add(sun);
+    this.scene.add(this.hemi, this.sun); this.sun.position.set(-6, 12, 8);
     this.scene.add(this.group);
     this.ground = new THREE.GridHelper(SPAN * 1.2, 24, 0x888888, 0x888888);
     (this.ground.material as THREE.Material).transparent = true; (this.ground.material as THREE.Material).opacity = 0.25;
@@ -121,13 +119,9 @@ export class Scene3D {
     const t = readTheme(), height = this.values(), max = this.maxH();
     const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
     const touched = this.state.touchedNow(), mask = touched ? touchedMask(this.ownerGrid(), touched) : null;
-    const fade = FADE[this.state.fade], tint = rgbOf(t.footprint), outlineLook = this.state.look === "outline";
     for (let k = 0; k < height.length; k++) {
       let [r, g, b] = terrainColour(t, height[k] / max);
-      if (mask) {
-        const [tr, tg, tb] = mask[k] ? (outlineLook ? tint : [r, g, b]) : t.ground, f = mask[k] ? (outlineLook ? 0.4 : 0) : fade;
-        r += (tr - r) * f; g += (tg - g) * f; b += (tb - b) * f;
-      }
+      if (mask && !mask[k]) { r += (t.muted[0] - r) * RECEDE; g += (t.muted[1] - g) * RECEDE; b += (t.muted[2] - b) * RECEDE; }
       col.setXYZ(k, r / 255, g / 255, b / 255);
     }
     col.needsUpdate = true;
@@ -217,29 +211,19 @@ export class Scene3D {
       const text = s !== undefined ? m.text + " \u00b7 " + Math.round(s * 100) + "%" : m.text;
       if (m.label.textContent !== text) { m.label.textContent = text; m.w = 0; }
       m.label.classList.toggle("touched", s !== undefined);
-      m.label.classList.toggle("receded", !!touched && s === undefined);
     }
     this.sortLabels();
     if (!touched || !touched.size) return;
-    const o = this.ownerGrid(), n = this.grid().n, t = readTheme();
-    if (this.state.look === "outline") {
-      const pts = outline(touchedMask(o, touched), n).map(([i, j]) => this.gridPoint(i, j, 0.05));
-      const geo = new LineSegmentsGeometry().setPositions(pts.flatMap((p) => [p.x, p.y, p.z]));
-      const mat = new LineMaterial({ color: t.accent, linewidth: 2.5 });
-      mat.resolution.set(this.host.clientWidth, this.host.clientHeight);
-      const line = new LineSegments2(geo, mat);
-      line.name = "footprint-outline"; this.group.add(line); this.fpObjects.push(line);
-    } else {
-      const fl = flowers(o, touched, n, 6);
-      const pos = new Float32Array(fl.length * 3), col = new Float32Array(fl.length * 3);
-      const cs = getComputedStyle(document.documentElement);
-      const palette = [1, 2, 3, 4].map((i) => new THREE.Color(cs.getPropertyValue("--flower-" + i).trim()));
-      fl.forEach(([i, j, c], k) => { const p = this.gridPoint(i, j, 0.03); pos.set([p.x, p.y, p.z], k * 3); col.set([palette[c].r, palette[c].g, palette[c].b], k * 3); });
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.14, vertexColors: true, map: dotTexture(), alphaTest: 0.5, transparent: true }));
-      pts.name = "footprint-flowers"; this.group.add(pts); this.fpObjects.push(pts);
-    }
+    const o = this.ownerGrid(), n = this.grid().n;
+    const fl = flowers(bloomCells(o, touched, n, this.values()), n);
+    const pos = new Float32Array(fl.length * 3), col = new Float32Array(fl.length * 3);
+    const cs = getComputedStyle(document.documentElement);
+    const palette = SPECIES.map((_, i) => new THREE.Color(cs.getPropertyValue("--flower-" + (i + 1)).trim()));
+    fl.forEach(([i, j, c], k) => { const p = this.gridPoint(i, j, 0.03); pos.set([p.x, p.y, p.z], k * 3); col.set([palette[c].r, palette[c].g, palette[c].b], k * 3); });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: [0.24, 0.16, 0.12][this.state.level] ?? 0.12, vertexColors: true, map: dotTexture(), alphaTest: 0.5, transparent: true }));
+    pts.name = "footprint-flowers"; this.group.add(pts); this.fpObjects.push(pts);
   }
 
   /** Fly the camera to frame these visible nodes (step-down). */
@@ -263,7 +247,7 @@ export class Scene3D {
   // ---- state sync
   private sync(force: boolean): void {
     const shape = [this.state.size, this.state.level].join("|");
-    const key = [shape, this.state.fpVersion, this.state.look, this.state.fade].join("|");
+    const key = [shape, this.state.fpVersion].join("|");
     if (force || key !== this.key) {
       const shapeChanged = force || !this.key.startsWith(shape + "|");
       this.key = key;
@@ -274,7 +258,9 @@ export class Scene3D {
   }
 
   applyTheme(): void {
-    this.scene.background = new THREE.Color(readTheme().bg);
+    this.scene.background = new THREE.Color(readTheme().sky);
+    const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+    this.hemi.intensity = dark ? 0.8 : 1.7; this.sun.intensity = dark ? 0.9 : 1.3;   // moonlit hills at night
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
   }
 
@@ -328,7 +314,6 @@ export class Scene3D {
     const w = this.host.clientWidth, h = this.host.clientHeight;
     if (!w || !h) return;
     this.renderer.setSize(w, h); this.camera.aspect = w / h;
-    for (const o of this.fpObjects) if ((o as LineSegments2).material instanceof LineMaterial) ((o as LineSegments2).material as LineMaterial).resolution.set(w, h);
     // narrow screens (phones): widen the vertical field of view so the whole map still fits across the width
     const narrow = Math.max(1, 1.3 / this.camera.aspect);
     this.camera.fov = Math.min(100, (2 * Math.atan(Math.tan((45 * Math.PI) / 360) * narrow) * 180) / Math.PI);
@@ -375,6 +360,7 @@ export class Scene3D {
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
       m.ring.visible = this.ringed(n.id);
       const priority = active || m.label.classList.contains("touched");
+      if (this.state.fp && !priority) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
       if (placed.length >= MAX_LABELS && !priority) { setVis(m, false); continue; }
       v.copy(m.anchor).project(this.camera);
       if (v.z >= 1) { setVis(m, false); continue; }

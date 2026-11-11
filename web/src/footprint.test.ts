@@ -44,3 +44,18 @@ test("synthetic footprint is well formed", () => {
   const f = JSON.parse(readFileSync(new URL("./fixtures/synthetic_footprint.json", import.meta.url), "utf8")) as FootprintData;
   for (const e of f.entries) close(Object.values(e.nodes).reduce((a, b) => a + b, 0), 1);
 });
+
+import { SPECIES, bloomCells, flowers } from "./footprintLayer.ts";
+
+test("a hill blooms over its share of the career, in drifts that follow the species mix", () => {
+  const n = 40, owner = new Int32Array(n * n).fill(-1);
+  for (let k = 0; k < n * n; k++) owner[k] = k % n < 20 ? 0 : 1;        // two hills of 800 cells each
+  const cells = bloomCells({ owner, ids: ["a", "b"] }, new Map([["a", 0.27], ["b", 0.05]]), n);
+  const count = (idx: number) => [...cells.values()].filter((v) => v === idx).length;
+  assert.equal(count(0), Math.round(800 * 0.27)); assert.equal(count(1), 40);
+  const fl = flowers(cells, n);
+  assert.equal(fl.length, cells.size * 6);
+  const poppies = fl.filter((f) => f[2] === 0).length / fl.length;
+  assert.ok(Math.abs(poppies - SPECIES[0].weight) < 0.2, "poppy share " + poppies);
+  assert.deepEqual(flowers(cells, n).slice(0, 5), fl.slice(0, 5));     // deterministic
+});

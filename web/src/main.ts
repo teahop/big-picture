@@ -1,6 +1,6 @@
 import { ensureLevel, loadBundle, visibleAt, type NodeRec, type SizeSetting } from "./data";
 import { Scene3D, webglAvailable } from "./scene3d";
-import { State, type Fade, type FootprintMode, type LodSetting, type Look } from "./state";
+import { State, type FootprintMode, type LodSetting } from "./state";
 import { compute, hierarchy, loadFootprint } from "./footprint";
 import { buildFootprintPanel, touchedChildren } from "./fpui";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
@@ -60,12 +60,10 @@ async function start(): Promise<void> {
       if (c?.unknown.length) $("notice").textContent = "Some footprint entries name industries that are not on the map: " + c.unknown.slice(0, 3).join(", ");
       state.setFocus([]); state.setFootprint(m, c);
     };
-    const mode = $<HTMLSelectElement>("fp-mode"), look = $<HTMLSelectElement>("fp-look"), fade = $<HTMLSelectElement>("fp-fade");
-    for (const id of ["fp-wrap", "fp-look-wrap", "fp-fade-wrap"]) $(id).hidden = false;
+    const mode = $<HTMLSelectElement>("fp-mode");
+    $("fp-wrap").hidden = false;
     (mode.querySelector("option[value=network]") as HTMLOptionElement).hidden = !Object.keys(fpData.layers?.connections ?? {}).length;
     mode.addEventListener("change", () => set(mode.value as FootprintMode));
-    look.addEventListener("change", () => state.setLook(look.value as Look));
-    fade.addEventListener("change", () => state.setFade(fade.value as Fade));
     const goLevel = async (level: number, auto = false) => {
       state.setLod(auto ? "auto" : String(level) as LodSetting); lod.value = auto ? "auto" : String(level);
       await applyLevel();
@@ -100,8 +98,6 @@ async function start(): Promise<void> {
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },
-    setLook: (v: Look) => { ($("fp-look") as HTMLSelectElement).value = v; state.setLook(v); },
-    setFade: (v: Fade) => { ($("fp-fade") as HTMLSelectElement).value = v; state.setFade(v); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }

@@ -1,5 +1,5 @@
-/** Geometry for drawing a footprint on the terrain: which industry owns each grid point, the outline around touched
- *  areas, and where the wildflowers go. Pure functions; scene3d turns the results into three.js objects. */
+/** Geometry for drawing a footprint on the terrain: which industry owns each grid point, which parts of a touched
+ *  hill bloom, and where each flower goes. Pure functions; scene3d turns the results into three.js objects. */
 import type { LevelGrids, Measure, Meta, NodeRec } from "./data";
 
 export interface Owners { owner: Int32Array; ids: string[] }
@@ -37,37 +37,63 @@ export function touchedMask(o: Owners, touched: Map<string, number>): Uint8Array
   return m;
 }
 
-/** Outline of a mask by marching squares: a flat list of segment end points in fractional grid coordinates [i, j]. */
-export function outline(mask: Uint8Array, n: number): [number, number][] {
-  const out: [number, number][] = [];
-  const at = (i: number, j: number) => mask[j * n + i];
-  for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) {
-    const c = at(i, j) | (at(i + 1, j) << 1) | (at(i + 1, j + 1) << 2) | (at(i, j + 1) << 3);
-    if (c === 0 || c === 15) continue;
-    const top: [number, number] = [i + 0.5, j], right: [number, number] = [i + 1, j + 0.5], bottom: [number, number] = [i + 0.5, j + 1], left: [number, number] = [i, j + 0.5];
-    const segs: Record<number, [number, number][][]> = {
-      1: [[left, top]], 2: [[top, right]], 3: [[left, right]], 4: [[right, bottom]], 5: [[left, top], [right, bottom]], 6: [[top, bottom]],
-      7: [[left, bottom]], 8: [[bottom, left]], 9: [[top, bottom]], 10: [[top, right], [bottom, left]], 11: [[right, bottom]], 12: [[right, left]],
-      13: [[top, right]], 14: [[left, top]],
-    };
-    for (const [a, b] of segs[c]) out.push(a, b);
+/** Smooth deterministic value noise in [0, 1) on grid coordinates (scale = cells per noise period). */
+export function hash(i: number, j: number, seed: number): number {
+  let v = (i * 374761393 + j * 668265263 + seed * 2147483647) | 0;
+  v = Math.imul(v ^ (v >>> 13), 1274126177);
+  return ((v ^ (v >>> 16)) >>> 0) / 4294967296;
+}
+
+export function noise(x: number, y: number, scale: number, seed: number): number {
+  const h = (i: number, j: number) => hash(i, j, seed);
+  const fx = x / scale, fy = y / scale, i = Math.floor(fx), j = Math.floor(fy), tx = fx - i, ty = fy - j;
+  const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+  const a = h(i, j) + (h(i + 1, j) - h(i, j)) * sx, b = h(i, j + 1) + (h(i + 1, j + 1) - h(i, j + 1)) * sx;
+  return a + (b - a) * sy;
+}
+
+/** Super bloom species, most common first, and how often each fills a drift. */
+export const SPECIES = [
+  { name: "poppy", weight: 0.42 }, { name: "goldfields", weight: 0.2 }, { name: "lupine", weight: 0.2 },
+  { name: "owls-clover", weight: 0.12 }, { name: "popcorn", weight: 0.06 },
+];
+
+/** Grid points that bloom: on each touched industry's ground, the share of its area equal to its share of the
+ *  career (27% of the career -> 27% of that hill), chosen as drifts from a smooth noise field that lean up the hill. */
+export function bloomCells(o: Owners, touched: Map<string, number>, n: number, height?: number[]): Map<number, number> {
+  const byNode = new Map<number, number[]>();
+  for (let k = 0; k < o.owner.length; k++) if (o.owner[k] >= 0) (byNode.get(o.owner[k]) ?? byNode.set(o.owner[k], []).get(o.owner[k])!).push(k);
+  const out = new Map<number, number>();                  // cell -> owner index
+  for (const [idx, cells] of byNode) {
+    const share = touched.get(o.ids[idx]);
+    if (!share) continue;
+    const keep = Math.round(cells.length * Math.min(1, share));
+    // drifts from noise, leaning up the hill (a narrow peak's flat area is mostly its foot, which would bloom as a ring)
+    const top = height ? Math.max(...cells.map((k) => height[k]), 1e-9) : 1;
+    const score = (k: number) => noise(k % n, Math.floor(k / n), 6, 11) * 0.55 + (height ? (height[k] / top) * 0.45 : 0);
+    const ranked = cells.map((k) => [k, score(k)] as [number, number]).sort((a, b) => b[1] - a[1]);
+    for (const [k] of ranked.slice(0, keep)) out.set(k, idx);
   }
   return out;
 }
 
-/** Deterministic flower positions over touched ground, densest on the industries with the largest share:
- *  [fractional i, fractional j, colour index 0..3]. */
-export function flowers(o: Owners, touched: Map<string, number>, n: number, perPoint = 3): [number, number, number][] {
-  const top = Math.max(...touched.values(), 1e-9), out: [number, number, number][] = [];
+/** Deterministic flowers over the blooming cells: [fractional i, fractional j, species index]. Species come in drifts
+ *  (a second, coarser noise field), with a few strays mixed in. */
+export function flowers(cells: Map<number, number>, n: number, perCell = 6): [number, number, number][] {
   let seed = 7;
   const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-  for (let k = 0; k < o.owner.length; k++) {
-    const id = o.owner[k] >= 0 ? o.ids[o.owner[k]] : undefined, s = id ? touched.get(id) : undefined;
-    if (s === undefined) continue;
-    const expect = 0.5 + perPoint * Math.sqrt(s / top);
-    const count = Math.floor(expect) + (rnd() < expect % 1 ? 1 : 0);
+  const cum = SPECIES.reduce<number[]>((a, s) => [...a, (a.at(-1) ?? 0) + s.weight], []);
+  const pick = (u: number) => { const i = cum.findIndex((c) => u < c); return i < 0 ? cum.length - 1 : i; };
+  const out: [number, number, number][] = [];
+  for (const k of [...cells.keys()].sort((a, b) => a - b)) {
     const i = k % n, j = Math.floor(k / n);
-    for (let c = 0; c < count; c++) out.push([i + rnd() - 0.5, j + rnd() - 0.5, Math.floor(rnd() * 4)]);
+    for (let c = 0; c < perCell; c++) {
+      const x = i + rnd() - 0.5, y = j + rnd() - 0.5;
+      // drifts: one species per warped patch of about 8 cells (uniform hash, so the mix follows SPECIES), some strays
+      const wx = x + 6 * noise(x, y, 7, 5), wy = y + 6 * noise(x, y, 7, 6);
+      const u = rnd() < 0.12 ? rnd() : hash(Math.floor(wx / 8), Math.floor(wy / 8), 23);
+      out.push([x, y, pick(u)]);
+    }
   }
   return out;
 }

@@ -8,22 +8,26 @@
 :root, :root[data-theme="light"] {
   --bg: var(--surface-page); --fg: var(--text-primary); --muted: var(--text-secondary); --panel: var(--surface-card); --line: var(--border-hairline);
   --accent: #1f7a63; --footprint: #19a98a;
-  /* Terrain colour by height (placeholder until the mountain skin): ground up to peak. */
-  --terrain-ground: var(--greige-100); --terrain-peak: #7a4a2e;
+  /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
+     career is shown. Flowers: poppy, goldfields, lupine, owl's clover, popcorn flower. */
+  --sky: #e9f0ef; --terrain-ground: #5f7f3a; --terrain-peak: #a9c45e; --terrain-muted: #b3b59a;
+  --flower-1: #f0821c; --flower-2: #f2c41f; --flower-3: #7a66c6; --flower-4: #d46aa4; --flower-5: #f6f3ea;
   color-scheme: light;
 }
 /* Dark theme derived from the same palette: warm brown surfaces, off-white text, soft teal accent. */
 :root[data-theme="dark"] {
   --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
-  --terrain-ground: #241e1a; --terrain-peak: #e0a878;
+  --sky: #10161b; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+  --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
-    --terrain-ground: #241e1a; --terrain-peak: #e0a878;
+    --sky: #10161b; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+  --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
     color-scheme: dark;
   }
 }
@@ -91,10 +95,7 @@ aside[hidden] { display: none; }
 #about form { float: right; margin: 0; }
 
 /* footprint (Phase 2) */
-:root, :root[data-theme="light"] { --flower-1: #e8731c; --flower-2: #7652a8; --flower-3: #e9b520; --flower-4: #c9508a; }
-:root[data-theme="dark"] { --flower-1: #ff9a3d; --flower-2: #a487d6; --flower-3: #ffd34d; --flower-4: #ee7fb3; }
 .node-label.touched { font-weight: 600; border: 1px solid var(--footprint); }
-.node-label.receded { opacity: .35; }
 #fp-panel h3 { margin-top: 4px; }
 .crumbs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12px; margin-bottom: 6px; }
 .crumbs button { border: 0; background: none; padding: 2px 4px; color: var(--accent); text-decoration: underline; }
