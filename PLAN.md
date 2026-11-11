@@ -1,110 +1,131 @@
-# Industry Map — Plan
+# The Big Picture — Plan (v2)
+
+v1 (Phases 0 to 6) is finished and archived in `docs/v1/`. This plan covers v2
+as specified in `SPEC.md`.
 
 Each phase has a kickoff prompt in `handoffs/`. Start a Claude Code session in
-this folder and paste or reference that file. Finish a phase, meet its checks,
-update this table, commit, then stop.
+this folder and reference that file. Finish the phase, meet its checks, update
+the table below, commit, then stop and wait for the owner.
+
+**Branch:** all v2 work happens on the `v2` branch. Pushing `main` redeploys the
+live site, so `main` is not touched until Phase 4.
 
 ## Status
 
 | Phase | Name | Status | Notes |
 |---|---|---|---|
-| 0 | Setup and guards | done (2026-11-09), awaiting owner OK | Hook proven; scaffolds run; SOURCES.md has spec differences to review (O*NET 31.0, OpenAlex key rule, BEA bulk file, Reliance on Science is non-commercial) |
-| 1 | Coarse industry terrain and viewer skeleton | done (2026-11-09), awaiting owner OK | Reconciles exactly (sectors + self-employed = published total). Health care to Educational services fails the similarity-space sanity pair (passes in the layout). BEA value added deferred to Phase 3, so no size switch yet. Self-employed left off the map |
-| 2 | Coarse research layer, bridge, shared layout | done (2026-11-09), awaiting owner OK | Counts match OpenAlex exactly. CIP mapping owner-reviewed; all 5 bridge sanity pairs pass. In the joint layout Finance and Professional services sit farther apart than the median sector pair, and Economics ranks Finance 6th by layout distance. HERD mapping owner-reviewed; Energy R&D is an estimate (about $1.07B from general engineering lines); Veterinary has no HERD source |
-| 3 | Deepen: Level 1 everywhere, Level 2 in deep zones | done (2026-11-09), awaiting owner OK | Level 1 (304 industries, 250 subfields), Level 2 research topics (501) and 43 estimated `deep:` industry nodes (owner-reviewed categories). Level 0 unchanged; children inside radius; deep nodes reconcile with their BLS parents to 1e-13; rebuild is byte-identical; Level 2 frame time 1.6 ms (all 1,107 nodes loaded). Open for the owner: deep-to-topic links, the headcount table, and 3 weak proxies (see notes below) |
-| 4 | Personal overlay | built (2026-11-09), awaiting owner review | `imap personal roles/connections/skills/education/presence` write only to `private/`; viewer footprint (all, tenure, connections, skills), centroid marker with caveat, local-only route for the private bundle. Public bundle byte-identical with and without personal inputs. Owner reviewed the role mappings (no changes) and every company with more than one contact (3 corrections, rest accepted). Connections are now a separate footprint layer (the own footprint is tenure plus skills and education); the owner added 28 more company corrections. Contact coverage is 54% by count (target 90%): owner accepts that single-contact companies too small to show may stay unmapped. Education degrees and presence weights still to confirm |
-| 5 | Where-next scoring and toggles | built (2026-11-09), awaiting owner review | `imap score` (adjacency by personalised PageRank, growth, size, novelty), geography (QCEW county LQ for industries, metro share of works for research), mission tags, ranked viewer panel with bars, reasons and a local tag editor. Pay toggle uses OEWS (hand-downloaded) for the owner's nearest occupations, listed in words in a private file for the owner to edit. Top 20 for review in `private/report_score.md` |
-| 6 | Polish and publish | done (2026-11-10), published at https://teahop.github.io/industry-map/ | About-the-data dialog, loading state, phone layout (no sideways scroll, map first, 3D camera fits), contrast and label checks, Pages workflow in `.github/workflows/pages.yml` (not enabled). Blocklist scan of `web/dist`, all tracked files and the full git history: no hits. `publish.personal` is `none`, so the published site has no personal overlay at all. Pages enabled by the owner's yes on 2026-11-10 (Actions source); live site checked: 46 nodes, no private controls, private route 404, blocklist scan of the served data files clean |
+| Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
+| 0 | Rename and strip | not started | |
+| 1 | One map | not started | Owner review of the prototype |
+| 2 | Clear footprint | not started | Owner chooses between variants |
+| 3 | Add your CV | not started | |
+| 4 | Download and release | not started | Publishing needs an explicit yes |
 
-## Before Phase 0 (owner)
+## Owner decisions (from SPEC section 10)
 
-- Install and sign in to the GitHub CLI (`gh auth login`) as `teahop`.
-- Install `uv` and Node 20+.
-- Create an OpenAlex API key (needed from Phase 2) and put it in `.env`.
-- Review `Personal Data/PROFILE_NOTES.md`, especially the proposed deep zones.
+Each is asked in the phase where it matters; none blocks Phase 0.
 
-## Owner review to-do (deferred, not blocking)
+| Decision | Asked in | Default if no answer |
+|---|---|---|
+| One-map design accepted | Phase 1 | Do not proceed to Phase 2 |
+| Footprint treatment | Phase 2 | Do not proceed to Phase 3 |
+| Connections layer kept (private only) | Phase 2 | Keep, off by default |
+| Sample synthetic footprint on the public site | Phase 3 | Yes |
+| Own footprint in public | Phase 4 | No |
+| Rename repository and URL | Phase 4 | Leave as `industry-map` |
 
-- ~~`data/mappings/field_to_cip.csv`~~: reviewed by the owner 2026-11-09 (180 of 208 proposed rows accepted).
-- ~~`data/mappings/herd_to_openalex.csv`~~: reviewed by the owner 2026-11-09 (Veterinary moved out of Health sciences, Communication mapped to Computer Science). Three Energy rows are an estimate (split of Electrical, Mechanical, Engineering nec) and stay `reviewed=no`. Veterinary now has no HERD source ($0); decide whether Agricultural sciences should also feed it.
-- Phase 1: Health care and Educational services fail the occupation-similarity sanity pair; owner considers them related (care sectors), so left as is.
+## Carried over from v1 (not blocking)
 
-- ~~`data/mappings/deep_categories.yaml`~~: categories and proxies reviewed by the owner 2026-11-09, no changes. The machine-readable `calc:` and `parent:` keys added at build time are not yet reviewed.
-- `data/mappings/deep_headcounts.csv`: organisation headcounts behind the headcount-share proxies (about 20 organisations have none; many are third-party estimates; Accenture, IBM and Deloitte figures are global or unconfirmed and dominate the consulting split). Owner may correct any row; rerun `uv run imap deep`, then layout, terrain and export.
-- Phase 4 (all in `private/`, details in the Phase 4 report): `role_corrections.csv` (role dates and node shares), `company_corrections.csv` (company to node), the umbrella-overlap rule, the education degrees and CIP proposals and the presence parameters in `profile.local.yaml`.
-- `data/interim/reports/deep_topic_links.md`: top embedding links from each `deep:` node to Level 2 research topics (local report; the viewer marks them unreviewed).
-- `config/deep_zones.yaml`: which subfields and industries are deepened. Public file: it shows which zones were chosen.
+- `data/mappings/deep_headcounts.csv`: organisation headcounts behind the deep
+  zone size estimates are still open to correction.
+- `data/interim/reports/deep_topic_links.md`: deep-node links to research topics
+  are still unreviewed and marked so in the viewer.
+- Private: the education mapping and presence weights were left to confirm at
+  the end of v1 Phase 4. Phase 2 uses them, so confirm them there.
+- The v1 to-dos about where-next, pay and geography are closed by removal.
 
 ## Phases
 
-### Phase 0 — Setup and guards
-Goal: a public repo that cannot leak personal data, and an inventory of inputs.
+### Phase 0 — Rename and strip
+Goal: the same v1 map under the new name, with the removed features gone.
 Checks:
-- `git status` shows nothing under `Personal Data/` or `private/`.
-- Pre-commit hook rejects a test commit that stages a file under `private/`.
-- `uv run imap --help` and `npm run dev` both work on empty scaffolds.
-- `data/SOURCES.md` exists with one row per source in SPEC section 4.
-- Private data inventory report written to `private/`.
+- `v1.0` tag exists on the last v1 commit; work is on branch `v2`.
+- Header, page title, description and README read "The Big Picture" and
+  "Visualizing a career" from `config/site.yaml`; no other file hard-codes them.
+- No code, control, config key or test remains for where-next, pay, mission,
+  geography, the 2D map or the centroid (search the tree for each).
+- `uv run pytest` and `npm run build` pass.
+- `nodes*.json`, `edges*.json` and `layout*.json` in `data/public/` are
+  byte-identical to v1.
+- Viewer runs locally with the remaining controls working.
 
-### Phase 1 — Coarse industry terrain and viewer skeleton
-Goal: about 20 sectors as peaks in the browser, end to end.
+### Phase 1 — One map
+Goal: industry and research on a single terrain.
 Checks:
-- Sector employment totals reconcile with the source total within 1%.
-- Similar sectors sit closer than dissimilar ones (named pairs in the handoff).
-- Viewer renders the mesh, labels, hover details; size switch works if value
-  added is loaded.
-- Layout file is tracked and a second run reproduces it exactly.
+- One mesh; height and industry-share grids exported per level and size
+  setting; the old per-layer grids are gone.
+- The largest Level 0 industry and the largest Level 0 field have equal peak
+  height; scaling constants are in `meta.json`.
+- Node positions are unchanged from v1 at every level.
+- Type is readable without colour (label marks), in light and dark.
+- Emphasis control (Both, Industry, Research) and size switch (Activity,
+  Dollars) work; frame time at Level 2 is no worse than v1.
+- Owner has looked at it and accepted the design, or asked for changes.
 
-### Phase 2 — Coarse research layer, bridge, shared layout
-Goal: 26 fields as valleys in the same space, linked to sectors.
+### Phase 2 — Clear footprint
+Goal: the owner can read their own footprint at a glance and step into it.
 Checks:
-- Field work counts match OpenAlex totals for the same filter.
-- Field-to-CIP mapping table exists, reviewed, tracked.
-- Bridge sanity pairs rank in the top 3 for their field.
-- Viewer shows the four layer modes; neither mesh affects the other's height.
+- The private pipeline writes the entry format of SPEC 6.1; the public bundle
+  is byte-identical with and without personal inputs.
+- Weights roll up: for every touched parent, weight equals the sum of its
+  children's (unit test, synthetic person).
+- With the footprint on: untouched terrain recedes, touched Level 0 areas are
+  outlined and labelled with shares, and the panel lists them.
+- Step-down works from map and list through Level 1 to Level 2, with a
+  breadcrumb back.
+- Selecting a touched node shows the entries behind it.
+- At least two visual variants were shown; the owner picked one and the other
+  is removed.
 
-### Phase 3 — Deepen
-Goal: Level 1 everywhere; Level 2 in the owner's deep zones.
+### Phase 3 — Add your CV
+Goal: a visitor gets a footprint from a CV without any data leaving the page.
 Checks:
-- Level 0 positions unchanged to within tolerance after deepening.
-- Children stay within their parent's radius.
-- Estimated `deep:` nodes are visibly marked and list their size proxy.
-- Frame rate acceptable with all nodes loaded (target 30 fps on a laptop).
+- Lookup sources verified and recorded in `data/SOURCES.md` before loaders are
+  written; lookup files are within the size budget set in the handoff.
+- Three synthetic CVs (PDF and pasted text) each reach a drawn footprint; the
+  manual form alone also does.
+- On the synthetic set, the correct Level 1 industry is among the offered
+  guesses for most roles and the correct field for most degrees (targets in the
+  handoff); misses are reported, not hidden.
+- Browser test: after a CV is chosen, no network request leaves the page, and
+  `localStorage`, `sessionStorage`, IndexedDB, cookies and the URL are
+  unchanged.
+- Content-Security-Policy restricts connections to the site's own origin.
+- The page states the privacy promise and the limits in SPEC 7.4.
 
-### Phase 4 — Personal overlay
-Goal: footprint from tenure, connections and skills, private only.
+### Phase 4 — Download and release
+Goal: one JPG download, then v2 replaces v1 in public.
 Checks:
-- Every role and at least 90% of connections (by count) map to a node; the rest
-  are listed in a private review table.
-- No month is counted twice under the umbrella rule (unit test with synthetic
-  data, plus a private reconciliation of total months against career length).
-- Owner has reviewed role mappings and the 50 highest-count companies.
-- Public export is byte-identical with and without personal data present.
-
-### Phase 5 — Where-next scoring and toggles
-Goal: ranked candidates with explanations; pay, mission and geography toggles.
-Checks:
-- Each candidate shows its component breakdown.
-- Each toggle changes the ranking in the expected direction on a synthetic
-  profile test.
-- Owner reads the top 20 and marks which are sensible; weights tuned once.
-
-### Phase 6 — Polish and publish
-Goal: a public static site of the base map, published only on confirmation.
-Checks:
-- Automated scan of `web/dist` finds no string from the private blocklist.
-- Site works from a clean clone with no private files.
-- Accessibility pass: keyboard navigation of the node list, readable contrast,
-  2D fallback.
-- Owner confirms, then GitHub Pages is enabled.
+- The download produces one JPG with the map, footprint, name, subtitle,
+  touched-area list, legend and site address; correct in light and dark; works
+  in current Chrome, Safari and Firefox.
+- The image is produced without any network request.
+- Phone layout: the CV flow and the download are usable at phone width.
+- Blocklist scan of `web/dist`, tracked files and history: no hits. The Pages
+  workflow's expected-file list matches the v2 bundle.
+- The site works from a clean clone with no private files.
+- Owner confirms; then `v2` is merged to `main`, the live site is checked, and
+  the repository rename is done only if separately confirmed.
 
 ## Risks
 
 | Risk | Response |
 |---|---|
-| Personal data reaches a public repo | Ignore rules, pre-commit hook, blocklist scan, public export built without reading private inputs |
-| Research-to-industry bridge is weak or noisy | Three independent signals, sanity pairs, per-link explanation, hand-reviewed mapping at coarse level |
-| Deepening a zone reshuffles the map | Anchored hierarchical layout with frozen parents |
-| Official taxonomies are too coarse in the owner's zones | Custom `deep:` nodes, marked as estimated |
-| Company-to-industry classification errors | Cache with confidence, hand review of the highest-count companies, corrections never overwritten |
-| A data source changes format | Loaders verify against documentation first and stop on mismatch |
+| One surface hides which type a mountain is | Share-of-industry tint, shape marks on labels, emphasis control; owner review before building on it |
+| The footprint is still unclear | Discrete touched set, receding background, list with shares; decided on working variants, not on paper |
+| CV parsing is unreliable | The confirm step is the design, not a fallback; a manual form always works |
+| Company-to-industry guesses are poor without a server | Organisation list plus job-title ranking, alternatives offered, search over all nodes; report hit rates on synthetic CVs |
+| A visitor's CV leaks | No backend, origin-only CSP, no storage, automated no-network test |
+| Personal data reaches the public repo | v1 guards unchanged; synthetic fixtures only |
+| v2 work reaches the live site early | `v2` branch; `main` untouched until the release step |
+| Lookup files make the page slow | Size budget; load them only when the CV flow opens |

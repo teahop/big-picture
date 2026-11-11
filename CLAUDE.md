@@ -1,7 +1,9 @@
-# CLAUDE.md — Industry Map
+# CLAUDE.md — The Big Picture (repo: industry-map)
 
 Read `SPEC.md` (what and why) and `PLAN.md` (order and status) before any work.
 Work one phase at a time using the matching file in `handoffs/`.
+These describe v2. The finished v1 documents are in `docs/v1/`; `SPEC.md` refers
+to them for everything v2 does not change.
 
 ## Hard rules
 
@@ -22,14 +24,20 @@ Work one phase at a time using the matching file in `handoffs/`.
 3. **Do not hand-edit generated outputs.** Change the code and re-run.
 4. **Stop at each phase's acceptance checks.** Report results, update the status
    table in `PLAN.md`, and wait for the owner before starting the next phase.
-5. **Ask before any step that publishes.** Enabling GitHub Pages or changing
-   repo visibility needs an explicit yes in that session.
+5. **Ask before any step that publishes.** Enabling GitHub Pages, changing
+   repo visibility, renaming the repo, or pushing `main` (which redeploys the
+   live site) needs an explicit yes in that session. v2 work stays on the `v2`
+   branch until the release step.
+6. **A visitor's CV never leaves their browser.** No backend, no third-party
+   request carrying CV content, nothing written to browser storage or the URL.
+   Fixtures for the CV flow are synthetic; the owner's CV is never one.
 
 ## Layout
 
 ```
 SPEC.md  PLAN.md  CLAUDE.md  README.md
-handoffs/            one kickoff prompt per phase
+handoffs/            one kickoff prompt per v2 phase
+docs/v1/             archived v1 spec, plan and handoffs
 config/              profile.example.yaml (public schema, synthetic values)
 pipeline/            Python package: ingest -> graph -> layout -> terrain -> export
 data/raw/            downloaded public data (ignored)
@@ -57,13 +65,13 @@ private/             derived personal outputs and profile.local.yaml (ignored)
 
 ## Naming
 
-"Industry Map" is a working title and will change. The display name lives in one
-place, `config/site.yaml` (`display_name`), and the viewer, README title and page
-metadata read from it. Code identifiers (`imap`, package and file names) stay
+The display name is "The Big Picture", subtitle "Visualizing a career" (v2; v1
+was "Industry Map"). Both live in one place, `config/site.yaml` (`display_name`,
+`subtitle`), and the viewer, README title, page metadata and exported image read
+from it. Code identifiers (`imap`, package and file names) stay
 neutral and do not change on a rename.
 
 ## Private context
 
-Owner-specific details (which zones to deepen, data quirks, default toggle
-values) are in `Personal Data/PROFILE_NOTES.md`. Read it; never quote it into a
+Owner-specific details (which zones to deepen, data quirks) are in `Personal Data/PROFILE_NOTES.md`. Read it; never quote it into a
 tracked file.

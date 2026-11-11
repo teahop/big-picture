@@ -1,263 +1,271 @@
-# Industry Map — Specification
+# The Big Picture — Specification (v2)
 
-Version 0.3, 2026-11-09 (0.2: source facts verified in Phase 0; 0.3: Level 1/2 design decisions from Phase 3; see `data/SOURCES.md`). Owner: github.com/teahop.
+*Visualizing a career.*
+
+Version 2.0 draft, 2026-11-10. Owner: github.com/teahop.
+The v1 specification, plan and handoffs are archived in `docs/v1/`. Anything this
+document does not change (data sources, node IDs, similarity, anchored layout,
+levels of detail, deep zones) still works as v1 section numbers describe; this
+document refers to them as "v1 §n".
 
 ## 1. Purpose
 
-Show American industry and research fields as terrain in one shared space, place
-one person on it from their work history, skills and connections, and score
-where they might head next.
+Show American industry and research as one landscape, and draw a career on it.
 
-The user can answer three questions by looking:
+A visitor can do two things:
 
-1. What is near what? (Which research fields sit under which industries.)
-2. Where am I? (A footprint, not a pin.)
-3. Where could I go? (Large or growing areas adjacent to the footprint, filtered
-   by pay, mission and geography.)
+1. **Look at the map.** See which research fields and industries sit near each
+   other, and how large they are.
+2. **See a career on it.** Add a CV, confirm a few guesses, see which parts of
+   the map that career touches, and download the picture.
 
-## 2. Decisions already made
+v1 also asked "where could I go next?". v2 does not. It is a picture of where a
+career has been.
 
-| Topic | Decision |
+## 2. What changes from v1
+
+| # | Change | Section |
+|---|---|---|
+| 1 | Renamed **The Big Picture**, subtitle **Visualizing a career** | 3 |
+| 2 | Removed: where-next scoring, the 2D map, pay, mission and geography | 4 |
+| 3 | Industry and research are drawn on **one** terrain instead of two | 5 |
+| 4 | New: a visitor adds a CV in the browser and sees a career footprint; nothing is stored or sent | 7 |
+| 5 | The footprint is redrawn so it is clear: touched Level 0 areas are highlighted and the user can step down into Levels 1 and 2 | 6 |
+| 6 | New: download one JPG of the map with the footprint | 8 |
+
+Unchanged: the public data pipeline, the node graph, the shared anchored layout,
+the three levels of detail, the deep zones, the privacy rules, static hosting.
+
+## 3. Name
+
+- `config/site.yaml` holds `display_name: "The Big Picture"` and a new key
+  `subtitle: "Visualizing a career"`. The viewer header, page title, page
+  description, README title and the exported image read both from there.
+- Code identifiers (`imap`, package and file names) do not change.
+- The repository name and the published URL still say `industry-map`. Renaming
+  them changes a public address, so it is a separate, confirmed step (section 10).
+
+## 4. Removed
+
+| Feature | What goes |
 |---|---|
-| Layers | Two separate terrains on one shared layout. Industry rises as peaks; research sinks as valleys. Each viewable alone, stacked with a vertical gap, or overlaid. They are separate meshes, so they never cancel. |
-| Industry size | Employment by default; value added as a switch. |
-| Research size | Publication volume by default; R&D dollars as a switch. |
-| Resolution | Coarse everywhere first, then deeper only in the owner's zones. |
-| "Where next" | Adjacency plus growth by default; pay, mission and geography as toggles. |
-| Form | Python data pipeline that exports static JSON; static web viewer. |
-| Publishing | Must be publishable as a public static site when the owner chooses. |
-| Repo | Public. Personal data local only. |
+| Where next | `imap score`, `score.py`, `web/src/score.ts`, `web/src/whereNext.ts`, the ranked panel and markers, the `where_next` block of the profile, the score tests |
+| Pay | OEWS ingest and the pay toggle |
+| Mission | Mission tags, the tag editor, the dev-server route that saves tags |
+| Geography | `geo.py`, the QCEW county and OpenAlex metro ingests used only for location quotients, the geography toggle |
+| 2D map | `web/src/map2d.ts` and the view switch. Without WebGL the page shows a plain message and the node lists; there is no contour fallback |
+| Layer modes | Industry only, research only, stacked, overlaid. One map replaces them |
+| Centroid marker | The weighted-centroid marker and its caveat text. A list of touched areas replaces it |
+| Presence diffusion | The one-step spread of presence to neighbours (v1 §7.3). It blurred the footprint |
 
-## 3. Data model
+QCEW stays where the deep-zone industry build and the value-added split use it.
+Retired sources stay listed in `data/SOURCES.md`, marked "retired in v2", so the
+history of the public data is still explained.
 
-Three node types and one extension:
+## 5. One map
 
-- `ind:` industry (NAICS-based, from the BLS National Employment Matrix).
-- `fld:` research field (OpenAlex domain, field, subfield or topic).
-- `occ:` occupation (SOC). Occupations are bridge nodes. They are not drawn as
-  terrain but connect industries to fields and carry pay data.
-- `deep:` custom child nodes inside a deep zone where official taxonomies are
-  too coarse (see 5.3).
+### 5.1 The problem
+v1 drew industry as peaks and research as valleys on two meshes. That needed
+four layer modes to read, and a footprint draped over two surfaces was hard to
+see. But the two node types already share one layout, so a position means the
+same thing for both.
 
-Every node has: `id`, `label`, `type`, `level`, `parent`, `size_*` measures,
-`growth`, `xy`, and `provenance` (official or estimated).
+### 5.2 Decision: one surface, height is size, colour is the mix
+- **One mesh.** Every node, industry or research, raises the ground. Height at
+  a point is the sum of Gaussian kernels of all nodes near it (v1 §6.4 kernel
+  and volume-preserving split, unchanged).
+- **Comparable heights.** Jobs and papers have different units, so each type is
+  scaled on its own before the two are added: the largest Level 0 industry and
+  the largest Level 0 field reach the same height. The scaling constants are
+  exported so the viewer can state them.
+- **Colour shows the mix.** Each grid cell also carries the industry share of
+  its height (0 = all research, 1 = all industry). The terrain is tinted along a
+  two-hue ramp through a neutral middle, so a mountain that is mostly industry,
+  mostly research, or a real blend is visible at a glance.
+- **Not colour alone.** Labels carry a shape mark for type (a square for
+  industry, a circle for research), and the details panel names the type.
+- **One emphasis control** replaces the layer modes: Both, Industry, Research.
+  It fades the labels and tint of the other type. It does not change heights.
 
-Edges are weighted and typed: `ind-occ` (employment share), `fld-fld`
-(similarity), `ind-ind` (similarity), `fld-occ` and `fld-ind` (bridge).
+### 5.3 Size measures
+One switch, two settings, applied to both types together:
 
-## 4. Data sources
+| Setting | Industry | Research |
+|---|---|---|
+| Activity (default) | Employment | US publications |
+| Dollars | Value added | University R&D |
 
-Record exact release, URL and retrieval date in `data/SOURCES.md`. Facts in the
-"Checked" column were confirmed on 2026-11-09; everything else must be confirmed
-by the build before use.
+Value added per job and R&D per paper are no longer terrain measures. They stay
+as figures in the details panel.
 
-| Need | Source | Checked 2026-11-09 | Confirm at build |
-|---|---|---|---|
-| Industries, occupation mix, employment, projections | BLS National Employment Matrix (XLSX) | Cycle 2025-2035; industries coded to NAICS 2022, occupations to SOC 2018. Counts of detailed industries and occupations are not stated on the BLS pages | File layout; count detailed rows from the file |
-| Industry value added | BEA GDP by industry | Release 2026-09-30 (Q2 2026). No bulk file found; data is in the interactive tables and the API dataset `GDPByIndustry` (free key) | Which table and years; API or interactive export |
-| Research taxonomy and volume | OpenAlex | 4 domains, 26 fields, 252 subfields, 4,516 topics; Counts confirmed. Docs now at help.openalex.org. Keyless basic use works; a free key gives a $1/day budget, 30 requests/s and is required for cursor paging past page one (no "required since 2026-02-13" statement found). About 10% of works have no topic. Topic classifier replaced October 2026 | `group_by` works on works; topic-hierarchy fields (`primary_topic.field.id` etc.) only as a single group_by field. Record classifier version; filter to article, review, book, book-chapter when counting |
-| Research dollars | NSF NCSES HERD survey | FY 2024 is the latest (released 2025-12-23); tables cut from 86 to 55; some by-field tables are Table Builder only | Which by-field tables download directly; field list and crosswalk to OpenAlex fields |
-| Field to occupation | NCES CIP 2020 to SOC 2018 crosswalk | Expert-judgment mapping, not empirical. XLSX at nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx; CIP 2020 is still current; the CIP code list has no direct URL | Get the CIP code list another way |
-| Occupation knowledge, skills, titles | O*NET database | Current release is 31.0 (2026-10); 30.3 renamed files and columns. No "Alternate Titles" file: use Job Titles and Sample of Reported Titles; skills are split across Software, Essential and Transferable Skills files. Licence Creative Commons (CC BY 4.0 per a summary) | Pin 31.0; use its data dictionary; confirm licence page |
-| Pay | BLS OEWS (wages by occupation, industry and metro) | May 2025 reference period; files `oesm25nat`, `oesm25in4`, `oesm25ma` ZIPs (XLSX inside) | NAICS edition of the industry file |
-| Geography | BLS QCEW (employment by industry and area); OpenAlex institution locations | Annual files through 2025; quarterly files in 2026; CSV slices API on data.bls.gov | NAICS edition; whether the API serves annual slices |
-| Business R&D by industry (optional bridge) | NSF NCSES Business Enterprise R&D (BERD) survey, successor to BRDIS | Survey year 2024, released 2026-10-29; by-industry tables are downloadable XLSX; methodology uses 2017 NAICS | Table list; NAICS 2017 vs 2022 mismatch |
-| Patent-to-paper links (optional bridge) | "Reliance on Science" dataset | Updated July 2026, through patents granted 2025; Zenodo CSV. **Licence CC BY-NC 4.0 (non-commercial)** | Whether non-commercial terms are acceptable for derived public data |
+### 5.4 Considered and not chosen
+- *Peaks and valleys on one mesh:* an industry over a related field would cancel
+  to flat ground, hiding exactly the places where the two meet.
+- *Merging both types into new joint regions at Level 0:* this invents a
+  taxonomy nobody recognises and loses the official names and figures.
+- *Two interleaved point clouds without terrain:* loses the sense of size.
 
-OpenAlex has no official crosswalk to CIP or NAICS. The project builds its own
-(section 6.3) and keeps it as a reviewed, tracked table.
+### 5.5 Exported data
+Per level and per size setting: one height grid and one industry-share grid.
+The separate industry and research grids of v1 are no longer exported. Nodes,
+edges and layout files keep their v1 shape.
 
-Three source differences from version 0.1 matter to the design: BEA value added has no bulk file, so it comes from the API or interactive export and is optional until proven; OpenAlex topic assignments depend on a classifier that changed in October 2026, so every research count records the classifier version; and Reliance on Science is non-commercial, so it stays out of the public bundle unless the owner accepts that.
+## 6. Footprint
 
-## 5. Resolution
-
-### 5.1 Level 0 (Phase 1 and 2)
-- Industry: NAICS sectors (about 20).
-- Research: OpenAlex fields (26).
-
-### 5.2 Level 1 (Phase 3, everywhere)
-- Industry: the detailed industries of the Employment Matrix.
-- Research: OpenAlex subfields (252).
-
-Level 1 industries are the matrix's "Line item" rows. Where a sector's line items do not add up to
-the sector total, one "Other: <sector>" remainder node carries the difference (and a residual
-occupation mix), so Level 1 always reconciles with Level 0. NAICS 2022 has no separate electronic
-shopping industry, so a deep zone for online retail attaches to its closest parent (general
-merchandise retailers). Subfields with no works at all in OpenAlex are not drawn. R&D dollars are
-published only by field, so subfield and topic R&D is allocated pro rata by US works (an estimate).
-
-### 5.3 Level 2 (Phase 3, deep zones only)
-- Research: OpenAlex topics under the subfields named in the private profile.
-- Industry: custom `deep:` categories under the industries named in the private
-  profile, where NAICS lumps distinct businesses together. The build proposes
-  the category list from public sources (company-affiliated publication topics
-  in OpenAlex, public filings' business descriptions, published market maps),
-  and the owner reviews it before it is used. These have no official employment
-  figures, so size is an estimate from documented proxies (member count,
-  published headcount). Estimated nodes carry `provenance: estimated` and the
-  viewer draws them with a distinct outline.
-
-## 6. Building the space
-
-### 6.1 Similarity
-- `ind-ind`: cosine similarity of occupation-share vectors from the Employment
-  Matrix.
-- `fld-fld`: preferred, co-assignment of topics on the same works via OpenAlex
-  `group_by` (confirm the API supports it at acceptable cost). Fallback, cosine
-  similarity of text embeddings of field descriptions and keywords.
-- Text embeddings use a local sentence-embedding model so no extra key is needed.
-
-### 6.2 Layout: anchored and hierarchical
-Variable resolution only works if deepening one zone does not move everything
-else. So:
-
-1. Lay out Level 0 nodes of both types together from the combined similarity
-   matrix (bridge included) using metric MDS or a seeded force layout. At this
-   size UMAP is not appropriate.
-2. Freeze those positions.
-3. Place each child within its parent's neighbourhood: start at the parent
-   position, then relax using similarity to siblings and to already-placed
-   nodes, constrained to a radius proportional to the parent's size.
-4. All randomness is seeded. Positions are written to a tracked file so the map
-   is stable across runs, and re-layout is an explicit command.
-
-### 6.3 Bridge between research and industry
-Combine three signals into one `fld-ind` weight, and keep each signal's
-contribution so the viewer can explain a link:
-
-1. **Occupational:** field to CIP (project-built mapping, embedding-matched then
-   reviewed by hand at the 26-field level), CIP to SOC (NCES crosswalk), SOC to
-   industry (Employment Matrix shares).
-2. **Semantic:** embedding similarity between field descriptions and industry
-   plus O*NET occupation descriptions.
-3. **Empirical (optional, later):** share of a field's works with a company
-   affiliation in OpenAlex, business R&D by industry, patent-to-paper links.
-
-Sanity pairs that must rank highly before the bridge is accepted are listed in
-the Phase 2 handoff.
-
-### 6.4 Terrain
-Deeper levels split a parent's terrain among its children so that the volume is preserved: the kernel
-narrows from parent to child by a fixed ratio, and the children share `amplitude_parent *
-(sigma_parent / sigma_child)^2` in proportion to `log(1 + size)`. Without this, many overlapping
-children stack far above their parent. A level of detail is a separate grid (Level 0, Level 1,
-Level 2), not a sum of levels; a child replaces its parent when the level is reached.
-
-For each layer, height at a point is a sum of Gaussian kernels centred on that
-layer's nodes: amplitude `log(1 + size)` scaled to a common range, bandwidth
-proportional to the node's level. Industry heights are positive. Research
-heights are negative. The viewer receives two height grids per size measure.
-
-## 7. Personal overlay
-
-All inputs are read from `Personal Data/`; all outputs go to `private/`.
-
-### 7.1 Inputs
-Role history table (organisation, sector, dates, engagement type), LinkedIn
-export (positions, skills, connections) and the owner's existing derived tables
-(normalised connections with tie strength, company index). Paths and quirks are
-in `Personal Data/PROFILE_NOTES.md`.
-
-### 7.2 Mapping
-- **Roles** map to one or more `ind:` or `deep:` nodes and one or more `occ:`
-  nodes, with shares that sum to 1. Use O*NET alternate titles and embeddings to
-  propose, then write proposals to a private review table the owner corrects.
-  Corrections are stored and never overwritten.
-- **Umbrella rule:** where an umbrella entity (for example an own consultancy)
-  overlaps engagements done through it, count the engagements first and assign
-  only the uncovered months to the umbrella. No month counts twice.
-- **Durations** are parsed to months; anything ambiguous goes to the review
-  table rather than being guessed.
-- **Connections:** classify each distinct company to an industry node once,
-  cached in a private table (public filings where available, otherwise
-  model-assisted with a confidence value; review the highest-count companies by
-  hand). Each contact contributes `1 + tie_strength_normalised`.
-- **Skills** map to `occ:` and `fld:` nodes by embedding similarity and spread a
-  small weight to them.
-- **Education** maps to `fld:` nodes through CIP.
-
-### 7.3 Presence
-For each node `n`:
+### 6.1 One format, two producers
+A footprint is a list of **entries**. An entry is one role or one degree:
 
 ```
-presence(n) = sum over roles r of share(r,n) * months(r)/12 * 0.5^(years_since_end(r)/half_life)
-            + k * log(1 + sum over contacts c at n of (1 + tie(c)))
-            + skill_weight * skill_match(n)
+{ "kind": "role" | "degree",
+  "label": "...",            # shown only to the person whose footprint it is
+  "years": 3.5,              # roles only
+  "end_year": 2021,          # roles only, optional
+  "nodes": { "ind:...": 0.7, "ind:...": 0.3 } }   # shares sum to 1
 ```
 
-Parameters live in the private profile. Presence then diffuses one step along
-graph edges (weight-proportional, damped) so that neighbours of occupied nodes
-get partial credit.
+Two producers write this format, and the viewer draws both the same way:
 
-### 7.4 Display
-Draw presence as a heat footprint draped on whichever terrain is visible. Also
-show the weighted centroid as a marker with a note that it is a summary, since a
-centroid between two distant clusters can sit where the person has never worked.
-Show three sub-footprints on request: tenure only, connections only, skills only.
+- **The owner's private pipeline** (`imap personal ...`), from the reviewed
+  role, education and skills mappings, written to `private/` and served only on
+  a local machine. It can map to `deep:` and Level 2 nodes.
+- **The in-browser CV flow** (section 7), held in memory only.
 
-## 8. "Where next" score
+### 6.2 Weight
+`weight(node) = sum over entries of share * years * recency`, where `recency`
+is the v1 half-life decay for roles and 1 for degrees (a degree counts as a
+fixed number of years set in config). No diffusion. Weights roll up: a parent's
+weight is the sum of its children's, so the three levels always agree.
 
-Each component is normalised to 0..1 across candidate nodes:
+A node is **touched** when its weight is at least a small fraction of the
+footprint's total (threshold in config), so stray shares do not light up the
+whole map.
 
-- `adjacency`: graph proximity to the footprint (personalised PageRank from
-  presence-weighted seeds).
-- `growth`: projected employment change (industry) or recent publication growth
-  (research).
-- `size`: the active size measure.
-- `novelty`: `1 - presence`, so the score favours places not already occupied.
+Connections remain a separate, private-only layer for the owner, off by
+default. Visitors do not have it.
 
-`score = weighted sum`, with weights in the private profile. Toggles act as
-filters or multipliers:
+### 6.3 How it is drawn
+The v1 footprint was a soft heat blended over two terrains. v2 makes it
+discrete and makes the map step back:
 
-- **Pay:** wage level for the person's nearest occupations in that industry
-  (OEWS); filter by a floor or multiply by a normalised wage.
-- **Mission:** owner-assigned tags from -2 to +2 on any node, stored in the
-  private profile. There is no public dataset for this; it is the owner's
-  judgment.
-- **Geography:** concentration of the industry in a chosen metro (location
-  quotient from QCEW); for research, share of works from institutions in that
-  metro.
+1. **The rest recedes.** With a footprint on, untouched terrain loses its tint
+   and its labels fade.
+2. **Touched Level 0 areas stand out.** Each touched sector or field keeps its
+   colour, gets an outline on the ground and a full-strength label with its
+   share of the footprint.
+3. **A footprint list.** The side panel lists the touched Level 0 areas, largest
+   first, with a bar for each share. This is the summary; there is no centroid.
+4. **Step down.** Choosing a touched area (on the map or in the list) moves the
+   camera to it and shows its Level 1 children, with the touched ones
+   highlighted the same way. Choosing a touched Level 1 node does the same for
+   Level 2 where that zone has one. A breadcrumb (All › Sector › Industry)
+   steps back up.
+5. **Why.** Selecting a touched node lists the entries that put weight there
+   (for example "Role, 4 years, 70%"). These labels come from the person's own
+   footprint and never from the public bundle.
 
-The viewer lists the top candidates with a plain breakdown of why each scored as
-it did, and marks them on the terrain.
+The exact treatment (outline or glow, how far the rest fades, how the step-down
+moves) is decided by the owner looking at working variants in Phase 2, not on
+paper.
+
+## 7. Add your CV
+
+### 7.1 Promise
+Nothing a visitor provides leaves their browser, and nothing is kept after the
+tab closes. This is enforced, not only stated:
+
+- All parsing and matching runs in the page. There is no backend, no analytics
+  on the CV flow, and no third-party request that carries CV content.
+- A Content-Security-Policy limits network access to the site's own origin.
+- Nothing is written to `localStorage`, `sessionStorage`, IndexedDB, cookies or
+  the URL.
+- An automated browser test loads a synthetic CV and asserts that no request
+  leaves the page after the file is chosen and that storage stays empty.
+- The page says this in one sentence beside the upload control.
+
+### 7.2 Flow
+1. **Add.** Choose a PDF or paste text. A short manual form (role, organisation,
+   years; degree, subject) is always available as the other path.
+2. **Read.** The page extracts text and finds likely roles and degrees from date
+   ranges and section headings. This will be imperfect; the next step is the
+   correction.
+3. **Confirm.** One compact list: each role and degree with its best guess and
+   two or three alternatives as buttons, plus a search box over all nodes. The
+   visitor can fix the years, change a guess, delete a row or add one. A typical
+   CV should need under a minute.
+4. **See.** The footprint is drawn as in section 6.
+5. **Download.** Section 8.
+
+### 7.3 Matching without a server
+The pipeline builds small public lookup files for the viewer:
+
+| Guess | From | Built from |
+|---|---|---|
+| Role → industry (Level 1) | Organisation name, then job title | A public company-to-industry list; job titles to occupation (O*NET titles), occupation to industries (Employment Matrix shares) |
+| Degree → research field (Level 0 or 1) | Subject of the degree | CIP titles and the reviewed `field_to_cip.csv` |
+
+Matching is by normalised text and token overlap. The organisation is the
+stronger signal for industry; the title only ranks alternatives. Where there is
+no confident guess the row asks the visitor to pick.
+
+Under hard rule 2, the company list and any new file are verified against their
+current documentation before a loader is written, and recorded in
+`data/SOURCES.md`. Candidates to check: SEC EDGAR company names with SIC codes
+and a SIC-to-NAICS concordance; O*NET 31.0 job titles (already ingested); the
+CIP 2020 code list. If the lookup files cannot be kept small enough to load
+quickly, the build stops and reports options.
+
+Considered and not chosen: sending the CV to a language model (it would leave
+the browser and need a key or a backend); a sentence-embedding model in the
+browser (tens of megabytes for a feature that is "just for fun"; revisit only
+if text matching proves too weak in Phase 3).
+
+### 7.4 Limits to state on the page
+- Level 2 exists only in a few deep zones, so most visitors' footprints stop at
+  Level 1.
+- The map is of the United States.
+- The match is a guess the visitor corrected, not an assessment.
+
+## 8. Download
+
+One button renders a single JPG, built in the page and saved by the browser:
+
+- The map from the current camera with the footprint on, at a fixed size
+  (target 2400 × 1600).
+- The name and subtitle, the list of touched Level 0 areas with shares, the
+  type legend and the site address.
+- An optional caption the visitor types (for example their name). It is not
+  required and is not stored.
+
+The image is drawn on a canvas (the WebGL frame plus labels and text) and
+exported with `canvas.toBlob("image/jpeg")`. No upload, no share link.
 
 ## 9. Privacy and publishing
 
-- The pipeline has two export targets: `public` (base map only) and `private`
-  (base map plus personal overlay), written to `data/public/` and `private/`.
-- The viewer loads the public bundle by default and a private bundle only when
-  one is present locally.
-- `publish.personal` in the private profile is `none` or `aggregate`.
-  `aggregate` exports node-level presence values rounded to coarse bands and
-  nothing else. Contact-level data, company-of-contact data and role text are
-  never exported to a public target under any setting.
-- A pre-commit hook blocks any staged path under `Personal Data/` or `private/`
-  and scans staged files for strings from a private blocklist (contact names).
-- Publishing target is GitHub Pages from a built `web/dist`. Turning it on is a
-  manual, confirmed step in Phase 6.
+v1 §9 stands. Additions:
 
-## 10. Viewer
+- Test fixtures for the CV flow are synthetic CVs only. The owner's CV is never
+  used in a tracked test or example.
+- The lookup files of section 7.3 are public data only and go through the same
+  blocklist scan as the rest of the bundle.
+- The Pages workflow's list of expected data files is updated for the new
+  bundle, and still refuses anything else.
+- `main` deploys to the live site on push. v2 is built on a `v2` branch so the
+  published v1 site stays as it is until the owner says to release.
 
-Static site: Vite, TypeScript, three.js. No server.
+## 10. Open questions for the owner
 
-- 3D scene with orbit controls; two meshes (industry, research) on one grid.
-- Layer modes: industry only, research only, stacked, overlaid.
-- Switches: size measure per layer; level of detail; footprint on or off and
-  which sub-footprint; where-next markers; pay, mission and geography toggles.
-- Hover or click a node for label, size, growth, top linked nodes and the
-  bridge explanation.
-- Search by node name.
-- Colour: one hue family per layer, readable in light and dark, never relying on
-  colour alone (labels and outlines carry the same information).
-- A 2D top-down contour mode as a fallback for devices without WebGL and for
-  screenshots.
+1. **One map** (5.2): confirm after seeing the Phase 1 prototype.
+2. **Footprint treatment** (6.3): choose between variants in Phase 2.
+3. **Example on the public site:** should the published site open with a sample
+   footprint (a synthetic career) so visitors see what the feature does before
+   adding a CV? Default: yes, synthetic.
+4. **Your own footprint in public:** stays off (`publish.personal: none`)
+   unless you decide otherwise.
+5. **Connections layer:** keep as a private-only extra, or remove with the
+   other v1 features? Default: keep, off by default.
+6. **Repository and URL rename** from `industry-map`: when, and to what.
 
-## 11. Out of scope for v1
+## 11. Out of scope for v2
 
-International data; time animation; multiple users; accounts or a backend;
-automatic scraping of connection profiles.
-
-## 12. Open questions for the owner
-
-1. Mission tags: which nodes get which values (Phase 5).
-2. Whether the published version should show an aggregate footprint or none.
+International data; time animation; accounts or a backend; saving or sharing
+footprints by link; comparing two careers; any recommendation of where to go.
