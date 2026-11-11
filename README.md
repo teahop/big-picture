@@ -2,25 +2,26 @@
 
 *Visualizing a career*
 
-A 3D terrain of American industries and research fields, built only from public
-data, that a person can place a career on.
+A 3D terrain of American industries, built only from public data, that a
+person can place a career on. Research and academia show up as the industries
+that do them (colleges and universities, scientific R&D services).
 
 This is version 2, in progress on the `v2` branch. The live site still runs v1
 until the v2 release step.
 
 ## What exists now
 
-- **One terrain:** US industries and research fields raise one surface; height is
-  size. Each type is scaled so the largest sector and the largest field peak at the
-  same height, and colour shows how much of each place is industry or research.
-- **Two size settings:** Activity (jobs from the BLS Employment Matrix 2025, US
-  publications from OpenAlex) and Dollars (BEA value added 2025, NSF HERD FY 2024
-  university R&D). An emphasis control fades one type without changing heights.
-- **Shared layout:** nearby things are similar.
-- **Three levels of detail:** sectors and fields, detailed industries and
-  subfields, then research topics and a few hand-built deep zones.
+- **One industry terrain:** every industry raises the ground; height is its own
+  size, square-root scaled, and each peak shows only its own industry.
+- **Two size settings:** Activity (jobs, BLS Employment Matrix 2025) and Dollars
+  (value added, BEA 2025).
+- **Layout by similarity:** industries sit near others with a similar,
+  distinctive occupation mix and description; a detailed industry can sit
+  outside its sector's area.
+- **Three levels of detail:** 20 sectors, 304 detailed industries, then a few
+  hand-built deep zones.
 - **Private footprint (local only):** its control is hidden while it is rebuilt
-  for the one terrain (next step). It is never published.
+  for the industry terrain (next step). It is never published.
 
 Without WebGL the page shows a one-line message and the searchable node lists.
 
@@ -32,7 +33,8 @@ Without WebGL the page shows a one-line message and the searchable node lists.
 3. Download one JPG of the map and footprint.
 
 Removed from v1: the "where next" score, the pay, mission and geography toggles,
-the 2D contour map, the footprint centroid marker and the four layer modes.
+the 2D contour map, the footprint centroid marker, the four layer modes and the
+research fields (OpenAlex, HERD).
 
 Personal data never enters this repository. See `SPEC.md` and `CLAUDE.md`.
 

@@ -74,10 +74,10 @@ def test_amplitude_comes_from_own_size_with_max_one():
 
 
 def test_height_grid_peaks_at_node_and_deeper_levels_are_narrower():
-    xy = np.array([[0.0, 0.0]])
-    kw = dict(n=41, margin=1.0, sigma0=0.4, per_level=0.5)
-    g0 = terrain.height_grid(xy, np.array([1.0]), np.array([0]), **kw)
-    g1 = terrain.height_grid(xy, np.array([1.0]), np.array([1]), **kw)
+    cfg = dict(grid_size=41, margin=1.0, bandwidth_level0=0.4, bandwidth_per_level=0.5, combine="max")
+    ext = np.array([[0.0, 0.0]])
+    g0 = terrain.height_grid(terrain.Layer(["a"], ext, np.array([0]), np.array([1.0])), ext, cfg)
+    g1 = terrain.height_grid(terrain.Layer(["a"], ext, np.array([1]), np.array([1.0])), ext, cfg)
     v0, v1 = np.array(g0["values"]), np.array(g1["values"])
     assert v0.max() == pytest.approx(1.0, abs=1e-3) and v0.min() >= 0
     assert (v1 > 0.05).sum() < (v0 > 0.05).sum()

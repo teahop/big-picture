@@ -60,9 +60,3 @@ def test_industry_level1_adds_a_remainder_node_that_reconciles():
     assert nodes["emp_2025"].sum() == pytest.approx(100.0) and nodes["remainder"].sum() == 1
     rem = occ[occ.ind_code == "110000-other"].set_index("occ_code")["emp_2025"]
     assert rem["45-1011"] == pytest.approx(20.0) and rem["45-2091"] == pytest.approx(20.0)
-
-
-def test_growth_needs_a_minimum_base():
-    yc = pd.DataFrame({"level": "subfield", "id": ["a", "a", "b", "b"], "year": [2019, 2024, 2019, 2024], "works_us": [100, 150, 5, 50]})
-    g = levels.growth_from_counts(yc, "subfield")
-    assert g["a"] == pytest.approx(50.0) and np.isnan(g["b"])

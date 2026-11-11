@@ -1,4 +1,4 @@
-"""Ingest HERD, CIP-SOC and O*NET. Files are fetched once into data/raw/ (identifying
+"""Ingest CIP-SOC and O*NET. Files are fetched once into data/raw/ (identifying
 User-Agent, no scripted evasion) and layout-checked before parsing."""
 from __future__ import annotations
 
@@ -9,9 +9,8 @@ from pathlib import Path
 import pandas as pd
 
 from .common import interim_dir, raw_dir, repo_root, report_dir, sha256
-from .openalex import USER_AGENT
 
-HERD_URL = "https://ncses.nsf.gov/pubs/nsf26304/assets/data-tables/tables/nsf26304-tab010.xlsx"
+USER_AGENT = "industry-map-research (github.com/teahop/industry-map)"
 CIP_URL = "https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx"
 ONET_URL = "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip"
 ONET_DIR = "db_31_0_excel"
@@ -29,80 +28,6 @@ def fetch(url: str, dest: Path) -> Path:
     with urllib.request.urlopen(req, timeout=300) as r:
         dest.write_bytes(r.read())
     return dest
-
-
-# ---------------------------------------------------------------- HERD
-HERD_PARENTS = {"All R&D fields", "Science", "Geosciences, atmospheric sciences, and ocean sciences",
-                "Life sciences", "Physical sciences", "Social sciences", "Engineering", "Non-S&E"}
-
-
-def parse_herd(path: Path) -> pd.DataFrame:
-    d = pd.read_excel(path, header=None)
-    if "Table 10" not in str(d.iloc[0, 0]) or "FY 2024" not in str(d.iloc[1, 0]):
-        raise LayoutMismatch(f"Unexpected HERD table: {d.iloc[0, 0]} / {d.iloc[1, 0]}")
-    if str(d.iloc[3, 0]).strip() != "Field" or "All R&D" not in str(d.iloc[3, 1]):
-        raise LayoutMismatch("HERD Table 10 header row moved")
-    body = d.iloc[5:, [0, 1]].dropna()
-    body.columns = ["herd_field", "rd_thousands"]
-    body["herd_field"] = body["herd_field"].astype(str).str.strip()
-    body["rd_thousands"] = body["rd_thousands"].astype(float)
-    body["is_parent"] = body["herd_field"].isin(HERD_PARENTS)
-    return body.reset_index(drop=True)
-
-
-def allocate_herd(herd: pd.DataFrame, mapping: pd.DataFrame, works_us: pd.Series) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Split each leaf HERD field's dollars across its mapped OpenAlex fields in proportion to
-    US works. Returns (dollars per OpenAlex field, HERD fields left unallocated)."""
-    leaves = herd[~herd["is_parent"]].set_index("herd_field")["rd_thousands"]
-    rows = []
-    for hf, grp in mapping.groupby("herd_field"):
-        if hf not in leaves.index:
-            raise LayoutMismatch(f"Mapping names a HERD field not in the table: {hf!r}")
-        w = grp["openalex_field"].map(works_us).astype(float)
-        if w.isna().any() or w.sum() == 0:
-            raise LayoutMismatch(f"Mapping names an unknown OpenAlex field for {hf!r}")
-        for of, share in zip(grp["openalex_field"], w / w.sum()):
-            rows.append({"openalex_field": of, "herd_field": hf, "rd_thousands": leaves[hf] * share})
-    alloc = pd.DataFrame(rows)
-    unalloc = leaves[~leaves.index.isin(mapping["herd_field"])].rename("rd_thousands").reset_index()
-    return alloc, unalloc
-
-
-def herd_mapping_reviewed() -> bool:
-    """True when every row of the HERD-to-OpenAlex mapping carries reviewed=yes."""
-    m = pd.read_csv(repo_root() / "data" / "mappings" / "herd_to_openalex.csv", dtype=str)
-    return bool((m["reviewed"].str.lower() == "yes").all())
-
-
-def run_herd() -> int:
-    path = fetch(HERD_URL, raw_dir() / "herd" / "nsf26304-tab010.xlsx")
-    herd = parse_herd(path)
-    leaves = herd[~herd["is_parent"]]
-    total = float(herd.loc[herd.herd_field == "All R&D fields", "rd_thousands"].iloc[0])
-    leaf_sum = float(leaves["rd_thousands"].sum())
-    fields = pd.read_csv(interim_dir() / "openalex" / "fields.csv")
-    mapping = pd.read_csv(repo_root() / "data" / "mappings" / "herd_to_openalex.csv")
-    alloc, unalloc = allocate_herd(herd, mapping, fields.set_index("name")["works_us"])
-    by_field = alloc.groupby("openalex_field")["rd_thousands"].sum()
-    out = fields[["id", "name"]].assign(rd_thousands=fields["name"].map(by_field).fillna(0.0))
-    odir = interim_dir() / "herd"; odir.mkdir(parents=True, exist_ok=True)
-    herd.to_csv(odir / "herd_fields.csv", index=False)
-    alloc.to_csv(odir / "allocation.csv", index=False)
-    out.to_csv(odir / "field_rd.csv", index=False)
-    lines = ["# ingest herd validation report",
-             f"- file: nsf26304-tab010.xlsx (HERD FY 2024, Table 10, standard-form population), sha256 `{sha256(path)}`",
-             f"- published all-fields total {total:,.0f}k; sum of leaf fields {leaf_sum:,.0f}k "
-             f"(diff {leaf_sum - total:,.0f}k, {((leaf_sum - total) / total) * 100:.3f}%)",
-             f"- allocated to OpenAlex fields {by_field.sum():,.0f}k; unallocated {unalloc.rd_thousands.sum():,.0f}k "
-             f"({unalloc.rd_thousands.sum() / leaf_sum * 100:.1f}%): " + ", ".join(unalloc.herd_field),
-             f"- OpenAlex fields with no HERD source (R&D = 0): " + ", ".join(out.loc[out.rd_thousands == 0, "name"]),
-             "- method: leaf HERD dollars split across mapped OpenAlex fields by US works share; mapping " + ("owner-reviewed" if herd_mapping_reviewed() else "owner-reviewed except rows marked reviewed=no (estimates added at the owner's request, e.g. Energy)"),
-             "", "| OpenAlex field | R&D (thousand USD) |", "|---|---|"]
-    for r in out.sort_values("rd_thousands", ascending=False).itertuples():
-        lines.append(f"| {r.name} | {r.rd_thousands:,.0f} |")
-    (report_dir() / "ingest_herd.md").write_text("\n".join(lines) + "\n")
-    print(f"ingest herd: total {total:,.0f}k, leaf sum diff {leaf_sum - total:,.0f}k, unallocated {unalloc.rd_thousands.sum():,.0f}k")
-    return 0
 
 
 # ---------------------------------------------------------------- CIP-SOC
@@ -164,4 +89,4 @@ def run_onet() -> int:
 
 
 def run(source: str) -> int:
-    return {"herd": run_herd, "cip-soc": run_cip, "onet": run_onet}[source]()
+    return {"cip-soc": run_cip, "onet": run_onet}[source]()

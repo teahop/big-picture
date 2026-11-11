@@ -10,12 +10,14 @@ document refers to them as "v1 §n".
 
 ## 1. Purpose
 
-Show American industry and research as one landscape, and draw a career on it.
+Show American industry as one landscape, and draw a career on it. Research and
+academia appear through the industries that do them (colleges and universities,
+scientific R&D services), not as a separate layer.
 
 A visitor can do two things:
 
-1. **Look at the map.** See which research fields and industries sit near each
-   other, and how large they are.
+1. **Look at the map.** See which industries sit near each other, and how large
+   they are.
 2. **See a career on it.** Add a CV, confirm a few guesses, see which parts of
    the map that career touches, and download the picture.
 
@@ -28,7 +30,7 @@ career has been.
 |---|---|---|
 | 1 | Renamed **The Big Picture**, subtitle **Visualizing a career** | 3 |
 | 2 | Removed: where-next scoring, the 2D map, pay, mission and geography | 4 |
-| 3 | Industry and research are drawn on **one** terrain instead of two | 5 |
+| 3 | **One** industry terrain; research fields are no longer drawn | 5 |
 | 4 | New: a visitor adds a CV in the browser and sees a career footprint; nothing is stored or sent | 7 |
 | 5 | The footprint is redrawn so it is clear: touched Level 0 areas are highlighted and the user can step down into Levels 1 and 2 | 6 |
 | 6 | New: download one JPG of the map with the footprint | 8 |
@@ -55,6 +57,7 @@ the three levels of detail, the deep zones, the privacy rules, static hosting.
 | Geography | `geo.py`, the QCEW county and OpenAlex metro ingests used only for location quotients, the geography toggle |
 | 2D map | `web/src/map2d.ts` and the view switch. Without WebGL the page shows a plain message and the node lists; there is no contour fallback |
 | Layer modes | Industry only, research only, stacked, overlaid. One map replaces them |
+| Research fields | OpenAlex fields, subfields and topics, HERD R&D dollars, the field-to-industry bridge, the research deep zones. Research shows through industries instead (owner, 2026-11-10) |
 | Centroid marker | The weighted-centroid marker and its caveat text. A list of touched areas replaces it |
 | Presence diffusion | The one-step spread of presence to neighbours (v1 §7.3). It blurred the footprint |
 
@@ -65,50 +68,48 @@ history of the public data is still explained.
 ## 5. One map
 
 ### 5.1 The problem
-v1 drew industry as peaks and research as valleys on two meshes. That needed
-four layer modes to read, and a footprint draped over two surfaces was hard to
-see. But the two node types already share one layout, so a position means the
-same thing for both.
+v1 drew industry as peaks and research as valleys on two meshes, with four
+layer modes to read them. A first v2 attempt put both on one surface, but jobs
+and publications are not comparable sizes, and the two kinds of node never
+really mixed in the layout.
 
-### 5.2 Decision: one surface, height is size, colour is the mix
-- **One mesh.** Every node, industry or research, raises the ground. Height at
-  a point is the sum of Gaussian kernels of all nodes near it (v1 §6.4 kernel
-  and volume-preserving split, unchanged).
-- **Comparable heights.** Jobs and papers have different units, so each type is
-  scaled on its own before the two are added: the largest Level 0 industry and
-  the largest Level 0 field reach the same height. The scaling constants are
-  exported so the viewer can state them.
-- **Colour shows the mix.** Each grid cell also carries the industry share of
-  its height (0 = all research, 1 = all industry). The terrain is tinted along a
-  two-hue ramp through a neutral middle, so a mountain that is mostly industry,
-  mostly research, or a real blend is visible at a glance.
-- **Not colour alone.** Labels carry a shape mark for type (a square for
-  industry, a circle for research), and the details panel names the type.
-- **One emphasis control** replaces the layer modes: Both, Industry, Research.
-  It fades the labels and tint of the other type. It does not change heights.
+### 5.2 Decision: one industry terrain (owner, 2026-11-10)
+- **Industries only.** Research fields are not drawn. Research and academia
+  show up where they employ people: colleges and universities, scientific R&D
+  services, hospitals, and the higher-education deep zone.
+- **Height is the industry's own size.** Each industry's peak is
+  (size / largest industry at that level) ** `height_exponent` (0.5, square
+  root). Each point takes the tallest peak there (`combine: max`), so a cluster
+  of small industries never stacks into a mountain taller than any of them.
+- **Position is similarity.** Industries are compared by their distinctive
+  occupation mix (TF-IDF weighted, so jobs found everywhere count for little)
+  blended with text similarity, and laid out by stress majorisation on a
+  nearest-neighbour graph. Level 1 is laid out as one set with a soft pull
+  toward its sector, so a detailed industry may sit outside its sector's area.
+  The v1 rule that positions never move is dropped.
+- **Colour is height only** for now; the visual skin (a mountain, with the
+  footprint as wildflowers) comes later.
 
 ### 5.3 Size measures
-One switch, two settings, applied to both types together:
+One switch, two settings:
 
-| Setting | Industry | Research |
-|---|---|---|
-| Activity (default) | Employment | US publications |
-| Dollars | Value added | University R&D |
+| Setting | Measure |
+|---|---|
+| Activity (default) | Employment (BLS Employment Matrix 2025) |
+| Dollars | Value added (BEA 2025, split below the sector by payroll) |
 
-Value added per job and R&D per paper are no longer terrain measures. They stay
-as figures in the details panel.
+Value added per job stays a figure in the details panel.
 
 ### 5.4 Considered and not chosen
-- *Peaks and valleys on one mesh:* an industry over a related field would cancel
-  to flat ground, hiding exactly the places where the two meet.
-- *Merging both types into new joint regions at Level 0:* this invents a
-  taxonomy nobody recognises and loses the official names and figures.
-- *Two interleaved point clouds without terrain:* loses the sense of size.
+- *Industry and research on one surface (built and reviewed 2026-11-10):* jobs
+  and publications have no common unit, so any equal-peak scaling misleads.
+- *Summed kernels:* clusters of small nodes pile up above large single nodes.
+- *Sharing a sector's height among its children:* an only child towers over
+  larger industries with many siblings.
 
 ### 5.5 Exported data
-Per level and per size setting: one height grid and one industry-share grid.
-The separate industry and research grids of v1 are no longer exported. Nodes,
-edges and layout files keep their v1 shape.
+Per level and per size setting: one height grid. Nodes, edges and layout keep
+their v1 shape, with industry nodes only; `edges_l2.json` is no longer produced.
 
 ## 6. Footprint
 
@@ -149,7 +150,7 @@ discrete and makes the map step back:
 
 1. **The rest recedes.** With a footprint on, untouched terrain loses its tint
    and its labels fade.
-2. **Touched Level 0 areas stand out.** Each touched sector or field keeps its
+2. **Touched Level 0 areas stand out.** Each touched sector keeps its
    colour, gets an outline on the ground and a full-strength label with its
    share of the footprint.
 3. **A footprint list.** The side panel lists the touched Level 0 areas, largest
@@ -201,7 +202,7 @@ The pipeline builds small public lookup files for the viewer:
 | Guess | From | Built from |
 |---|---|---|
 | Role → industry (Level 1) | Organisation name, then job title | A public company-to-industry list; job titles to occupation (O*NET titles), occupation to industries (Employment Matrix shares) |
-| Degree → research field (Level 0 or 1) | Subject of the degree | CIP titles and the reviewed `field_to_cip.csv` |
+| Degree → industries (Level 1), PROPOSED, confirm in Phase 2 | Subject of the degree | CIP titles → the occupations graduates enter (CIP-SOC crosswalk) → the industries employing them (Employment Matrix shares) |
 
 Matching is by normalised text and token overlap. The organisation is the
 stronger signal for industry; the title only ranks alternatives. Where there is

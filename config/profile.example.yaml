@@ -2,8 +2,6 @@
 # private/profile.local.yaml (git-ignored). All people here are synthetic.
 
 deep_zones:
-  research:        # names resolved to OpenAlex subfields, then expanded to topics
-    - "Human-Computer Interaction"
   industry:        # names resolved to detailed industries, then custom children
     - "Software publishers"
 

@@ -13,9 +13,9 @@ STAGES: dict[str, str] = {
     "levels": "Build Level 1 and Level 2 node tables",
     "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
     "value": "Industry value added in dollars (BEA), allocated to the map nodes",
-    "graph": "Build similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
-    "layout": "Joint layout of industries and research at every level (shared occupations and text)",
-    "terrain": "Height grids per layer and size measure",
+    "graph": "Industry similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
+    "layout": "Industry layout at every level (shared occupations and text)",
+    "terrain": "Height grids per level and size setting",
     "export": "Write the public JSON bundle (--target public)",
     "personal": "Personal overlay from private inputs (parts: roles, connections, skills, education, presence)",
 }
@@ -28,10 +28,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="stage", metavar="STAGE", required=True)
     for name, helptext in STAGES.items():
         p = sub.add_parser(name, help=helptext, description=helptext)
-        if name == "graph":
-            p.add_argument("--propose-cip", action="store_true", help="write the field-to-CIP proposal for owner review")
         if name == "ingest":
-            p.add_argument("source", choices=["bls-matrix", "openalex-taxonomy", "openalex-levels", "qcew", "bea", "herd", "cip-soc", "onet"], help="dataset to ingest")
+            p.add_argument("source", choices=["bls-matrix", "qcew", "bea", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
             p.add_argument("part", choices=["roles", "connections", "skills", "education", "presence", "all"], help="which personal stage to run")
         if name == "export":
@@ -48,18 +46,12 @@ def run_stage(args: argparse.Namespace) -> int:
         if args.source == "bls-matrix":
             from . import bls
             return bls.run()
-        if args.source == "openalex-taxonomy":
-            from . import openalex
-            return openalex.run()
         if args.source == "bea":
             from . import bea
             return bea.fetch()
         if args.source == "qcew":
             from . import qcew
             return qcew.download_qcew()
-        if args.source == "openalex-levels":
-            from . import openalex
-            return openalex.run_levels()
         from . import ingest_files
         return ingest_files.run(args.source)
     if name == "personal":
@@ -72,13 +64,8 @@ def run_stage(args: argparse.Namespace) -> int:
         from . import deep_industry
         return deep_industry.run()
     if name == "graph":
-        from . import bridge, graph
-        if args.propose_cip:
-            out = bridge.propose_cip()
-            print(f"graph: wrote {len(out)} proposed field-to-CIP rows to {bridge.PROPOSED}")
-            return 0
+        from . import graph
         graph.run()
-        bridge.run()
         from .common import interim_dir
         if (interim_dir() / "levels" / "industry_l1.csv").exists():
             from . import graph_l1

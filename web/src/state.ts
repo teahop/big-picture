@@ -1,15 +1,12 @@
-import { SETTING_MEASURES, type Measure, type NodeRec, type SizeSetting } from "./data";
+import { SETTING_MEASURE, type Measure, type NodeRec, type SizeSetting } from "./data";
 import type { OverlayData } from "./overlay";
 
-/** Which type the map emphasises. It fades the labels and tint of the other type; heights never change. */
-export type Emphasis = "both" | "industry" | "research";
 export type LodSetting = "auto" | "0" | "1" | "2";
 
 /** Shared view state; views subscribe and redraw. */
 export class State {
   hover: NodeRec | null = null;
   selected: NodeRec | null = null;
-  emphasis: Emphasis = "both";
   size: SizeSetting = "activity";
   lod: LodSetting = "auto";
   overlay: OverlayData | null = null;   // private, only when present locally
@@ -19,14 +16,11 @@ export class State {
   subscribe(cb: () => void): void { this.listeners.push(cb); }
   setHover(n: NodeRec | null): void { if (n !== this.hover) { this.hover = n; this.emit(); } }
   setSelected(n: NodeRec | null): void { this.selected = n; this.emit(); }
-  setEmphasis(e: Emphasis): void { this.emphasis = e; this.emit(); }
   setSize(s: SizeSetting): void { this.size = s; this.emit(); }
   setLod(l: LodSetting): void { this.lod = l; this.emit(); }
   setLevel(level: number, ids: Set<string>): void { this.level = level; this.visibleIds = ids; this.emit(); }
-  /** Size measure of a node type under the current size setting. */
-  measure(type: "ind" | "fld"): Measure { return SETTING_MEASURES[this.size][type]; }
-  /** True when the emphasis fades this type. */
-  faded(type: "ind" | "fld"): boolean { return this.emphasis === (type === "ind" ? "research" : "industry"); }
+  /** Size measure under the current size setting. */
+  get measure(): Measure { return SETTING_MEASURE[this.size]; }
   get active(): NodeRec | null { return this.hover ?? this.selected; }
   isVisible(n: NodeRec): boolean { return this.visibleIds.has(n.id); }
   private emit(): void { this.listeners.forEach((l) => l()); }

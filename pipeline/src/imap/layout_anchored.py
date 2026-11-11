@@ -1,5 +1,5 @@
 """Placing children inside a parent's neighbourhood (v1 anchored layout). v2 uses these helpers for Level 2
-(topics of deep-zone subfields, deep: industries) around their Level 1 parent; see layout_joint.py.
+(deep: industries) around their Level 1 parent; see layout_joint.py.
 
 For every parent: (1) classical MDS of the children's sibling distances gives their internal
 shape; (2) an orthogonal Procrustes fit turns that shape toward the children's "prior" - the
@@ -13,7 +13,7 @@ import pandas as pd
 
 K0 = 0.10         # Level 0 radius scale (layout units) for the largest parent
 R_MIN = 0.028      # smallest Level 0 radius
-K_SUB = 0.35       # a subfield's radius relative to its parent field's radius (scaled by size)
+K_SUB = 0.35       # a Level 2 cluster's radius relative to its sector's radius (scaled by size)
 R_SUB_MIN = 0.012
 FILL = 0.9         # children are scaled so the farthest sits at FILL * radius
 

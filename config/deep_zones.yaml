@@ -1,20 +1,7 @@
 # Deep zones: where the map is deepened beyond Level 1 (SPEC 5.3).
-# Generic taxonomy labels only (OpenAlex subfield ids and Employment Matrix industry codes).
+# Generic taxonomy labels only (Employment Matrix industry codes). Research fields were removed in v2:
+# research and academia show through industries such as higher education and scientific R&D.
 # Nothing from private notes is recorded here. Edit this file to add or remove zones.
-
-research_subfields:     # Level 2 = all OpenAlex topics under each subfield
-  - {id: "1709", name: "Human-Computer Interaction"}
-  - {id: "1702", name: "Artificial Intelligence"}
-  - {id: "3205", name: "Experimental and Cognitive Psychology"}
-  - {id: "2805", name: "Cognitive Neuroscience"}
-  - {id: "3312", name: "Sociology and Political Science"}
-  - {id: "1705", name: "Computer Networks and Communications"}
-  - {id: "1407", name: "Organizational Behavior and Human Resource Management"}
-  - {id: "1405", name: "Management of Technology and Innovation"}
-  - {id: "3307", name: "Human Factors and Ergonomics"}
-  - {id: "2739", name: "Public Health, Environmental and Occupational Health"}
-  - {id: "2738", name: "Psychiatry and Mental health"}
-  - {id: "1406", name: "Marketing"}
 
 industries:             # custom `deep:` categories attach under these Level 1 industries
   - label: "Software publishers and AI model developers"

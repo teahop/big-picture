@@ -1,36 +1,22 @@
 export interface Occupation { soc: string; title: string; share_pct: number }
 export interface NodeRec {
-  id: string; label: string; title: string; type: "ind" | "fld"; level: number; parent: string | null;
+  id: string; label: string; title: string; type: "ind"; level: number; parent: string | null;
   provenance: "official" | "estimated"; size: Record<string, number>; growth: number | null; xy: [number, number];
   naics_code?: string; top_occupations?: Occupation[]; remainder?: boolean;
-  domain?: string; description?: string; keywords?: string[]; top_subfields?: { name: string; works_us: number }[];
   size_proxy?: string; value_added_basis?: string; weak_proxy?: boolean; replaces?: string[]; zone?: string; members?: string[];
 }
-export interface Edge {
-  source: string; target: string; type: "ind-ind" | "fld-fld" | "fld-ind"; weight: number;
-  signals?: { occupational?: number; semantic: number };
-}
-/** Type mark used on labels, lists and the panel: a square for industry, a circle for research. */
-export const MARK = { ind: "\u25A0", fld: "\u25CF" } as const;
-export type IndustryMeasure = "employment" | "value_added" | "va_per_job";
-export type ResearchMeasure = "works" | "rd" | "rd_per_work";
-export type Measure = IndustryMeasure | ResearchMeasure;
-/** Size setting (SPEC 5.3): one switch for both types. */
+export interface Edge { source: string; target: string; type: "ind-ind"; weight: number }
+export type Measure = "employment" | "value_added" | "va_per_job";
+/** Size setting: Activity sizes industries by jobs, Dollars by value added. */
 export type SizeSetting = "activity" | "dollars";
-export const SETTING_MEASURES: Record<SizeSetting, { ind: IndustryMeasure; fld: ResearchMeasure }> = {
-  activity: { ind: "employment", fld: "works" },
-  dollars: { ind: "value_added", fld: "rd" },
-};
-/** One level's terrain: a combined height grid and the industry share of each cell (0 research .. 1 industry). */
-export interface LevelGrids { n: number; x: [number, number]; y: [number, number]; settings: Record<SizeSetting, { height: number[]; share: number[] }> }
-export interface TerrainScale { industry: number; research: number; largest_industry: string; largest_research: string; industry_peak: number; research_peak: number }
+export const SETTING_MEASURE: Record<SizeSetting, Measure> = { activity: "employment", dollars: "value_added" };
+/** One level's terrain: a height grid per size setting. */
+export interface LevelGrids { n: number; x: [number, number]; y: [number, number]; settings: Record<SizeSetting, { height: number[] }> }
 export interface Meta {
   sources: { name: string; release: string; url: string; retrieved: string }[];
-  research_sources: { name: string; url: string; retrieved: string }[];
+  other_sources: { name: string; url: string; retrieved: string }[];
   measure_labels: Record<string, string>;
-  bridge: { field_to_cip_reviewed: boolean; herd_mapping_reviewed: boolean };
-  levels: number[]; level_notes?: Record<string, string>; deep_topic_links_reviewed?: boolean;
-  terrain_scale: Record<string, Record<SizeSetting, TerrainScale>>;   // by level
+  levels: number[]; level_notes?: Record<string, string>;
 }
 export interface Bundle {
   nodes: NodeRec[]; edges: Edge[]; meta: Meta; byId: Map<string, NodeRec>;
@@ -77,7 +63,7 @@ export function ensureLevel(b: Bundle, level: number): Promise<void> {
       const sfx = "_l" + level;
       const [nodes, raw] = await Promise.all([getJson<NodeRec[]>("nodes" + sfx + ".json"), getJson<LevelGrids>("grids" + sfx + ".json")]);
       addNodes(b, nodes);
-      b.edges.push(...(await getJson<Edge[]>("edges_l" + level + ".json")));
+      if (level === 1) b.edges.push(...(await getJson<Edge[]>("edges_l1.json")));   // Level 2 deep nodes have no edges
       addGrids(b, level, raw);
     })());
   }
@@ -85,8 +71,8 @@ export function ensureLevel(b: Bundle, level: number): Promise<void> {
 }
 
 /** Nodes drawn at a level of detail: a node is shown at level L if its level <= L and none of
- *  its children is (children replace their parent). Level 2 therefore shows topics inside the
- *  deep zones and Level 1 subfields everywhere else. A deep: industry node can replace several
+ *  its children is (children replace their parent). Level 2 therefore shows the deep: categories
+ *  inside the deep zones and Level 1 industries everywhere else. A deep: industry node can replace several
  *  Level 1 industries (`replaces`), because its size is drawn from all of them. */
 export function visibleAt(b: Bundle, level: number): NodeRec[] {
   const parents = new Set<string>();
@@ -109,39 +95,29 @@ export function sampleAt(g: LevelGrids, values: number[], x: number, y: number):
   return (v(i, j) * (1 - tx) + v(i + 1, j) * tx) * (1 - ty) + (v(i, j + 1) * (1 - tx) + v(i + 1, j + 1) * tx) * ty;
 }
 
-export interface Link { node: NodeRec; weight: number; signals?: Edge["signals"] }
+export interface Link { node: NodeRec; weight: number }
 
-/** Strongest links of `id` to nodes of `otherType` (bridge edges when crossing layers). */
-export function links(b: Bundle, id: string, otherType: "ind" | "fld", k = 5): Link[] {
+/** Most similar industries to `id` (by shared occupations). */
+export function links(b: Bundle, id: string, k = 5): Link[] {
   const out: Link[] = [];
   for (const e of b.edges) {
     const other = e.source === id ? e.target : e.target === id ? e.source : null;
-    if (!other) continue;
-    const node = b.byId.get(other);
-    if (node && node.type === otherType) out.push({ node, weight: e.weight, signals: e.signals });
+    const node = other ? b.byId.get(other) : undefined;
+    if (node) out.push({ node, weight: e.weight });
   }
   return out.sort((a, c) => c.weight - a.weight).slice(0, k);
 }
 
-/** Value of a size measure as text. Value added is in billions of dollars, per-job values in thousands, R&D in thousands. */
+/** Value of a size measure as text. Value added is in billions of dollars, per-job values in thousands. */
 export function fmtMeasure(measure: Measure, v: number | undefined): string {
   if (v === undefined || v === null) return "n/a";
   switch (measure) {
     case "employment": return fmtJobs(v);
     case "value_added": return v >= 1000 ? "$" + (v / 1000).toFixed(2) + " trillion" : v >= 1 ? "$" + v.toFixed(0) + " billion" : "$" + (v * 1000).toFixed(0) + " million";
     case "va_per_job": return "$" + Math.round(v) + "k per job";
-    case "works": return fmtWorks(v);
-    case "rd": return fmtDollars(v);
-    case "rd_per_work": return v > 0 ? "$" + Math.round(v).toLocaleString("en-US") + " per paper" : "no R&D data";
   }
 }
 export function fmtJobs(thousands: number): string {
   return thousands >= 1000 ? (thousands / 1000).toFixed(1) + " million" : Math.round(thousands) + " thousand";
-}
-export function fmtWorks(n: number): string {
-  return n >= 1e6 ? (n / 1e6).toFixed(2) + " million" : n >= 1000 ? Math.round(n / 1000) + " thousand" : String(n);
-}
-export function fmtDollars(thousands: number): string {
-  return thousands >= 1e6 ? "$" + (thousands / 1e6).toFixed(1) + " billion" : "$" + Math.round(thousands / 1000) + " million";
 }
 export function fmtGrowth(pct: number | null): string { return pct === null ? "n/a" : (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%"; }

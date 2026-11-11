@@ -184,19 +184,6 @@ def build() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     return node_df, contrib, occ_df, {"ipeds": ip, "onet": onet}
 
 
-def topic_links() -> pd.DataFrame:
-    """Cosine similarity of every deep: node to every Level 2 research topic (all pairs, long form)."""
-    from .embed import embed
-    deep = pd.read_csv(interim_dir() / "levels" / "deep_industry.csv")
-    topics = pd.read_csv(interim_dir() / "levels" / "topics_l2.csv", dtype={"id": str})
-    dv = embed([f"{r.label}. {r.zone}. Examples: {r.members if isinstance(r.members, str) else ''}" for r in deep.itertuples()])
-    tv = embed([f"{r.name}. {r.description if isinstance(r.description, str) else ''} {r.keywords if isinstance(r.keywords, str) else ''}" for r in topics.itertuples()])
-    sim = dv @ tv.T
-    rows = [{"deep_id": d, "topic_node": tn, "topic": tname, "subfield": sf, "cosine": float(sim[i, j])}
-            for i, d in enumerate(deep["node_id"]) for j, (tn, tname, sf) in enumerate(zip(topics["node_id"], topics["name"], topics["subfield_name"]))]
-    return pd.DataFrame(rows)
-
-
 def run() -> int:
     node_df, contrib, occ_df, extra = build()
     out = interim_dir() / "levels"
@@ -222,14 +209,6 @@ def run() -> int:
         t = ip.groupby(["group", "public"])["EAPTOT"].sum().unstack()
         lines += ["## IPEDS 2023 four-year staff by group (headcount)", "", "| Group | Private | Public |", "|---|---|---|"]
         lines += [f"| {g} | {t.loc[g, False]:,.0f} | {t.loc[g, True]:,.0f} |" for g in t.index] + [""]
-    links = topic_links()
-    links.sort_values(["deep_id", "cosine"], ascending=[True, False]).groupby("deep_id").head(10).to_csv(out / "deep_topic_links.csv", index=False)
-    rep = ["# deep: industry to research-topic links (embedding similarity) - for owner review", "",
-           "Top 5 Level 2 research topics per deep: node, by cosine similarity of the node's text (label, zone, example organisations) to the topic's text.", ""]
-    labels = dict(zip(node_df["node_id"], node_df["label"]))
-    for d, g in links.groupby("deep_id", sort=False):
-        rep += [f"### {labels[d]}", ""] + [f"- {r.cosine:.2f}  {r.topic} ({r.subfield})" for r in g.sort_values("cosine", ascending=False).head(5).itertuples()] + [""]
-    (report_dir() / "deep_topic_links.md").write_text("\n".join(rep) + "\n")
     (report_dir() / "deep_industry.md").write_text("\n".join(lines) + "\n")
     print(f"deep: {len(node_df)} nodes, reconciliation gap {worst:.2e}, weak proxies: {int(node_df['weak'].sum())}")
     return 0

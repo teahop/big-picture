@@ -1,6 +1,6 @@
 import { ensureLevel, loadBundle, visibleAt, type NodeRec, type SizeSetting } from "./data";
 import { Scene3D, webglAvailable } from "./scene3d";
-import { State, type Emphasis, type LodSetting } from "./state";
+import { State, type LodSetting } from "./state";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
 import { loadOverlay } from "./overlay";
@@ -42,10 +42,6 @@ async function start(): Promise<void> {
 
   const lod = $<HTMLSelectElement>("lod");
   lod.addEventListener("change", () => { state.setLod(lod.value as LodSetting); void applyLevel(); });
-  for (const input of document.querySelectorAll<HTMLInputElement>("input[name=emphasis]")) {
-    input.checked = input.value === state.emphasis;
-    input.addEventListener("change", () => { if (input.checked) state.setEmphasis(input.value as Emphasis); });
-  }
   const size = $<HTMLSelectElement>("size");
   size.addEventListener("change", () => state.setSize(size.value as SizeSetting));
 
@@ -64,7 +60,6 @@ async function start(): Promise<void> {
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },
-    setEmphasis: (e: Emphasis) => { state.setEmphasis(e); document.querySelectorAll<HTMLInputElement>("input[name=emphasis]").forEach((i) => { i.checked = i.value === e; }); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }

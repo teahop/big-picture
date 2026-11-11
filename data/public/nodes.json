@@ -16,8 +16,8 @@
   },
   "growth": 1.48,
   "xy": [
-   0.370144,
-   0.720701
+   0.044878,
+   0.892612
   ],
   "top_occupations": [
    {
@@ -65,8 +65,8 @@
   },
   "growth": 0.66,
   "xy": [
-   0.541132,
-   -0.556733
+   -0.594676,
+   0.508497
   ],
   "top_occupations": [
    {
@@ -114,8 +114,8 @@
   },
   "growth": 9.78,
   "xy": [
-   0.351136,
-   -0.792656
+   -0.915516,
+   0.073393
   ],
   "top_occupations": [
    {
@@ -163,8 +163,8 @@
   },
   "growth": 4.97,
   "xy": [
-   0.633399,
-   -0.433302
+   -0.457093,
+   0.215599
   ],
   "top_occupations": [
    {
@@ -212,8 +212,8 @@
   },
   "growth": 0.57,
   "xy": [
-   0.460439,
-   -0.177014
+   -0.176359,
+   0.085994
   ],
   "top_occupations": [
    {
@@ -261,8 +261,8 @@
   },
   "growth": 2.07,
   "xy": [
-   0.637011,
-   -0.014358
+   -0.087543,
+   0.21733
   ],
   "top_occupations": [
    {
@@ -310,8 +310,8 @@
   },
   "growth": -0.18,
   "xy": [
-   1.0,
-   0.183987
+   0.241084,
+   0.416555
   ],
   "top_occupations": [
    {
@@ -359,8 +359,8 @@
   },
   "growth": 3.12,
   "xy": [
-   0.901735,
-   -0.146675
+   -0.046466,
+   0.4514
   ],
   "top_occupations": [
    {
@@ -408,8 +408,8 @@
   },
   "growth": 5.28,
   "xy": [
-   0.304784,
-   -0.18024
+   -0.538355,
+   -0.287592
   ],
   "top_occupations": [
    {
@@ -457,8 +457,8 @@
   },
   "growth": 2.29,
   "xy": [
-   0.544186,
-   -0.305468
+   -0.429641,
+   -0.829408
   ],
   "top_occupations": [
    {
@@ -506,8 +506,8 @@
   },
   "growth": 3.38,
   "xy": [
-   0.931437,
-   0.047724
+   -0.11625,
+   -0.129126
   ],
   "top_occupations": [
    {
@@ -555,8 +555,8 @@
   },
   "growth": 8.6,
   "xy": [
-   -0.147992,
-   -0.060971
+   -0.38434,
+   -0.318272
   ],
   "top_occupations": [
    {
@@ -604,8 +604,8 @@
   },
   "growth": 4.07,
   "xy": [
-   0.152398,
-   -0.160586
+   -0.228693,
+   -0.288411
   ],
   "top_occupations": [
    {
@@ -653,8 +653,8 @@
   },
   "growth": 0.89,
   "xy": [
-   0.435058,
-   -0.024371
+   0.151956,
+   -0.085032
   ],
   "top_occupations": [
    {
@@ -702,8 +702,8 @@
   },
   "growth": 0.66,
   "xy": [
-   -0.233614,
-   -0.213966
+   0.980586,
+   -0.448566
   ],
   "top_occupations": [
    {
@@ -751,8 +751,8 @@
   },
   "growth": 9.2,
   "xy": [
-   0.056026,
-   0.615489
+   0.185495,
+   -0.703768
   ],
   "top_occupations": [
    {
@@ -800,8 +800,8 @@
   },
   "growth": 5.71,
   "xy": [
-   0.616819,
-   0.484685
+   0.800612,
+   0.010221
   ],
   "top_occupations": [
    {
@@ -849,8 +849,8 @@
   },
   "growth": 4.28,
   "xy": [
-   0.92518,
-   0.906956
+   1.0,
+   0.394246
   ],
   "top_occupations": [
    {
@@ -898,8 +898,8 @@
   },
   "growth": 3.75,
   "xy": [
-   0.33378,
-   0.230328
+   0.447729,
+   -0.392408
   ],
   "top_occupations": [
    {
@@ -947,8 +947,8 @@
   },
   "growth": 0.31,
   "xy": [
-   0.352398,
-   0.474796
+   0.122594,
+   0.216736
   ],
   "top_occupations": [
    {
@@ -978,1113 +978,5 @@
    }
   ],
   "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
- },
- {
-  "id": "fld:33",
-  "label": "Social Sciences",
-  "title": "Social Sciences",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "academic disciplines concerned with society and the relationships between individuals in society",
-  "size": {
-   "works": 383506,
-   "works_global": 56604419,
-   "rd": 6252474.0,
-   "rd_per_work": 16303.0
-  },
-  "growth": 0.56,
-  "xy": [
-   -0.528278,
-   -0.126584
-  ],
-  "top_subfields": [
-   {
-    "name": "Education",
-    "works_us": 101431
-   },
-   {
-    "name": "Sociology and Political Science",
-    "works_us": 93312
-   },
-   {
-    "name": "Political Science and International Relations",
-    "works_us": 34701
-   },
-   {
-    "name": "Health",
-    "works_us": 27948
-   },
-   {
-    "name": "Gender Studies",
-    "works_us": 21634
-   }
-  ]
- },
- {
-  "id": "fld:31",
-  "label": "Physics and Astronomy",
-  "title": "Physics and Astronomy",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "study of matter and its motion, along with related concepts such as energy and force",
-  "size": {
-   "works": 136486,
-   "works_global": 54868966,
-   "rd": 4589249.0,
-   "rd_per_work": 33624.0
-  },
-  "growth": -2.15,
-  "xy": [
-   -0.920513,
-   -0.273387
-  ],
-  "top_subfields": [
-   {
-    "name": "Astronomy and Astrophysics",
-    "works_us": 37651
-   },
-   {
-    "name": "Atomic and Molecular Physics, and Optics",
-    "works_us": 28953
-   },
-   {
-    "name": "Nuclear and High Energy Physics",
-    "works_us": 28588
-   },
-   {
-    "name": "Condensed Matter Physics",
-    "works_us": 16198
-   },
-   {
-    "name": "Radiation",
-    "works_us": 10882
-   }
-  ]
- },
- {
-  "id": "fld:27",
-  "label": "Medicine",
-  "title": "Medicine",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Health Sciences",
-  "provenance": "official",
-  "description": "field of study for diagnosing, treating and preventing disease",
-  "size": {
-   "works": 1193838,
-   "works_global": 49308108,
-   "rd": 31467849.0,
-   "rd_per_work": 26359.0
-  },
-  "growth": 5.52,
-  "xy": [
-   -0.322591,
-   0.334047
-  ],
-  "top_subfields": [
-   {
-    "name": "Public Health, Environmental and Occupational Health",
-    "works_us": 126261
-   },
-   {
-    "name": "Surgery",
-    "works_us": 122128
-   },
-   {
-    "name": "Cardiology and Cardiovascular Medicine",
-    "works_us": 98195
-   },
-   {
-    "name": "Oncology",
-    "works_us": 89265
-   },
-   {
-    "name": "Clinical Neurology",
-    "works_us": 76792
-   }
-  ]
- },
- {
-  "id": "fld:12",
-  "label": "Arts and Humanities",
-  "title": "Arts and Humanities",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "examination of human culture, including art, literature, philosophy, history, and artifacts",
-  "size": {
-   "works": 115616,
-   "works_global": 44021650,
-   "rd": 1229220.0,
-   "rd_per_work": 10632.0
-  },
-  "growth": -6.73,
-  "xy": [
-   -0.947985,
-   -0.123716
-  ],
-  "top_subfields": [
-   {
-    "name": "History",
-    "works_us": 20244
-   },
-   {
-    "name": "Literature and Literary Theory",
-    "works_us": 18907
-   },
-   {
-    "name": "Philosophy",
-    "works_us": 18782
-   },
-   {
-    "name": "Visual Arts and Performing Arts",
-    "works_us": 11397
-   },
-   {
-    "name": "Religious studies",
-    "works_us": 11206
-   }
-  ]
- },
- {
-  "id": "fld:11",
-  "label": "Agricultural and Biological Sciences",
-  "title": "Agricultural and Biological Sciences",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Life Sciences",
-  "provenance": "official",
-  "description": "study of plant and animal biology for food, fuel, fiber, and reclamation, including environmental and economic impacts",
-  "size": {
-   "works": 135138,
-   "works_global": 33252974,
-   "rd": 15357106.0,
-   "rd_per_work": 113640.0
-  },
-  "growth": -0.84,
-  "xy": [
-   -0.437761,
-   0.235279
-  ],
-  "top_subfields": [
-   {
-    "name": "Plant Science",
-    "works_us": 38877
-   },
-   {
-    "name": "Ecology, Evolution, Behavior and Systematics",
-    "works_us": 24904
-   },
-   {
-    "name": "Animal Science and Zoology",
-    "works_us": 18521
-   },
-   {
-    "name": "Food Science",
-    "works_us": 13010
-   },
-   {
-    "name": "Soil Science",
-    "works_us": 10597
-   }
-  ]
- },
- {
-  "id": "fld:22",
-  "label": "Engineering",
-  "title": "Engineering",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "practice of using natural science, mathematics, and the engineering design process to solve technical problems",
-  "size": {
-   "works": 222763,
-   "works_global": 29542137,
-   "rd": 15650243.0,
-   "rd_per_work": 70255.0
-  },
-  "growth": -6.83,
-  "xy": [
-   0.157518,
-   -0.368651
-  ],
-  "top_subfields": [
-   {
-    "name": "Electrical and Electronic Engineering",
-    "works_us": 61472
-   },
-   {
-    "name": "Biomedical Engineering",
-    "works_us": 34008
-   },
-   {
-    "name": "Mechanical Engineering",
-    "works_us": 23028
-   },
-   {
-    "name": "Civil and Structural Engineering",
-    "works_us": 21088
-   },
-   {
-    "name": "Control and Systems Engineering",
-    "works_us": 17833
-   }
-  ]
- },
- {
-  "id": "fld:17",
-  "label": "Computer Science",
-  "title": "Computer Science",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "study of computation",
-  "size": {
-   "works": 124406,
-   "works_global": 14683326,
-   "rd": 4218733.0,
-   "rd_per_work": 33911.0
-  },
-  "growth": 24.4,
-  "xy": [
-   0.002857,
-   -0.11655
-  ],
-  "top_subfields": [
-   {
-    "name": "Artificial Intelligence",
-    "works_us": 42632
-   },
-   {
-    "name": "Information Systems",
-    "works_us": 20240
-   },
-   {
-    "name": "Computer Vision and Pattern Recognition",
-    "works_us": 18966
-   },
-   {
-    "name": "Computer Networks and Communications",
-    "works_us": 11598
-   },
-   {
-    "name": "Computational Theory and Mathematics",
-    "works_us": 8566
-   }
-  ]
- },
- {
-  "id": "fld:23",
-  "label": "Environmental Science",
-  "title": "Environmental Science",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "interdisciplinary field that studies human interaction with the environment",
-  "size": {
-   "works": 144370,
-   "works_global": 13808373,
-   "rd": 1127157.0,
-   "rd_per_work": 7807.0
-  },
-  "growth": -0.96,
-  "xy": [
-   -0.617668,
-   -0.453092
-  ],
-  "top_subfields": [
-   {
-    "name": "Ecology",
-    "works_us": 32312
-   },
-   {
-    "name": "Global and Planetary Change",
-    "works_us": 26648
-   },
-   {
-    "name": "Health, Toxicology and Mutagenesis",
-    "works_us": 17815
-   },
-   {
-    "name": "Environmental Engineering",
-    "works_us": 12999
-   },
-   {
-    "name": "Water Science and Technology",
-    "works_us": 12993
-   }
-  ]
- },
- {
-  "id": "fld:14",
-  "label": "Business, Management and Accounting",
-  "title": "Business, Management and Accounting",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "administration of a commercial enterprise",
-  "size": {
-   "works": 60708,
-   "works_global": 12448974,
-   "rd": 1349055.0,
-   "rd_per_work": 22222.0
-  },
-  "growth": 4.8,
-  "xy": [
-   0.286143,
-   0.077567
-  ],
-  "top_subfields": [
-   {
-    "name": "Strategy and Management",
-    "works_us": 13303
-   },
-   {
-    "name": "Marketing",
-    "works_us": 11894
-   },
-   {
-    "name": "Organizational Behavior and Human Resource Management",
-    "works_us": 11613
-   },
-   {
-    "name": "Accounting",
-    "works_us": 6526
-   },
-   {
-    "name": "Management of Technology and Innovation",
-    "works_us": 6364
-   }
-  ]
- },
- {
-  "id": "fld:13",
-  "label": "Biochemistry, Genetics and Molecular Biology",
-  "title": "Biochemistry, Genetics and Molecular Biology",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Life Sciences",
-  "provenance": "official",
-  "description": "study of chemical processes in living organisms",
-  "size": {
-   "works": 231179,
-   "works_global": 11773409,
-   "rd": 9209553.0,
-   "rd_per_work": 39837.0
-  },
-  "growth": -12.96,
-  "xy": [
-   -0.762621,
-   0.177205
-  ],
-  "top_subfields": [
-   {
-    "name": "Molecular Biology",
-    "works_us": 127094
-   },
-   {
-    "name": "Genetics",
-    "works_us": 39617
-   },
-   {
-    "name": "Cancer Research",
-    "works_us": 21424
-   },
-   {
-    "name": "Cell Biology",
-    "works_us": 18299
-   },
-   {
-    "name": "Biophysics",
-    "works_us": 5742
-   }
-  ]
- },
- {
-  "id": "fld:19",
-  "label": "Earth and Planetary Sciences",
-  "title": "Earth and Planetary Sciences",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "all fields of natural science related to the planet Earth and other planets",
-  "size": {
-   "works": 76780,
-   "works_global": 9562847,
-   "rd": 4407449.0,
-   "rd_per_work": 57404.0
-  },
-  "growth": -17.68,
-  "xy": [
-   -0.665087,
-   -0.264796
-  ],
-  "top_subfields": [
-   {
-    "name": "Atmospheric Science",
-    "works_us": 20232
-   },
-   {
-    "name": "Space and Planetary Science",
-    "works_us": 13044
-   },
-   {
-    "name": "Oceanography",
-    "works_us": 10445
-   },
-   {
-    "name": "Geophysics",
-    "works_us": 9953
-   },
-   {
-    "name": "Geochemistry and Petrology",
-    "works_us": 7406
-   }
-  ]
- },
- {
-  "id": "fld:20",
-  "label": "Economics, Econometrics and Finance",
-  "title": "Economics, Econometrics and Finance",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "social science that studies the production, distribution, and consumption of goods and services",
-  "size": {
-   "works": 66519,
-   "works_global": 9254362,
-   "rd": 780462.0,
-   "rd_per_work": 11733.0
-  },
-  "growth": -6.18,
-  "xy": [
-   0.019579,
-   -0.43918
-  ],
-  "top_subfields": [
-   {
-    "name": "Economics and Econometrics",
-    "works_us": 42629
-   },
-   {
-    "name": "Finance",
-    "works_us": 17687
-   },
-   {
-    "name": "General Economics, Econometrics and Finance",
-    "works_us": 6203
-   }
-  ]
- },
- {
-  "id": "fld:25",
-  "label": "Materials Science",
-  "title": "Materials Science",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "research, discovery and design of physical materials (especially solids)",
-  "size": {
-   "works": 84866,
-   "works_global": 8379061,
-   "rd": 1490003.0,
-   "rd_per_work": 17557.0
-  },
-  "growth": -15.99,
-  "xy": [
-   -0.132281,
-   -0.435408
-  ],
-  "top_subfields": [
-   {
-    "name": "Materials Chemistry",
-    "works_us": 41897
-   },
-   {
-    "name": "Biomaterials",
-    "works_us": 12983
-   },
-   {
-    "name": "Electronic, Optical and Magnetic Materials",
-    "works_us": 12658
-   },
-   {
-    "name": "Polymers and Plastics",
-    "works_us": 5795
-   },
-   {
-    "name": "Metals and Alloys",
-    "works_us": 5269
-   }
-  ]
- },
- {
-  "id": "fld:16",
-  "label": "Chemistry",
-  "title": "Chemistry",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "branch of physical science concerned with the composition, structure and properties of matter",
-  "size": {
-   "works": 51730,
-   "works_global": 8243992,
-   "rd": 2517853.0,
-   "rd_per_work": 48673.0
-  },
-  "growth": -17.14,
-  "xy": [
-   -0.373676,
-   -0.133255
-  ],
-  "top_subfields": [
-   {
-    "name": "Organic Chemistry",
-    "works_us": 18948
-   },
-   {
-    "name": "Spectroscopy",
-    "works_us": 9725
-   },
-   {
-    "name": "Inorganic Chemistry",
-    "works_us": 7922
-   },
-   {
-    "name": "Analytical Chemistry",
-    "works_us": 7204
-   },
-   {
-    "name": "Physical and Theoretical Chemistry",
-    "works_us": 6833
-   }
-  ]
- },
- {
-  "id": "fld:32",
-  "label": "Psychology",
-  "title": "Psychology",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "study of mental functions and behaviours",
-  "size": {
-   "works": 141447,
-   "works_global": 8224385,
-   "rd": 1730944.0,
-   "rd_per_work": 12237.0
-  },
-  "growth": 5.58,
-  "xy": [
-   -0.589833,
-   0.211302
-  ],
-  "top_subfields": [
-   {
-    "name": "Clinical Psychology",
-    "works_us": 61761
-   },
-   {
-    "name": "Social Psychology",
-    "works_us": 26542
-   },
-   {
-    "name": "Developmental and Educational Psychology",
-    "works_us": 24307
-   },
-   {
-    "name": "Experimental and Cognitive Psychology",
-    "works_us": 19511
-   },
-   {
-    "name": "Applied Psychology",
-    "works_us": 8455
-   }
-  ]
- },
- {
-  "id": "fld:26",
-  "label": "Mathematics",
-  "title": "Mathematics",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "area of knowledge that includes the topics of numbers, formulas and related structures, shapes and the spaces in which they are contained, and quantities and their changes",
-  "size": {
-   "works": 75591,
-   "works_global": 4789335,
-   "rd": 841736.0,
-   "rd_per_work": 11135.0
-  },
-  "growth": 0.23,
-  "xy": [
-   -0.287979,
-   -0.561114
-  ],
-  "top_subfields": [
-   {
-    "name": "Statistics and Probability",
-    "works_us": 22348
-   },
-   {
-    "name": "Applied Mathematics",
-    "works_us": 12758
-   },
-   {
-    "name": "Geometry and Topology",
-    "works_us": 10183
-   },
-   {
-    "name": "Mathematical Physics",
-    "works_us": 8438
-   },
-   {
-    "name": "Modeling and Simulation",
-    "works_us": 7962
-   }
-  ]
- },
- {
-  "id": "fld:28",
-  "label": "Neuroscience",
-  "title": "Neuroscience",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Life Sciences",
-  "provenance": "official",
-  "description": "scientific study of the nervous system",
-  "size": {
-   "works": 96299,
-   "works_global": 3911267,
-   "rd": 3836295.0,
-   "rd_per_work": 39837.0
-  },
-  "growth": -8.94,
-  "xy": [
-   -0.845411,
-   0.308728
-  ],
-  "top_subfields": [
-   {
-    "name": "Cognitive Neuroscience",
-    "works_us": 41456
-   },
-   {
-    "name": "Cellular and Molecular Neuroscience",
-    "works_us": 25947
-   },
-   {
-    "name": "Neurology",
-    "works_us": 11963
-   },
-   {
-    "name": "Endocrine and Autonomic Systems",
-    "works_us": 6713
-   },
-   {
-    "name": "Sensory Systems",
-    "works_us": 5177
-   }
-  ]
- },
- {
-  "id": "fld:24",
-  "label": "Immunology and Microbiology",
-  "title": "Immunology and Microbiology",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Life Sciences",
-  "provenance": "official",
-  "description": "study of the immune system and microorganisms, including their roles in health and disease",
-  "size": {
-   "works": 58748,
-   "works_global": 3616180,
-   "rd": 2340363.0,
-   "rd_per_work": 39837.0
-  },
-  "growth": -10.06,
-  "xy": [
-   -0.570622,
-   0.433975
-  ],
-  "top_subfields": [
-   {
-    "name": "Immunology",
-    "works_us": 31298
-   },
-   {
-    "name": "Parasitology",
-    "works_us": 8811
-   },
-   {
-    "name": "Virology",
-    "works_us": 8763
-   },
-   {
-    "name": "Microbiology",
-    "works_us": 7088
-   },
-   {
-    "name": "Applied Microbiology and Biotechnology",
-    "works_us": 2788
-   }
-  ]
- },
- {
-  "id": "fld:36",
-  "label": "Health Professions",
-  "title": "Health Professions",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Health Sciences",
-  "provenance": "official",
-  "description": "field encompassing a wide range of disciplines focused on health care, treatment, and advice, including public health and occupational therapy",
-  "size": {
-   "works": 65133,
-   "works_global": 3488130,
-   "rd": 1716812.0,
-   "rd_per_work": 26359.0
-  },
-  "growth": 3.56,
-  "xy": [
-   -0.078654,
-   0.193934
-  ],
-  "top_subfields": [
-   {
-    "name": "General Health Professions",
-    "works_us": 30721
-   },
-   {
-    "name": "Physical Therapy, Sports Therapy and Rehabilitation",
-    "works_us": 9185
-   },
-   {
-    "name": "Health Information Management",
-    "works_us": 8359
-   },
-   {
-    "name": "Speech and Hearing",
-    "works_us": 7157
-   },
-   {
-    "name": "Occupational Therapy",
-    "works_us": 2803
-   }
-  ]
- },
- {
-  "id": "fld:21",
-  "label": "Energy",
-  "title": "Energy",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "study of energy in physical systems, its sources, technology, management, and impact on sustainability",
-  "size": {
-   "works": 27511,
-   "works_global": 2996515,
-   "rd": 1070695.0,
-   "rd_per_work": 38919.0
-  },
-  "growth": 3.52,
-  "xy": [
-   0.030856,
-   -0.594653
-  ],
-  "top_subfields": [
-   {
-    "name": "Renewable Energy, Sustainability and the Environment",
-    "works_us": 16803
-   },
-   {
-    "name": "Fuel Technology",
-    "works_us": 6077
-   },
-   {
-    "name": "Nuclear Energy and Engineering",
-    "works_us": 2819
-   },
-   {
-    "name": "Energy Engineering and Power Technology",
-    "works_us": 1457
-   },
-   {
-    "name": "General Energy",
-    "works_us": 355
-   }
-  ]
- },
- {
-  "id": "fld:18",
-  "label": "Decision Sciences",
-  "title": "Decision Sciences",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Social Sciences",
-  "provenance": "official",
-  "description": "branch of applied probability theory",
-  "size": {
-   "works": 28986,
-   "works_global": 2495070,
-   "rd": 322771.0,
-   "rd_per_work": 11135.0
-  },
-  "growth": -1.91,
-  "xy": [
-   -0.147878,
-   -0.629574
-  ],
-  "top_subfields": [
-   {
-    "name": "Management Science and Operations Research",
-    "works_us": 19113
-   },
-   {
-    "name": "Statistics, Probability and Uncertainty",
-    "works_us": 3625
-   },
-   {
-    "name": "General Decision Sciences",
-    "works_us": 3310
-   },
-   {
-    "name": "Information Systems and Management",
-    "works_us": 2938
-   }
-  ]
- },
- {
-  "id": "fld:29",
-  "label": "Nursing",
-  "title": "Nursing",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Health Sciences",
-  "provenance": "official",
-  "description": "caring for people who are sick or injured",
-  "size": {
-   "works": 26438,
-   "works_global": 1869644,
-   "rd": 696868.0,
-   "rd_per_work": 26359.0
-  },
-  "growth": -14.34,
-  "xy": [
-   -0.045758,
-   0.384394
-  ],
-  "top_subfields": [
-   {
-    "name": "Nutrition and Dietetics",
-    "works_us": 17327
-   },
-   {
-    "name": "Research and Theory",
-    "works_us": 4962
-   },
-   {
-    "name": "Issues, ethics and legal aspects",
-    "works_us": 2538
-   },
-   {
-    "name": "Leadership and Management",
-    "works_us": 1611
-   }
-  ]
- },
- {
-  "id": "fld:35",
-  "label": "Dentistry",
-  "title": "Dentistry",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Health Sciences",
-  "provenance": "official",
-  "description": "branch of medicine dealing with oral health and teeth",
-  "size": {
-   "works": 20430,
-   "works_global": 1832322,
-   "rd": 538505.0,
-   "rd_per_work": 26359.0
-  },
-  "growth": 6.83,
-  "xy": [
-   -0.269123,
-   0.742121
-  ],
-  "top_subfields": [
-   {
-    "name": "Oral Surgery",
-    "works_us": 7743
-   },
-   {
-    "name": "General Dentistry",
-    "works_us": 7349
-   },
-   {
-    "name": "Periodontics",
-    "works_us": 3332
-   },
-   {
-    "name": "Orthodontics",
-    "works_us": 2006
-   }
-  ]
- },
- {
-  "id": "fld:30",
-  "label": "Pharmacology, Toxicology and Pharmaceutics",
-  "title": "Pharmacology, Toxicology and Pharmaceutics",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Life Sciences",
-  "provenance": "official",
-  "description": "branch of biology concerning drugs",
-  "size": {
-   "works": 20128,
-   "works_global": 1531736,
-   "rd": 530545.0,
-   "rd_per_work": 26359.0
-  },
-  "growth": 2.15,
-  "xy": [
-   -0.754423,
-   0.468115
-  ],
-  "top_subfields": [
-   {
-    "name": "Pharmacology",
-    "works_us": 5744
-   },
-   {
-    "name": "Toxicology",
-    "works_us": 5522
-   },
-   {
-    "name": "Drug Discovery",
-    "works_us": 5104
-   },
-   {
-    "name": "Pharmaceutical Science",
-    "works_us": 3758
-   }
-  ]
- },
- {
-  "id": "fld:15",
-  "label": "Chemical Engineering",
-  "title": "Chemical Engineering",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Physical Sciences",
-  "provenance": "official",
-  "description": "branch of science that applies physical sciences and life sciences together with applied mathematics and economics to produce, transform, transport, and properly use chemicals, materials and energy",
-  "size": {
-   "works": 12687,
-   "works_global": 1301513,
-   "rd": 1409387.0,
-   "rd_per_work": 111089.0
-  },
-  "growth": -8.0,
-  "xy": [
-   0.024722,
-   -0.287139
-  ],
-  "top_subfields": [
-   {
-    "name": "Fluid Flow and Transfer Processes",
-    "works_us": 4932
-   },
-   {
-    "name": "Filtration and Separation",
-    "works_us": 3388
-   },
-   {
-    "name": "Catalysis",
-    "works_us": 2872
-   },
-   {
-    "name": "Process Chemistry and Technology",
-    "works_us": 1272
-   },
-   {
-    "name": "Chemical Health and Safety",
-    "works_us": 223
-   }
-  ]
- },
- {
-  "id": "fld:34",
-  "label": "Veterinary",
-  "title": "Veterinary",
-  "type": "fld",
-  "level": 0,
-  "parent": null,
-  "domain": "Health Sciences",
-  "provenance": "official",
-  "description": "branch of medicine that deals with the prevention, management, diagnosis, and treatment of disease, disorder, and injury in non-human animals",
-  "size": {
-   "works": 9634,
-   "works_global": 462750,
-   "rd": 0.0,
-   "rd_per_work": 0
-  },
-  "growth": -7.92,
-  "xy": [
-   -0.388985,
-   0.642107
-  ],
-  "top_subfields": [
-   {
-    "name": "Small Animals",
-    "works_us": 7755
-   },
-   {
-    "name": "Equine",
-    "works_us": 1879
-   }
-  ]
  }
 ]

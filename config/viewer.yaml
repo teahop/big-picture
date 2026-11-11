@@ -1,9 +1,4 @@
-# Viewer settings that are expected to be tuned by eye. The two terrain hues are
-# tokens in web/src/style.css (--terrain-ind, --terrain-res, --terrain-neutral).
-# The relative height of the two types is set in the pipeline
-# (config/pipeline.yaml, terrain.research_relative_height).
+# Viewer settings that are expected to be tuned by eye. Terrain colours are
+# tokens in web/src/style.css (--terrain-ground, --terrain-peak).
 
 peak_height: 7.0     # world height of the highest point at each level
-neutral_band: 0.2    # industry shares within this distance of an even mix (as a fraction of 0.5) read as neutral
-fade: 0.85           # how far the emphasis control pulls the other type's tint back to neutral (0 none, 1 fully)
-faded_label_opacity: 0.35

@@ -3,30 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="%DISPLAY_NAME%: %SUBTITLE%. A terrain of US industries and research fields." />
+    <meta name="description" content="%DISPLAY_NAME%: %SUBTITLE%. A terrain of US industries." />
     <title>%DISPLAY_NAME%: %SUBTITLE%</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <header>
       <h1 id="title">%DISPLAY_NAME% <span class="subtitle">%SUBTITLE%</span></h1>
-      <fieldset class="layers" aria-describedby="emphasis-note">
-        <legend class="sr">Emphasis</legend>
-        <label><input type="radio" name="emphasis" value="both" checked /> <span>Both</span></label>
-        <label><input type="radio" name="emphasis" value="industry" /> <span>Industry</span></label>
-        <label><input type="radio" name="emphasis" value="research" /> <span>Research</span></label>
-      </fieldset>
       <label class="size">Size
         <select id="size" aria-describedby="size-note">
-          <option value="activity">Activity: jobs and publications</option>
-          <option value="dollars">Dollars: value added and university R&amp;D</option>
+          <option value="activity">Activity: jobs</option>
+          <option value="dollars">Dollars: value added</option>
         </select>
       </label>
       <label class="size">Detail
         <select id="lod">
           <option value="auto">Auto (by zoom)</option>
-          <option value="0">Level 0: sectors, fields</option>
-          <option value="1">Level 1: industries, subfields</option>
+          <option value="0">Level 0: sectors</option>
+          <option value="1">Level 1: industries</option>
           <option value="2">Level 2: deep zones</option>
         </select>
       </label>
@@ -38,41 +32,36 @@
       <button id="about-open" type="button" aria-haspopup="dialog">About the data</button>
       <button id="panel-toggle" type="button" aria-pressed="false">Hide panel</button>
     </header>
-    <p id="emphasis-note" class="sr">Emphasis fades the labels and colour of the other type. It does not change heights.</p>
-    <p id="size-note" class="sr">Activity sizes industries by jobs and research by US publications. Dollars sizes industries by value added and research by university R&amp;D spending. Below the sector level value added is estimated by splitting each BEA industry by payroll.</p>
+    <p id="size-note" class="sr">Activity sizes industries by jobs. Dollars sizes them by value added; below the sector level value added is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status">Loading the map…</p>
     <main>
       <section class="map" id="map" aria-label="Terrain map">
         <div id="view-3d" class="view"></div>
         <div id="labels" class="labels" aria-hidden="true"></div>
-        <div class="legend" aria-hidden="true"><span>&#9679; Research</span><i></i><span>Industry &#9632;</span><small>Colour: share of the height. Height: size.</small></div>
       </section>
       <aside>
         <div id="details" aria-live="polite"></div>
         <div id="group-ind"><h3 id="head-ind">Industry sectors by employment</h3><ul id="list-ind"></ul></div>
-        <div id="group-fld"><h3 id="head-fld">Research fields by publications</h3><ul id="list-fld"></ul></div>
         <p id="source" class="source"></p>
       </aside>
     </main>
     <dialog id="about" aria-labelledby="about-title">
       <form method="dialog"><button class="close" aria-label="Close">Close</button></form>
       <h2 id="about-title">About the data</h2>
-      <p>The map places US industries and research fields on one terrain, so that nearby things are similar. It is built only from public data. Values marked <b>&asymp;</b> are estimates made for this map.</p>
+      <p>The map is a terrain of US industries, built only from public data, so that nearby industries are similar. Values marked <b>&asymp;</b> are estimates made for this map.</p>
       <h3>How to read it</h3>
-      <p>Every industry (&#9632;) and research field (&#9679;) raises the ground; height is size. Jobs and papers have different units, so each type is scaled on its own: the largest sector and the largest research field reach the same height. Colour shows how much of the height at a place comes from industry or from research, with a neutral colour where the two mix. The Size control switches both types together between activity (jobs, publications) and dollars (value added, university R&amp;D). Emphasis fades one type's labels and colour without changing heights.</p>
+      <p>Every industry raises the ground; height is its size. The Size control switches between activity (jobs) and dollars (value added). Peaks are scaled by the square root of size, so smaller industries stay visible, and each peak shows only its own industry: a crowd of small industries never adds up to a taller mountain. Research and academia are not drawn separately; they appear as industries, such as colleges and universities and scientific research and development services.</p>
       <h3>What the position means</h3>
-      <p>East-west and north-south have no meaning of their own. Industries are close when they employ a similar mix of occupations. Research fields are close when their descriptions are semantically similar. An industry and a field are close when the occupations their graduates fill, and the text of their descriptions, link them. Distances are approximate: a high-dimensional similarity is squeezed into two dimensions, and nodes are nudged apart so labels stay readable.</p>
+      <p>East-west and north-south have no meaning of their own. Industries are close when they employ a similar, distinctive mix of occupations and when their descriptions are similar. Distances are approximate: a high-dimensional similarity is squeezed into two dimensions, and nodes are nudged apart so labels stay readable. A detailed industry can sit outside its sector's area when it resembles industries elsewhere.</p>
       <h3>Sources</h3>
       <ul>
         <li><b>Industries, employment, growth:</b> BLS National Employment Matrix, 2025 and projected 2035 (NAICS 2022).</li>
         <li><b>Value added:</b> BEA GDP by Industry, 2025. The sector figures are BEA's; below the sector level each BEA industry is split by payroll (BLS QCEW, 2025), so those figures are &asymp; estimates. Owner-occupied housing is excluded. Federal value added is mostly government pay and has no uniformed military in the job counts, so its value per job reads high.</li>
-        <li><b>Research volume:</b> OpenAlex, works with a US-affiliated author, 2021&ndash;25. OpenAlex changed its topic classifier in October 2026, so counts depend on that version.</li>
-        <li><b>Research dollars:</b> NSF Higher Education R&amp;D Survey, FY 2024, mapped to OpenAlex fields by hand and split to subfields by publications (&asymp;). Veterinary has no source. R&amp;D per publication is only meaningful at the field level.</li>
-        <li><b>Linking research to industry:</b> NCES CIP-to-SOC crosswalk, O*NET 31.0 occupations, and text-embedding similarity.</li>
-        <li><b>Deep zones (Level 2 industries):</b> a few industries are split finer than any official table. Sizes come from QCEW 2025 employment, IPEDS 2023 completions and published headcounts, all &asymp; estimates. Their links to research topics are computed by text similarity and have not been reviewed.</li>
+        <li><b>Similarity:</b> occupation mixes from the Employment Matrix, occupation descriptions from O*NET 31.0, and text-embedding similarity.</li>
+        <li><b>Deep zones (Level 2):</b> a few industries are split finer than any official table. Sizes come from QCEW 2025 employment, IPEDS 2023 staff and published headcounts, all &asymp; estimates.</li>
       </ul>
       <h3>Levels</h3>
-      <p>Level 0 shows 20 industry sectors and 26 research fields. Zoom in, or use the Detail control, for 304 industries and 252 subfields (Level 1), and then research topics and the deep zones (Level 2). Finer nodes replace their parent; they never move it.</p>
+      <p>Level 0 shows 20 industry sectors. Zoom in, or use the Detail control, for 304 detailed industries (Level 1), and then the deep zones (Level 2). Finer nodes replace their parent.</p>
       <h3>Limits</h3>
       <p>This is a descriptive map of the present, not a forecast or advice. Classification boundaries, estimates and similarity scores all carry error; the sources and rules are in the project's repository (<code>data/SOURCES.md</code>, <code>SPEC.md</code>).</p>
     </dialog>

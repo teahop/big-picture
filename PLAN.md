@@ -16,7 +16,7 @@ live site, so `main` is not touched until Phase 4.
 |---|---|---|---|
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
-| 1 | One map | built 2026-11-10, layout reworked, awaiting owner design decision | One mesh, height and share grids per level and setting; equal Level 0 peaks. Joint layout (`layout_joint.py`): shared occupations (TF-IDF) plus text, balanced neighbours; research nodes next to a top-3 industry 50% -> 81% at Level 0 and 8% -> 26% at Level 1 (`data/interim/reports/layout_joint.md`). Level 0 kernel 0.07. Footprint control hidden until Phase 2 |
+| 1 | One map | rebuilt 2026-11-10 as an industry-only terrain, awaiting owner review | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
 | 2 | Clear footprint | not started | Owner chooses between variants |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
@@ -38,11 +38,13 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 
 - `data/mappings/deep_headcounts.csv`: organisation headcounts behind the deep
   zone size estimates are still open to correction.
-- `data/interim/reports/deep_topic_links.md`: deep-node links to research topics
-  are still unreviewed and marked so in the viewer.
 - Private: the education mapping and presence weights were left to confirm at
   the end of v1 Phase 4. Phase 2 uses them, so confirm them there.
 - The v1 to-dos about where-next, pay and geography are closed by removal.
+- Research fields were removed in Phase 1. The private footprint still maps
+  education and skills onto research nodes (`personal/skills.py`), so the
+  `imap personal` stage will not run until Phase 2 re-targets them to
+  industries (degrees via CIP -> SOC -> industry; see SPEC 7.3).
 
 ## Phases
 
@@ -60,16 +62,14 @@ Checks:
 - Viewer runs locally with the remaining controls working.
 
 ### Phase 1 — One map
-Goal: industry and research on a single terrain.
+Goal: one industry terrain that reads honestly (research shows through industries).
 Checks:
-- One mesh; height and industry-share grids exported per level and size
-  setting; the old per-layer grids are gone.
-- The largest Level 0 industry and the largest Level 0 field have equal peak
-  height; scaling constants are in `meta.json`.
-- Node positions may change: the joint layout is being reworked so industry and research mix (owner, 2026-11-10).
-- Type is readable without colour (label marks), in light and dark.
-- Emphasis control (Both, Industry, Research) and size switch (Activity,
-  Dollars) work; frame time at Level 2 is no worse than v1.
+- One mesh; one height grid per level and size setting (Activity, Dollars).
+- Heights follow each industry's own size; no point is taller than its tallest
+  industry (`combine: max`); an only child never towers over larger industries.
+- No research nodes, edges or sources in the public bundle.
+- Similar industries stay together at least as well as in v1 (layout report).
+- Size switch works; frame time at Level 2 is no worse than v1.
 - Owner has looked at it and accepted the design, or asked for changes.
 
 ### Phase 2 — Clear footprint
@@ -95,7 +95,7 @@ Checks:
 - Three synthetic CVs (PDF and pasted text) each reach a drawn footprint; the
   manual form alone also does.
 - On the synthetic set, the correct Level 1 industry is among the offered
-  guesses for most roles and the correct field for most degrees (targets in the
+  guesses for most roles and for most degrees (targets in the
   handoff); misses are reported, not hidden.
 - Browser test: after a CV is chosen, no network request leaves the page, and
   `localStorage`, `sessionStorage`, IndexedDB, cookies and the URL are
@@ -121,7 +121,7 @@ Checks:
 
 | Risk | Response |
 |---|---|
-| One surface hides which type a mountain is | Share-of-industry tint, shape marks on labels, emphasis control; owner review before building on it |
+| Research is less visible without fields | It shows through industries (higher education, scientific R&D); owner decision 2026-11-10 |
 | The footprint is still unclear | Discrete touched set, receding background, list with shares; decided on working variants, not on paper |
 | CV parsing is unreliable | The confirm step is the design, not a fallback; a manual form always works |
 | Company-to-industry guesses are poor without a server | Organisation list plus job-title ranking, alternatives offered, search over all nodes; report hit rates on synthetic CVs |

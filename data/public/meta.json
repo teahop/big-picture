@@ -1,134 +1,63 @@
 {
- "schema": 3,
+ "schema": 4,
  "size_settings": {
   "activity": {
    "label": "Activity",
-   "industry": "employment",
-   "research": "works"
+   "measure": "employment"
   },
   "dollars": {
    "label": "Dollars",
-   "industry": "value_added",
-   "research": "rd"
+   "measure": "value_added"
   }
  },
- "terrain_scale": {
+ "largest": {
   "0": {
-   "activity": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:620000",
-    "largest_research": "fld:27",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "employment",
-     "research": "works"
-    }
-   },
-   "dollars": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:31-330",
-    "largest_research": "fld:27",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "value_added",
-     "research": "rd"
-    }
-   }
+   "activity": "ind:620000",
+   "dollars": "ind:31-330"
   },
   "1": {
-   "activity": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:61110L",
-    "largest_research": "fld:1312",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "employment",
-     "research": "works"
-    }
-   },
-   "dollars": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:999100",
-    "largest_research": "fld:1312",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "value_added",
-     "research": "rd"
-    }
-   }
+   "activity": "ind:61110L",
+   "dollars": "ind:999100"
   },
   "2": {
-   "activity": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:61110L",
-    "largest_research": "fld:1312",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "employment",
-     "research": "works"
-    }
-   },
-   "dollars": {
-    "industry": 1.0,
-    "research": 1.0,
-    "largest_industry": "ind:999100",
-    "largest_research": "fld:1312",
-    "industry_peak": 1.0,
-    "research_peak": 1.0,
-    "measures": {
-     "industry": "value_added",
-     "research": "rd"
-    }
-   }
+   "activity": "ind:61110L",
+   "dollars": "ind:999100"
   }
  },
  "measure_labels": {
   "employment": "Employment (jobs, 2025)",
-  "works": "US publications 2021-25",
-  "rd": "University R&D spending (FY 2024, estimated by field)",
   "value_added": "Value added (2025, billions of dollars)",
-  "va_per_job": "Value added per job (thousands of dollars)",
-  "rd_per_work": "R&D dollars per publication"
+  "va_per_job": "Value added per job (thousands of dollars)"
  },
- "bridge": {
-  "method": "occupational (field to CIP to SOC to sector) combined with semantic (embedding) similarity; weights in config/pipeline.yaml",
-  "field_to_cip_reviewed": true,
-  "herd_mapping_reviewed": false,
-  "signals_per_edge": [
-   "occupational",
-   "semantic"
-  ]
- },
- "research_sources": [
+ "levels": [
+  0,
+  1,
+  2
+ ],
+ "sources": [
   {
-   "name": "OpenAlex",
-   "url": "https://api.openalex.org",
+   "name": "BLS National Employment Matrix",
+   "release": "2025-35 projection cycle (base year 2025, projected year 2035)",
+   "url": "https://www.bls.gov/emp/ind-occ-matrix/matrix.xlsx",
    "retrieved": "2026-11-09",
-   "filter": "authorships.countries:US,type:article|review|book|book-chapter,publication_year:2021-2025",
-   "note": "topic classifier replaced October 2026"
-  },
+   "retrieval_note": "saved by hand: BLS blocks scripted downloads",
+   "industry_coding": "NAICS 2022 based; occupations SOC 2018",
+   "sha256": "cf0a39bcefe3f427af74b53006003a7e3afaa9623e1b9933349b1a5a8ef55b4d"
+  }
+ ],
+ "other_sources": [
   {
-   "name": "NSF NCSES HERD FY 2024, Table 10",
-   "url": "https://ncses.nsf.gov/pubs/nsf26304/assets/data-tables/tables/nsf26304-tab010.xlsx",
+   "name": "BEA GDP by Industry 2025, Table 1 (value added)",
+   "url": "https://apps.bea.gov/api/data",
    "retrieved": "2026-11-09"
   },
   {
-   "name": "NCES CIP 2020 to SOC 2018 crosswalk",
-   "url": "https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx",
+   "name": "BLS QCEW 2025 annual (payroll for the value-added split)",
+   "url": "https://data.bls.gov/cew/data/files/2025/csv/2025_annual_by_area.zip",
    "retrieved": "2026-11-09"
   },
   {
-   "name": "O*NET 31.0 (CC BY 4.0)",
+   "name": "O*NET 31.0 (CC BY 4.0), occupation descriptions for the layout",
    "url": "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip",
    "retrieved": "2026-11-09"
   },
@@ -148,22 +77,6 @@
    "retrieved": "2026-11-09"
   }
  ],
- "levels": [
-  0,
-  1,
-  2
- ],
- "sources": [
-  {
-   "name": "BLS National Employment Matrix",
-   "release": "2025-35 projection cycle (base year 2025, projected year 2035)",
-   "url": "https://www.bls.gov/emp/ind-occ-matrix/matrix.xlsx",
-   "retrieved": "2026-11-09",
-   "retrieval_note": "saved by hand: BLS blocks scripted downloads",
-   "industry_coding": "NAICS 2022 based; occupations SOC 2018",
-   "sha256": "cf0a39bcefe3f427af74b53006003a7e3afaa9623e1b9933349b1a5a8ef55b4d"
-  }
- ],
  "layout": {
   "stage": "joint-level0",
   "seed": 20261109
@@ -172,17 +85,14 @@
   "grid_size": 128,
   "margin": 0.25,
   "bandwidth_level0": 0.07,
-  "bandwidth_per_level": 0.5,
+  "bandwidth_per_level": 0.75,
   "combine": "max",
-  "height_exponent": 0.5,
-  "research_relative_height": 1.0
+  "height_exponent": 0.5
  },
  "display_name_source": "config/site.yaml",
  "level_notes": {
-  "1": "industries: BLS Line items plus remainder nodes; research: OpenAlex subfields",
-  "2": "research: topics replace their deep-zone subfield; industry: owner-reviewed deep: categories (estimated) replace the Level 1 industries they split",
-  "deep_size": "deep: node employment splits the official BLS total of its parent industries by a size proxy (QCEW, IPEDS or published headcounts); see each node",
-  "rd_below_field": "R&D dollars are not published below field level; subfield and topic values are allocated pro rata by US works (estimate)"
- },
- "deep_topic_links_reviewed": false
+  "1": "BLS Line items plus remainder nodes",
+  "2": "owner-reviewed deep: categories (estimated) replace the Level 1 industries they split",
+  "deep_size": "deep: node employment splits the official BLS total of its parent industries by a size proxy (QCEW, IPEDS or published headcounts); see each node"
+ }
 }

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { type Bundle, type LevelGrids, type NodeRec, MARK, levelMaxSize, sampleAt } from "./data";
-import { mixPosition, readTheme, terrainColour } from "./theme";
+import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
+import { readTheme, terrainColour } from "./theme";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -12,8 +12,8 @@ const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
 const AUTO_L2 = 7.0;  // ... and to Level 2
 const CFG = __VIEWER__;
 
-// Shared, low-poly marker geometry: a square for industry, a circle for research (the same marks as the labels)
-const GEO = { square: new THREE.RingGeometry(0.8, 1, 4, 1, Math.PI / 4), circle: new THREE.RingGeometry(0.82, 1, 24) };
+// Shared, low-poly marker geometry (one instance for every node)
+const RING = new THREE.RingGeometry(0.82, 1, 24);
 
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 
@@ -40,7 +40,7 @@ export class Scene3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     const el = this.renderer.domElement;
     el.tabIndex = 0;
-    el.setAttribute("aria-label", "3D terrain of US industries and research fields on one surface. Height is size; colour shows how much of a mountain is industry or research. Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
+    el.setAttribute("aria-label", "3D terrain of US industries. Height is size (jobs or value added); similar industries sit near each other. Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
     host.appendChild(el);
 
     const g = b.grids[0]!;
@@ -73,11 +73,11 @@ export class Scene3D {
 
   // ---- heights
   private grid(): LevelGrids { return this.b.grids[this.state.level]!; }
-  private values(): { height: number[]; share: number[] } { return this.grid().settings[this.state.size]; }
+  private values(): number[] { return this.grid().settings[this.state.size].height; }
   private maxH(): number { return this.b.maxHeight[this.state.level]![this.state.size]; }
   private h(v: number): number { return (v / this.maxH()) * CFG.peak_height; }
   private rel(n: NodeRec): number {
-    const m = this.state.measure(n.type);
+    const m = this.state.measure;
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
   private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale * STRETCH_X, h, (y - this.cy) * this.scale * STRETCH_Z); }
@@ -99,7 +99,7 @@ export class Scene3D {
   }
 
   private refreshHeights(): void {
-    const g = this.grid(), n = g.n, v = this.values().height, pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
+    const g = this.grid(), n = g.n, v = this.values(), pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const x = g.x[0] + ((g.x[1] - g.x[0]) * i) / (n - 1), y = g.y[0] + ((g.y[1] - g.y[0]) * j) / (n - 1);
       const p = this.local(x, y, this.h(v[j * n + i]));
@@ -109,11 +109,10 @@ export class Scene3D {
   }
 
   private refreshColours(): void {
-    const t = readTheme(), { height, share } = this.values(), max = this.maxH();
+    const t = readTheme(), height = this.values(), max = this.maxH();
     const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
-    const fadeInd = this.state.faded("ind") ? CFG.fade : 0, fadeRes = this.state.faded("fld") ? CFG.fade : 0;
     for (let k = 0; k < height.length; k++) {
-      const [r, g, b] = terrainColour(t, mixPosition(share[k], CFG.neutral_band, fadeInd, fadeRes), height[k] / max);
+      const [r, g, b] = terrainColour(t, height[k] / max);
       col.setXYZ(k, r / 255, g / 255, b / 255);
     }
     col.needsUpdate = true;
@@ -125,19 +124,18 @@ export class Scene3D {
     if (m) return m;
     let ring: THREE.Object3D;
     const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    if (node.provenance === "estimated") {            // dashed outline marks estimated nodes, in the type's shape
-      const k = node.type === "ind" ? 4 : 48, off = node.type === "ind" ? Math.PI / 4 : 0;
-      const pts = Array.from({ length: k + 1 }, (_, i) => new THREE.Vector3(Math.cos(off + (i / k) * Math.PI * 2), 0, Math.sin(off + (i / k) * Math.PI * 2)));
+    if (node.provenance === "estimated") {            // dashed outline marks estimated nodes
+      const pts = Array.from({ length: 49 }, (_, i) => new THREE.Vector3(Math.cos((i / 48) * Math.PI * 2), 0, Math.sin((i / 48) * Math.PI * 2)));
       const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.18, gapSize: 0.12 }));
       line.computeLineDistances(); ring = line;
     } else {
-      ring = new THREE.Mesh(node.type === "ind" ? GEO.square : GEO.circle, mat); ring.rotation.x = -Math.PI / 2;
+      ring = new THREE.Mesh(RING, mat); ring.rotation.x = -Math.PI / 2;
     }
     this.group.add(ring);
     const btn = document.createElement("button");
-    btn.className = "node-label " + node.type + (node.provenance === "estimated" ? " est" : "") + " lvl" + node.level;
+    btn.className = "node-label" + (node.provenance === "estimated" ? " est" : "") + " lvl" + node.level;
     btn.type = "button"; btn.tabIndex = -1; btn.style.visibility = "hidden";
-    btn.textContent = (node.provenance === "estimated" ? "≈ " : "") + MARK[node.type] + " " + node.label;
+    btn.textContent = (node.provenance === "estimated" ? "≈ " : "") + node.label;
     btn.addEventListener("pointerenter", () => this.state.setHover(node));
     btn.addEventListener("pointerleave", () => this.state.setHover(null));
     btn.addEventListener("click", () => this.state.setSelected(node));
@@ -152,7 +150,7 @@ export class Scene3D {
   private placeMarkers(): void {
     for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on && this.ringed(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
     const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
-    const g = this.grid(), v = this.values().height;
+    const g = this.grid(), v = this.values();
     for (const node of visible) {
       const m = this.marker(node), [x, y] = node.xy;
       const h = this.h(sampleAt(g, v, x, y));
@@ -165,23 +163,12 @@ export class Scene3D {
     this.drawOrder = visible.map((node) => ({ id: node.id, node, m: this.markers.get(node.id)! })).sort((a, c) => c.m.rel - a.m.rel);
   }
 
-  private applyEmphasis(): void {
-    for (const [, m] of this.markers) {
-      const faded = m.label.classList.contains("ind") ? this.state.faded("ind") : this.state.faded("fld");
-      m.label.style.opacity = faded ? String(CFG.faded_label_opacity) : "";
-    }
-  }
-
   // ---- state sync
   private sync(force: boolean): void {
-    const shape = [this.state.size, this.state.level].join("|");
-    const key = [shape, this.state.emphasis].join("|");
+    const key = [this.state.size, this.state.level].join("|");
     if (force || key !== this.key) {
-      const shapeChanged = force || !this.key.startsWith(shape + "|");
       this.key = key;
-      if (shapeChanged) { this.refreshHeights(); this.placeMarkers(); }
-      this.refreshColours();
-      this.applyEmphasis();
+      this.refreshHeights(); this.placeMarkers(); this.refreshColours();
     }
     this.refreshHighlight();
   }
