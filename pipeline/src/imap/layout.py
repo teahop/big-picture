@@ -40,6 +40,21 @@ def mds_layout(dist: np.ndarray, seed: int) -> tuple[np.ndarray, float]:
     return canonical(xy), float(mds.stress_)
 
 
+MIN_SEP = 0.16      # no two Level 0 nodes closer than this (layout units, coordinates run -1..1)
+
+
+def spread(xy: np.ndarray, min_sep: float = MIN_SEP, iters: int = 800, pull: float = 0.02) -> np.ndarray:
+    """Push apart nodes closer than `min_sep`, with a weak pull back toward the MDS position so neighbourhoods are kept.
+    Deterministic (no randomness); the result is rescaled to max |coord| = 1."""
+    q = xy.copy()
+    for _ in range(iters):
+        v = q[:, None, :] - q[None, :, :]
+        d = np.linalg.norm(v, axis=2) + np.eye(len(q))
+        push = np.where((d < min_sep) & (d > 1e-9), (min_sep - d) / d / 2, 0.0)
+        q = q + 0.5 * (v * push[:, :, None]).sum(axis=1) + pull * (xy - q)
+    return q / np.abs(q).max()
+
+
 def layout_distances(xy: np.ndarray) -> np.ndarray:
     return np.linalg.norm(xy[:, None, :] - xy[None, :, :], axis=2)
 
@@ -78,9 +93,9 @@ def run() -> int:
     sf = comb.loc[fids, codes].to_numpy().T  # sectors x fields
     dist = joint_distance(ss, ff, sf)
     xy, stress = mds_layout(dist, seed)
-    xy = np.round(xy, DECIMALS)
+    xy = np.round(spread(xy), DECIMALS)
     ids = [f"ind:{c}" for c in codes] + [f"fld:{f}" for f in fids]
-    payload = {"stage": "joint-level0", "method": "metric MDS (sklearn) on percentile-ranked similarity blocks, canonical orientation",
+    payload = {"stage": "joint-level0", "method": "metric MDS (sklearn) on percentile-ranked similarity blocks, canonical orientation, then spread so no two nodes are closer than MIN_SEP",
                "seed": seed, "stress": round(stress, 6), "nodes": {i: [float(x), float(y)] for i, (x, y) in zip(ids, xy)}}
     LAYOUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     LAYOUT_PATH.write_text(json.dumps(payload, indent=1, sort_keys=True) + "\n")

@@ -13,8 +13,8 @@ import json
 import numpy as np
 import pandas as pd
 
-K0 = 0.15          # Level 0 radius scale (layout units) for the largest parent
-R_MIN = 0.04       # smallest Level 0 radius
+K0 = 0.10         # Level 0 radius scale (layout units) for the largest parent
+R_MIN = 0.028      # smallest Level 0 radius
 K_SUB = 0.35       # a subfield's radius relative to its parent field's radius (scaled by size)
 R_SUB_MIN = 0.012
 FILL = 0.9         # children are scaled so the farthest sits at FILL * radius

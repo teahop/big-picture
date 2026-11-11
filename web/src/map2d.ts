@@ -46,12 +46,13 @@ export class Map2D {
   }
 
   private geom(p: Panel) {
-    const g = this.b.grids[0]!.employment, s = Math.min(p.w / this.spanX, p.h / this.spanY) * 0.96 * this.k;
-    return { s, ox: p.x + p.w / 2 - (this.cx - g.x[0]) * s, oy: p.y + p.h / 2 - (g.y[1] - this.cy) * s };
+    // each axis is stretched on its own to fill the panel, so the layout uses the whole width instead of a square in the middle
+    const g = this.b.grids[0]!.employment, sx = (p.w / this.spanX) * 0.96 * this.k, sy = (p.h / this.spanY) * 0.96 * this.k;
+    return { sx, sy, ox: p.x + p.w / 2 - (this.cx - g.x[0]) * sx, oy: p.y + p.h / 2 - (g.y[1] - this.cy) * sy };
   }
   private px(p: Panel, n: NodeRec): [number, number] {
-    const { s, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
-    return [ox + (n.xy[0] - g.x[0]) * s, oy + (g.y[1] - n.xy[1]) * s]; // north (+y) is up
+    const { sx, sy, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
+    return [ox + (n.xy[0] - g.x[0]) * sx, oy + (g.y[1] - n.xy[1]) * sy]; // north (+y) is up
   }
 
   private nodeAt(e: MouseEvent): NodeRec | null {
@@ -69,7 +70,7 @@ export class Map2D {
   applyTheme(): void { this.bg = null; this.draw(); }
 
   private paintPanel(c: CanvasRenderingContext2D, p: Panel): void {
-    const t = readTheme(), { s, ox, oy } = this.geom(p);
+    const t = readTheme(), { sx, sy, ox, oy } = this.geom(p);
     const w = Math.round(p.w), h = Math.round(p.h), img = c.createImageData(w, h);
     const bgRgb = rgbOf(t.bg), fg = rgbOf(t.fg), overlay = p.layers.length > 1;
     const heat = this.state.heatGrid(), hg = heat ? { n: this.grid(p.layers[0]).n, x: this.grid(p.layers[0]).x, y: this.grid(p.layers[0]).y, values: heat.values } : null;
@@ -77,7 +78,7 @@ export class Map2D {
     for (const layer of p.layers) {
       const g = this.grid(layer), max = this.maxAbs(layer), arr = new Int8Array(w * h);
       for (let py = 0; py < h; py++) for (let px = 0; px < w; px++) {
-        const x = g.x[0] + (px + p.x - ox) / s, y = g.y[1] - (py + p.y - oy) / s;
+        const x = g.x[0] + (px + p.x - ox) / sx, y = g.y[1] - (py + p.y - oy) / sy;
         arr[py * w + px] = x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1] ? -1
           : Math.min(Math.floor((Math.abs(heightAt(g, x, y)) / max) * BANDS), BANDS - 1);
       }
@@ -98,7 +99,7 @@ export class Map2D {
         if (edge(bands[layer], i, px, py)) rgb = mix(rgb, fg, 0.4);
       }
       if (hg) {
-        const x = hg.x[0] + (px + p.x - ox) / s, y = hg.y[1] - (py + p.y - oy) / s;
+        const x = hg.x[0] + (px + p.x - ox) / sx, y = hg.y[1] - (py + p.y - oy) / sy;
         if (x >= hg.x[0] && x <= hg.x[1] && y >= hg.y[0] && y <= hg.y[1]) { const hv = heightAt(hg, x, y); if (hv > 0.02) rgb = blendHeat(rgb, hv); }
       }
       img.data.set([rgb[0], rgb[1], rgb[2], 255], i * 4);
@@ -127,15 +128,15 @@ export class Map2D {
         const [x, y] = this.px(p, n);
         if (x < -20 * d || y < -20 * d || x > this.canvas.width + 20 * d || y > this.canvas.height + 20 * d) continue;   // off screen
         const on = this.state.active?.id === n.id || this.state.selected?.id === n.id;
-        const r = (3 + 11 * Math.sqrt(this.rel(n))) * d * (n.level === 0 ? 1 : n.level === 1 ? 0.8 : 0.65);
-        const top = this.state.ranked.has(n.id);
-        ctx.lineWidth = (on || top ? 3 : 1.5) * d; ctx.strokeStyle = on ? t.accent : top ? t.footprint : t.fg;
-        ctx.setLineDash(n.provenance === "estimated" ? [4 * d, 3 * d] : []);
-        ctx.beginPath();
-        if (n.type === "ind") ctx.arc(x, y, r, 0, Math.PI * 2);
-        else { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
-        ctx.stroke(); ctx.setLineDash([]);
-        const text = (n.provenance === "estimated" ? "\u2248 " : "") + (n.type === "ind" ? "▲ " : "▼ ") + n.label, w = ctx.measureText(text).width, ly = y - r - 3 * d;
+        const top = this.state.ranked.has(n.id), r = 5 * d;       // no marker on ordinary nodes: the label sits on the spot
+        if (on || top) {                                           // a ring only for the selected, hovered and top-ranked
+          ctx.lineWidth = 3 * d; ctx.strokeStyle = on ? t.accent : t.footprint;
+          ctx.beginPath();
+          if (n.type === "ind") ctx.arc(x, y, r, 0, Math.PI * 2);
+          else { ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath(); }
+          ctx.stroke();
+        }
+        const text = (n.provenance === "estimated" ? "\u2248 " : "") + (n.type === "ind" ? "▲ " : "▼ ") + n.label, w = ctx.measureText(text).width, ly = y - (on || top ? r : 0) - 3 * d;
         const box = { x0: x - w / 2, x1: x + w / 2, y0: ly - 14 * d, y1: ly };
         if (!on && (labels >= Map2D.MAX_LABELS || x - w / 2 < 0 || x + w / 2 > this.canvas.width)) continue;   // few labels, none cut by the edge
         if (!on && placed.some((q) => box.x0 < q.x1 && box.x1 > q.x0 && box.y0 < q.y1 && box.y1 > q.y0)) continue;
@@ -152,8 +153,8 @@ export class Map2D {
     if (!c) return;
     const t = readTheme();
     for (const p of this.panels()) {
-      const { s, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
-      const x = ox + (c.xy[0] - g.x[0]) * s, y = oy + (g.y[1] - c.xy[1]) * s, r = 9 * d;
+      const { sx, sy, ox, oy } = this.geom(p), g = this.b.grids[0]!.employment;
+      const x = ox + (c.xy[0] - g.x[0]) * sx, y = oy + (g.y[1] - c.xy[1]) * sy, r = 9 * d;
       ctx.strokeStyle = t.footprint; ctx.lineWidth = 3 * d;
       ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x + r, y); ctx.moveTo(x, y - r); ctx.lineTo(x, y + r); ctx.stroke();
       ctx.font = 12 * d + "px \"DM Sans\", system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
@@ -169,10 +170,10 @@ export class Map2D {
   private schedule(): void { if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.draw(); }); }
   private zoomAt(factor: number, mx: number, my: number): void {
     const p = this.panels()[0], before = this.geom(p), g = this.b.grids[0]!.employment;
-    const x = g.x[0] + (mx - before.ox) / before.s, y = g.y[1] - (my - before.oy) / before.s;
+    const x = g.x[0] + (mx - before.ox) / before.sx, y = g.y[1] - (my - before.oy) / before.sy;
     this.k = Math.min(Math.max(this.k * factor, 1), Map2D.K_MAX);
     const after = this.geom(p);
-    this.cx += x - (g.x[0] + (mx - after.ox) / after.s); this.cy += y - (g.y[1] - (my - after.oy) / after.s);
+    this.cx += x - (g.x[0] + (mx - after.ox) / after.sx); this.cy += y - (g.y[1] - (my - after.oy) / after.sy);
     this.afterView();
   }
   private clampView(): void {
@@ -197,8 +198,8 @@ export class Map2D {
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
       if (!this.moved && Math.hypot(dx, dy) < 4) return;
       this.moved = true; drag = { x: e.clientX, y: e.clientY };
-      const s = this.geom(this.panels()[0]).s;
-      this.cx -= (dx * this.dpr) / s; this.cy += (dy * this.dpr) / s; this.afterView();
+      const { sx, sy } = this.geom(this.panels()[0]);
+      this.cx -= (dx * this.dpr) / sx; this.cy += (dy * this.dpr) / sy; this.afterView();
     });
     const end = () => { drag = null; setTimeout(() => { this.moved = false; }, 0); };
     c.addEventListener("pointerup", end); c.addEventListener("pointercancel", end);

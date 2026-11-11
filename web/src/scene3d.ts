@@ -5,8 +5,9 @@ import { BANDS, bandColour, readTheme } from "./theme";
 import { blendHeat } from "./overlay";
 import type { State } from "./state";
 
+const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
 const SPAN = 12;      // world units across the layout
-const H_MAX = 5.0;    // world height of the largest peak / depth of the deepest valley
+const H_MAX = 7.0;    // world height of the largest peak / depth of the deepest valley
 const GAP = 2.6;      // vertical gap between the two terrains in stacked mode
 const MAX_LABELS = 60; // labels drawn at once (largest first); the rest stay hidden until hover or select
 const PICK_PX = 30;   // screen-space radius for hover and click
@@ -60,6 +61,7 @@ export class Scene3D {
     this.scene.add(this.groups.ind, this.groups.fld);
     this.ground = new THREE.GridHelper(SPAN * 1.2, 24, 0x888888, 0x888888);
     (this.ground.material as THREE.Material).transparent = true; (this.ground.material as THREE.Material).opacity = 0.25;
+    this.ground.scale.set(STRETCH_X, 1, STRETCH_Z);
     this.scene.add(this.ground);
 
     for (const layer of ["ind", "fld"] as Layer[]) this.buildMesh(layer);
@@ -81,7 +83,7 @@ export class Scene3D {
     const m = n.type === "ind" ? this.state.industryMeasure : this.state.researchMeasure;
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
-  private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale, h, (y - this.cy) * this.scale); }
+  private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale * STRETCH_X, h, (y - this.cy) * this.scale * STRETCH_Z); }
 
   private buildMesh(layer: Layer): void {
     const n = this.b.grids[0]!.employment.n;
@@ -151,7 +153,7 @@ export class Scene3D {
   private drawOrder: { id: string; node: NodeRec; m: Marker }[] = [];   // visible nodes, largest first
 
   private placeMarkers(): void {
-    for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on; if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
+    for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on && this.ringed(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
     const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
     for (const node of visible) {
       const m = this.marker(node), layer = node.type, [x, y] = node.xy;
@@ -213,6 +215,9 @@ export class Scene3D {
     this.refreshLayer("ind"); this.refreshLayer("fld"); this.refreshHighlight();
   }
 
+  /** Rings only mark the selected, hovered and top-ranked nodes; the terrain itself shows where the peaks are. */
+  private ringed(id: string): boolean { return this.state.active?.id === id || this.state.selected?.id === id || this.state.ranked.has(id); }
+
   private refreshHighlight(): void {
     const t = readTheme(), act = this.state.active, sel = this.state.selected;
     for (const [id, m] of this.markers) {
@@ -220,6 +225,7 @@ export class Scene3D {
       const mat = (m.ring as THREE.Mesh | THREE.LineLoop).material as THREE.MeshBasicMaterial | THREE.LineDashedMaterial;
       mat.color.set(on ? t.accent : top ? t.footprint : t.fg);
       m.ring.scale.setScalar(m.r * (on ? 1.5 : top ? 1.3 : 1));
+      m.ring.visible = this.state.visibleIds.has(id) && (on || top);
       m.label.classList.toggle("active", on);
     }
   }
@@ -287,7 +293,7 @@ export class Scene3D {
     for (const { node: n, m } of this.drawOrder) {          // largest nodes claim label space first
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
-      m.ring.visible = true;
+      m.ring.visible = this.ringed(n.id);
       if (placed.length >= MAX_LABELS && !active) { setVis(m, false); continue; }
       v.copy(m.anchor).add(this.groups[n.type].position).project(this.camera);
       if (v.z >= 1) { setVis(m, false); continue; }
