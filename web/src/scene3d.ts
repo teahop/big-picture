@@ -5,6 +5,7 @@ import { readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
 import { makeBillboard } from "./billboard";
+import { makeGrassLabel } from "./grassLabel";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -41,6 +42,7 @@ export class Scene3D {
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
   private billboard: { id: string; group: THREE.Group } | null = null;   // prototype: one sign on the largest touched hill
+  private grass: { id: string; mesh: THREE.Mesh } | null = null;         // prototype: lettering in the grass of the second
   private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
   private sun = new THREE.DirectionalLight(0xfff3dc, 2.2);            // low side sun models the slopes
   private running = false;
@@ -241,7 +243,7 @@ export class Scene3D {
       this.group.remove(o);
       o.traverse((c) => { (c as THREE.Mesh).geometry?.dispose(); const m = (c as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined; m?.map?.dispose(); m?.dispose(); });
     }
-    this.fpObjects = []; this.billboard = null;
+    this.fpObjects = []; this.billboard = null; this.grass = null;
     const touched = this.state.touchedNow();
     for (const [id, m] of this.markers) {                  // labels: touched ones carry their share; the rest recede
       const s = touched?.get(id);
@@ -260,7 +262,21 @@ export class Scene3D {
       sign.position.copy(this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]) - 0.02));
       this.group.add(sign); this.fpObjects.push(sign); this.billboard = { id: topId, group: sign };
     }
-    const fl = flowers(bloomCells(o, touched, n, this.values()), n);
+    // prototype: the second largest touched hill has its name laid into the grass of its front slope
+    const second = [...touched][1];
+    const gnode = second ? this.b.byId.get(second[0]) : undefined;
+    if (gnode) {
+      const width = [0.6, 0.32, 0.22][this.state.level] ?? 0.22, front = [0.22, 0.11, 0.07][this.state.level] ?? 0.07;
+      const mesh = makeGrassLabel(gnode.label, Math.round(second[1] * 100) + "%", [gnode.xy[0], gnode.xy[1] + front], width,
+        (x, y) => this.local(x, y, this.heightAt(x, y)), 1);
+      this.group.add(mesh); this.fpObjects.push(mesh); this.grass = { id: gnode.id, mesh };
+    }
+    let fl = flowers(bloomCells(o, touched, n, this.values()), n);
+    if (this.grass) {                                      // the lettering is mown: no flowers on it
+      const [x0, x1, y0, y1] = this.grass.mesh.userData.rect as number[], g = this.grid();
+      const gx = (i: number) => g.x[0] + ((g.x[1] - g.x[0]) * i) / (n - 1), gy = (j: number) => g.y[0] + ((g.y[1] - g.y[0]) * j) / (n - 1);
+      fl = fl.filter(([i, j]) => { const x = gx(i), y = gy(j); return x < x0 || x > x1 || y < y0 || y > y1; });
+    }
     const size = [0.3, 0.2, 0.15][this.state.level] ?? 0.15;
     SPECIES.forEach((sp, c) => {
       const mine = fl.filter((f) => f[2] === c);
@@ -409,8 +425,9 @@ export class Scene3D {
     const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
     const setVis = (m: Marker, on: boolean) => { if (m.vis !== on) { m.vis = on; m.label.style.visibility = on ? "visible" : "hidden"; } };
     const stems: string[] = [];
-    if (this.billboard) {                                  // floating labels keep clear of the sign
-      const box = new THREE.Box3().setFromObject(this.billboard.group), c = new THREE.Vector3();
+    for (const obj of [this.billboard?.group, this.grass?.mesh]) {   // floating labels keep clear of the sign and the lettering
+      if (!obj) continue;
+      const box = new THREE.Box3().setFromObject(obj), c = new THREE.Vector3();
       let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
       for (const cx of [box.min.x, box.max.x]) for (const cy of [box.min.y, box.max.y]) for (const cz of [box.min.z, box.max.z]) {
         c.set(cx, cy, cz).project(this.camera);
@@ -426,7 +443,7 @@ export class Scene3D {
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
       m.ring.visible = this.ringed(n.id);
-      if (this.billboard?.id === n.id && !active) { setVis(m, false); continue; }   // the sign stands in for this label
+      if ((this.billboard?.id === n.id || this.grass?.id === n.id) && !active) { setVis(m, false); continue; }   // sign or lettering stands in
       const priority = active || m.label.classList.contains("touched");
       if (this.state.fp && !priority) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
       if (placed.length >= MAX_LABELS && !priority) { setVis(m, false); continue; }
