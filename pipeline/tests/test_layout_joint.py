@@ -64,4 +64,5 @@ def test_layout_keeps_similar_industries_together_at_least_as_well_as_v1():
         assert new > 0.6, (level, new)
         old = _v1(f"data/public/{name}")
         if old is not None:
-            assert new >= score(old["nodes"]) - 0.02, level
+            # 3 points of slack: the hills were deliberately spread apart (owner, 2026-11-11), which costs a little here
+            assert new >= score(old["nodes"]) - 0.03, level

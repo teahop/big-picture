@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
 import { readTheme, terrainColour } from "./theme";
-import { SPECIES, bloomCells, flowers, owners, touchedMask, type Owners } from "./footprintLayer";
+import { SPECIES, bloomCells, flowers, noise, owners, touchedMask, type Owners } from "./footprintLayer";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -17,7 +17,11 @@ const CFG = __VIEWER__;
 const RING = new THREE.RingGeometry(0.82, 1, 24);
 
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
-const RECEDE = 0.6;   // how far untouched hills move toward the dry-sage colour while a career is shown
+const RECEDE = 0.35;  // how far untouched hills move toward the dry-sage colour while a career is shown
+const MESH_N = 256;   // mesh points per side
+const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
+const BASE = 0.3;     // rolling base hills (decoration, no data), as a share of the peak height
+const RIDGE = 2.2;    // how much taller the base grows far beyond the map (distant ridges)
 
 export class Scene3D {
   private renderer: THREE.WebGLRenderer;
@@ -33,18 +37,20 @@ export class Scene3D {
   private flyDir: THREE.Vector3 | null = null; // camera direction from the target to reach while flying
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
-  private hemi = new THREE.HemisphereLight(0xffffff, 0x777777, 1.7);
-  private sun = new THREE.DirectionalLight(0xffffff, 1.3);
+  private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
+  private sun = new THREE.DirectionalLight(0xfff3dc, 2.2);            // low side sun models the slopes
   private running = false;
   private key = "";
-  private ground!: THREE.GridHelper;
+  private meshXY = new Float32Array(MESH_N * MESH_N * 2);   // layout coordinates of each mesh point
+  private base = new Float32Array(MESH_N * MESH_N);          // rolling base height at each mesh point (world units)
   private autoLevel = 0;
   private frameMs = 0;        // moving average of CPU time spent per frame (render + label layout)
   private labelsShown = 0;
   onAutoLevel: (level: number) => void = () => {};
 
   constructor(private host: HTMLElement, private labelLayer: HTMLElement, private b: Bundle, private state: State) {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });   // see-through: the page's sky shows behind the hills
+    this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     const el = this.renderer.domElement;
     el.tabIndex = 0;
@@ -55,19 +61,16 @@ export class Scene3D {
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
 
-    this.camera.position.set(0, 11, 15);
+    this.camera.position.set(0, 6.2, 12.5);   // low oblique view across the hills; the horizon sits near the top
     this.controls = new OrbitControls(this.camera, el);
     this.controls.enableDamping = true;
     this.controls.minDistance = 3; this.controls.maxDistance = 40;
-    this.controls.target.set(0, 1, 0);
+    this.controls.target.set(0, 0.6, 0);
+    this.controls.maxPolarAngle = Math.PI * 0.47;   // never below the ground
     this.controls.listenToKeyEvents(el);
 
-    this.scene.add(this.hemi, this.sun); this.sun.position.set(-6, 12, 8);
+    this.scene.add(this.hemi, this.sun); this.sun.position.set(-12, 5, 3);
     this.scene.add(this.group);
-    this.ground = new THREE.GridHelper(SPAN * 1.2, 24, 0x888888, 0x888888);
-    (this.ground.material as THREE.Material).transparent = true; (this.ground.material as THREE.Material).opacity = 0.25;
-    this.ground.scale.set(STRETCH_X, 1, STRETCH_Z); this.ground.position.y = -0.01;
-    this.scene.add(this.ground);
 
     this.buildMesh();
     this.applyTheme();
@@ -89,8 +92,22 @@ export class Scene3D {
   }
   private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale * STRETCH_X, h, (y - this.cy) * this.scale * STRETCH_Z); }
 
+  /** Rolling base hills in world units at layout point (x, y): two octaves of smooth noise, swelling into ridges
+   *  beyond the map. Decoration only; every industry's height comes from the data on top of it. */
+  private baseAt(x: number, y: number): number {
+    const g = this.b.grids[0]!, half = (g.x[1] - g.x[0]) / 2, r = Math.hypot(x - this.cx, y - this.cy) / half;
+    const n = 0.7 * noise(x * 40, y * 40, 34, 3) + 0.3 * noise(x * 40, y * 40, 15, 4);
+    const far = Math.min(1, Math.max(0, (r - 1.1) / 1.0));
+    return CFG.peak_height * BASE * n * (1 + RIDGE * far * far);
+  }
+
   private buildMesh(): void {
-    const n = this.b.grids[0]!.n;
+    const n = MESH_N, g = this.b.grids[0]!;
+    const wx = (g.x[1] - g.x[0]) * EXTEND, wy = (g.y[1] - g.y[0]) * EXTEND;
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      const k = j * n + i, x = this.cx + (i / (n - 1) - 0.5) * wx, y = this.cy + (j / (n - 1) - 0.5) * wy;
+      this.meshXY[2 * k] = x; this.meshXY[2 * k + 1] = y; this.base[k] = this.baseAt(x, y);
+    }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(n * n * 3), 3));
     geo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * n * 3), 3));
@@ -100,29 +117,44 @@ export class Scene3D {
       idx.push(a, c, b, b, c, d);
     }
     geo.setIndex(idx);
-    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0, side: THREE.DoubleSide });
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
     this.mesh = new THREE.Mesh(geo, mat);
     this.group.add(this.mesh);
   }
 
+  /** Data height (world units) at a layout point: the industries' hills, zero outside the data grid. */
+  private dataAt(x: number, y: number): number {
+    const g = this.grid();
+    if (x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1]) return 0;
+    return this.h(sampleAt(g, this.values(), x, y));
+  }
+  /** Ground height (world units) at a layout point: data plus the rolling base. */
+  private heightAt(x: number, y: number): number { return this.dataAt(x, y) + this.baseAt(x, y); }
+
   private refreshHeights(): void {
-    const g = this.grid(), n = g.n, v = this.values(), pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
-    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-      const x = g.x[0] + ((g.x[1] - g.x[0]) * i) / (n - 1), y = g.y[0] + ((g.y[1] - g.y[0]) * j) / (n - 1);
-      const p = this.local(x, y, this.h(v[j * n + i]));
-      pos.setXYZ(j * n + i, p.x, p.y, p.z);
+    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
+    for (let k = 0; k < MESH_N * MESH_N; k++) {
+      const x = this.meshXY[2 * k], y = this.meshXY[2 * k + 1];
+      const p = this.local(x, y, this.dataAt(x, y) + this.base[k]);
+      pos.setXYZ(k, p.x, p.y, p.z);
     }
     pos.needsUpdate = true; this.mesh.geometry.computeVertexNormals();
   }
 
   private refreshColours(): void {
-    const t = readTheme(), height = this.values(), max = this.maxH();
+    const t = readTheme(), g = this.grid(), gn = g.n, top = CFG.peak_height * (1 + BASE);
+    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
     const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
     const touched = this.state.touchedNow(), mask = touched ? touchedMask(this.ownerGrid(), touched) : null;
-    for (let k = 0; k < height.length; k++) {
-      let [r, g, b] = terrainColour(t, height[k] / max);
-      if (mask && !mask[k]) { r += (t.muted[0] - r) * RECEDE; g += (t.muted[1] - g) * RECEDE; b += (t.muted[2] - b) * RECEDE; }
-      col.setXYZ(k, r / 255, g / 255, b / 255);
+    const dx = (g.x[1] - g.x[0]) / (gn - 1), dy = (g.y[1] - g.y[0]) / (gn - 1);
+    for (let k = 0; k < MESH_N * MESH_N; k++) {
+      let [r, gg, b] = terrainColour(t, pos.getY(k) / top);
+      if (mask) {
+        const i = Math.round((this.meshXY[2 * k] - g.x[0]) / dx), j = Math.round((this.meshXY[2 * k + 1] - g.y[0]) / dy);
+        const on = i >= 0 && j >= 0 && i < gn && j < gn && mask[j * gn + i] === 1;
+        if (!on) { r += (t.muted[0] - r) * RECEDE; gg += (t.muted[1] - gg) * RECEDE; b += (t.muted[2] - b) * RECEDE; }
+      }
+      col.setXYZ(k, r / 255, gg / 255, b / 255);
     }
     col.needsUpdate = true;
   }
@@ -160,10 +192,9 @@ export class Scene3D {
   private placeMarkers(): void {
     for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on && this.ringed(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
     const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
-    const g = this.grid(), v = this.values();
     for (const node of visible) {
       const m = this.marker(node), [x, y] = node.xy;
-      const h = this.h(sampleAt(g, v, x, y));
+      const h = this.heightAt(x, y);
       m.rel = this.rel(node);
       const r = (0.07 + 0.34 * Math.sqrt(m.rel)) * (node.level === 0 ? 1 : node.level === 1 ? 0.8 : 0.6);
       m.ring.position.copy(this.local(x, y, h + 0.04));
@@ -199,7 +230,7 @@ export class Scene3D {
   private gridPoint(fi: number, fj: number, lift: number): THREE.Vector3 {
     const g = this.grid(), n = g.n;
     const x = g.x[0] + ((g.x[1] - g.x[0]) * fi) / (n - 1), y = g.y[0] + ((g.y[1] - g.y[0]) * fj) / (n - 1);
-    return this.local(x, y, this.h(sampleAt(g, this.values(), x, y)) + lift);
+    return this.local(x, y, this.heightAt(x, y) + lift);
   }
 
   private refreshFootprint(): void {
@@ -237,12 +268,12 @@ export class Scene3D {
     const lvl = this.state.level;
     this.flyDist = Math.min(lvl >= 2 ? AUTO_L2 * 0.95 : lvl === 1 ? AUTO_L1 * 0.95 : 18, Math.max(lvl >= 2 ? 5.5 : 7.5, spread * 3.2));
     // look down from higher up so taller untouched peaks do not hide the touched ones
-    const off = this.camera.position.clone().sub(this.controls.target), az = Math.atan2(off.x, off.z), elev = 1.0;
+    const off = this.camera.position.clone().sub(this.controls.target), az = Math.atan2(off.x, off.z), elev = 0.55;
     this.flyDir = new THREE.Vector3(Math.sin(az) * Math.cos(elev), Math.sin(elev), Math.cos(az) * Math.cos(elev));
   }
 
   /** Back to the whole map. */
-  frameAll(): void { this.flyTo = new THREE.Vector3(0, 1, 0); this.flyDist = 18.6; this.flyDir = new THREE.Vector3(0, 11, 15).normalize(); }
+  frameAll(): void { this.flyTo = new THREE.Vector3(0, 0.6, 0); this.flyDist = 13.9; this.flyDir = new THREE.Vector3(0, 6.2, 12.5).normalize(); }
 
   // ---- state sync
   private sync(force: boolean): void {
@@ -258,9 +289,10 @@ export class Scene3D {
   }
 
   applyTheme(): void {
-    this.scene.background = new THREE.Color(readTheme().sky);
+    const t = readTheme();
+    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 24, 70);   // distant hills fade into the horizon haze
     const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
-    this.hemi.intensity = dark ? 0.8 : 1.7; this.sun.intensity = dark ? 0.9 : 1.3;   // moonlit hills at night
+    this.hemi.intensity = dark ? 0.6 : 1.1; this.sun.intensity = dark ? 0.9 : 2.2;   // moonlit hills at night
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
   }
 

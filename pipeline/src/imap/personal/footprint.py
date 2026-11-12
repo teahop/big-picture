@@ -1,19 +1,19 @@
 """The owner's footprint (SPEC 6.1): an entry list written to private/footprint.json, plus a private report.
 
 Roles come from private/roles_resolved.csv (reviewed nodes; person-months after the umbrella rule and role weights),
-degrees from private/education_mapping.csv. Connections are a separate private-only layer, off by default in the
-viewer. Skills are not part of the v2 footprint (entries are roles and degrees only). No diffusion.
+degrees from private/education_mapping.csv. Skills and connections are not part of the v2 footprint (entries are
+roles and degrees only). No diffusion.
 """
 from __future__ import annotations
 
 import json
 
-import numpy as np
 import pandas as pd
 
 from .. import footprint as fp
-from .base import NodeTable, load_profile, personal_root, private_dir
-from .connections import NODE_SPLIT, tie_normalised
+from .base import NodeTable, load_profile, private_dir
+
+NODE_SPLIT = ";"
 from .roles import parse_nodes
 
 
@@ -54,31 +54,6 @@ def degree_entries(mapping: pd.DataFrame) -> list[dict]:
             for deg, g in mapping.groupby("degree", sort=False)]
 
 
-def connections_layer(nodes: NodeTable, k: float) -> dict[str, float]:
-    priv = private_dir()
-    path = personal_root() / "LinkedIn_Network" / "connections_normalized.csv"
-    if not path.exists() or not (priv / "company_nodes.csv").exists():
-        return {}
-    contacts = pd.read_csv(path, usecols=["company_norm", "tie_strength"]).dropna(subset=["company_norm"])
-    contacts = contacts.assign(w=1.0 + tie_normalised(contacts["tie_strength"].astype(float)))
-    per_company = contacts.groupby("company_norm")["w"].sum()
-    finest = nodes.finest("ind")
-    members: dict[str, pd.Series] = {}
-    for r in finest.itertuples():
-        sector = r.id
-        while isinstance(nodes.df.loc[sector, "parent"], str):
-            sector = nodes.df.loc[sector, "parent"]
-        members.setdefault(sector, {})[r.id] = float(r.size.get("employment", 0.0))
-    members = {s: pd.Series(v) for s, v in members.items()}
-    spec = pd.read_csv(priv / "company_nodes.csv").fillna("").set_index("company_norm")["node_id"]
-    raw: dict[str, float] = {}
-    for company, w in per_company.items():
-        if spec.get(company, ""):
-            for node, share in expand(spec[company], members).items():
-                raw[node] = raw.get(node, 0.0) + share * float(w)
-    return {n: round(k * float(np.log1p(w)), 4) for n, w in sorted(raw.items())}
-
-
 def run() -> int:
     profile = load_profile(); priv = private_dir()
     nodes = NodeTable()
@@ -92,8 +67,7 @@ def run() -> int:
     bad = sorted({n for e in entries for n in e["nodes"] if n not in finest})
     if bad:
         raise ValueError(f"footprint: entries name nodes that are not drawn at the finest level: {bad}")
-    k = float(profile.get("presence", {}).get("connection_weight_k", 0.6))
-    out = {"schema": 1, "as_of": round(as_of, 4), "entries": entries, "layers": {"connections": connections_layer(nodes, k)}}
+    out = {"schema": 1, "as_of": round(as_of, 4), "entries": entries}
     (priv / "footprint.json").write_text(json.dumps(out, indent=1) + "\n")
     report(out, nodes)
     print(f"footprint: {sum(e['kind'] == 'role' for e in entries)} roles, {sum(e['kind'] == 'degree' for e in entries)} degrees; wrote private/footprint.json")

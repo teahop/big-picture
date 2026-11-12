@@ -1,7 +1,7 @@
 # Viewer settings that are expected to be tuned by eye. Terrain colours are
 # tokens in web/src/style.css (--terrain-ground, --terrain-peak).
 
-peak_height: 7.0     # world height of the highest point at each level
+peak_height: 2.6     # world height of the highest point (the map is 12 units across): tall rolling hills, not cones
 
 footprint:           # how a footprint's entries become weights (the page and the private pipeline both use these)
   half_life_years: 8       # a role's weight halves for every this many years since it ended

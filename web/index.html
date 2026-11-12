@@ -10,27 +10,22 @@
   <body>
     <header>
       <h1 id="title">%DISPLAY_NAME% <span class="subtitle">%SUBTITLE%</span></h1>
-      <label class="size">Size
-        <select id="size" aria-describedby="size-note">
-          <option value="activity">Activity: jobs</option>
-          <option value="dollars">Dollars: value added</option>
-        </select>
+      <fieldset class="seg" aria-describedby="size-note">
+        <legend>Size</legend>
+        <label><input type="radio" name="size" value="activity" checked /><span>Jobs</span></label>
+        <label><input type="radio" name="size" value="dollars" /><span>Value added</span></label>
+      </fieldset>
+      <label class="switch" id="fp-wrap" hidden>
+        <input type="checkbox" id="fp-on" role="switch" checked />
+        <span class="track" aria-hidden="true"></span><span class="switch-label">Footprint</span>
       </label>
-      <label class="size" id="fp-wrap" hidden>Footprint
-        <select id="fp-mode">
-          <option value="career">Career</option>
-          <option value="network" hidden>Network (private)</option>
-          <option value="off">Off</option>
-        </select>
-      </label>
-      <label class="size">Detail
-        <select id="lod">
-          <option value="auto">Auto (by zoom)</option>
-          <option value="0">Level 0: sectors</option>
-          <option value="1">Level 1: industries</option>
-          <option value="2">Level 2: deep zones</option>
-        </select>
-      </label>
+      <fieldset class="seg">
+        <legend>Detail</legend>
+        <label><input type="radio" name="lod" value="auto" checked /><span>Auto</span></label>
+        <label><input type="radio" name="lod" value="0" /><span>Sectors</span></label>
+        <label><input type="radio" name="lod" value="1" /><span>Industries</span></label>
+        <label><input type="radio" name="lod" value="2" /><span>Deep zones</span></label>
+      </fieldset>
       <label class="search"><span class="sr">Search nodes</span>
         <input id="search" type="search" placeholder="Search" autocomplete="off" />
       </label>
@@ -43,6 +38,7 @@
     <p id="notice" role="status">Loading the map…</p>
     <main>
       <section class="map" id="map" aria-label="Terrain map">
+        <div class="moon" aria-hidden="true"></div>
         <div id="view-3d" class="view"></div>
         <div id="labels" class="labels" aria-hidden="true"></div>
       </section>

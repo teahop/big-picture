@@ -7,7 +7,6 @@ deep_zones:
 
 presence:
   tenure_half_life_years: 8      # recency decay
-  connection_weight_k: 0.6       # scales log(1 + weighted connections)
   skill_weight: 0.3
   umbrella_rule: "children_first"  # see SPEC 7.2
 

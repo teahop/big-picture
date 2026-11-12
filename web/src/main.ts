@@ -5,6 +5,7 @@ import { compute, hierarchy, loadFootprint } from "./footprint";
 import { buildFootprintPanel, touchedChildren } from "./fpui";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
 import { buildPanel } from "./ui";
+import { Toggle } from "./controls";
 
 restoreTheme();
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -40,13 +41,13 @@ async function start(): Promise<void> {
   $("map").hidden = !gl;
   $("notice").textContent = gl ? "" : NO_GL;
 
-  const lod = $<HTMLSelectElement>("lod");
-  lod.addEventListener("change", () => { state.setLod(lod.value as LodSetting); void applyLevel(); });
-  const size = $<HTMLSelectElement>("size");
-  size.addEventListener("change", () => state.setSize(size.value as SizeSetting));
+  const lod = new Toggle<LodSetting>("lod");
+  lod.onChange((v) => { state.setLod(v); void applyLevel(); });
+  const size = new Toggle<SizeSetting>("size");
+  size.onChange((v) => state.setSize(v));
 
   const pick = (n: NodeRec) => {
-    if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level); }
+    if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level) as LodSetting; }
     void applyLevel().then(() => { state.setSelected(n); scene3d?.focus(n); });
   };
   // ---- footprint (the owner's private file on a local server, or the synthetic sample in development)
@@ -56,16 +57,15 @@ async function start(): Promise<void> {
     await ensureLevel(bundle, 2);                         // weights roll up across every level
     const h = hierarchy(bundle.nodes), cfg = __VIEWER__.footprint;
     const set = (m: FootprintMode) => {
-      const c = m === "off" ? null : compute(fpData, h, cfg, m);
+      const c = m === "off" ? null : compute(fpData, h, cfg);
       if (c?.unknown.length) $("notice").textContent = "Some footprint entries name industries that are not on the map: " + c.unknown.slice(0, 3).join(", ");
       state.setFocus([]); state.setFootprint(m, c);
     };
-    const mode = $<HTMLSelectElement>("fp-mode");
+    const on = $<HTMLInputElement>("fp-on");
     $("fp-wrap").hidden = false;
-    (mode.querySelector("option[value=network]") as HTMLOptionElement).hidden = !Object.keys(fpData.layers?.connections ?? {}).length;
-    mode.addEventListener("change", () => set(mode.value as FootprintMode));
+    on.addEventListener("change", () => set(on.checked ? "career" : "off"));
     const goLevel = async (level: number, auto = false) => {
-      state.setLod(auto ? "auto" : String(level) as LodSetting); lod.value = auto ? "auto" : String(level);
+      state.setLod(auto ? "auto" : String(level) as LodSetting); lod.value = (auto ? "auto" : String(level)) as LodSetting;
       await applyLevel();
     };
     const stepInto = async (n: NodeRec) => {

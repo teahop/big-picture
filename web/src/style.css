@@ -10,7 +10,7 @@
   --accent: #1f7a63; --footprint: #19a98a;
   /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
      career is shown. Flowers: poppy, goldfields, lupine, owl's clover, popcorn flower. */
-  --sky: #e9f0ef; --terrain-ground: #5f7f3a; --terrain-peak: #a9c45e; --terrain-muted: #b3b59a;
+  --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3f6b1a; --terrain-peak: #9cc93f; --terrain-muted: #a3ad7c;
   --flower-1: #f0821c; --flower-2: #f2c41f; --flower-3: #7a66c6; --flower-4: #d46aa4; --flower-5: #f6f3ea;
   color-scheme: light;
 }
@@ -18,7 +18,7 @@
 :root[data-theme="dark"] {
   --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
-  --sky: #10161b; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+  --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
   --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
   color-scheme: dark;
 }
@@ -26,13 +26,16 @@
   :root:not([data-theme="light"]) {
     --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
-    --sky: #10161b; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+    --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
   --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
     color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--font-body); }
+html, body { margin: 0; height: 100%; color: var(--fg); font: 14px/1.45 var(--font-body); }
+/* the sky takes the whole page: header and map sit on it, the panel floats over it */
+html { background: var(--sky-top); }
+body { background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 45%, var(--horizon) 100%) fixed; }
 body { display: flex; flex-direction: column; }
 header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 h1 { margin: 0; font-size: 16px; margin-right: auto; }
@@ -107,3 +110,34 @@ aside[hidden] { display: none; }
 .fp-bar i { display: block; height: 100%; border-radius: 3px; background: var(--footprint); }
 .fp-step { margin: 6px 0 10px; }
 .fp-why li { margin-bottom: 4px; }
+
+/* toggles */
+fieldset.seg { display: flex; align-items: center; gap: 2px; margin: 0; padding: 2px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
+fieldset.seg legend { float: left; padding: 0 6px 0 8px; font-size: 11px; color: var(--muted); }
+fieldset.seg label { display: block; }
+fieldset.seg input { position: absolute; opacity: 0; pointer-events: none; }
+fieldset.seg span { display: block; padding: 4px 10px; border-radius: 999px; cursor: pointer; font-size: 13px; }
+fieldset.seg input:checked + span { background: var(--fg); color: var(--bg); }
+fieldset.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+label.switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+label.switch input { position: absolute; opacity: 0; }
+label.switch .track { width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background var(--duration-fast); }
+label.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--panel); transition: transform var(--duration-fast); }
+label.switch input:checked + .track { background: var(--accent); }
+label.switch input:checked + .track::after { transform: translateX(16px); }
+label.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+label.switch[hidden] { display: none; }
+
+/* sky: header on the sky, translucent panel, moon at night */
+header { border-bottom: 0; }
+header h1, header h1 .subtitle { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .25); }
+aside { background: color-mix(in srgb, var(--panel) 90%, transparent); border-left: 0; backdrop-filter: blur(6px); }
+#notice { color: #fff; }
+.moon { display: none; position: absolute; top: 18px; left: 34%; width: 64px; height: 64px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 38% 36%, #fffdf4 0%, #f3edd9 55%, #d9d1b8 100%);
+  box-shadow: 0 0 28px 10px rgb(255 248 220 / .28), inset -8px -6px 0 rgb(0 0 0 / .06); }
+.moon::before, .moon::after { content: ""; position: absolute; border-radius: 50%; background: rgb(150 140 115 / .22); }
+.moon::before { width: 14px; height: 14px; top: 18px; left: 34px; }
+.moon::after { width: 9px; height: 9px; top: 38px; left: 18px; }
+:root[data-theme="dark"] .moon { display: block; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .moon { display: block; } }

@@ -2,8 +2,9 @@
 
 Every industry raises the ground with a Gaussian kernel (v1 SPEC 6.4) whose width shrinks with the node's level. Its
 amplitude comes from its own size, compared with the other industries drawn at the same level:
-(size / largest) ** height_exponent. With `combine: max` each point takes the tallest kernel there, so every peak shows
-its own industry's size and a cluster of small industries never outgrows one large one.
+(size / largest) ** height_exponent. With `combine: pmean` the kernels are blended by a power mean: each peak still
+shows its own industry's size, a cluster of small industries never outgrows one large one, and neighbouring hills meet
+in rounded saddles (rolling hills rather than cones).
 
 Research fields are not drawn (owner decision, 2026-11-10); research and academia show through industries such as
 higher education and scientific R&D services.
@@ -46,19 +47,22 @@ def axes(extent_xy: np.ndarray, n: int, margin: float) -> tuple[np.ndarray, np.n
     return gx, gy, [float(lo[0]), float(hi[0])], [float(lo[1]), float(hi[1])]
 
 
-def kernel_surface(gx: np.ndarray, gy: np.ndarray, layer: Layer, sigma0: float, per_level: float, mode: str = "max") -> np.ndarray:
-    """The layer's Gaussian kernels at points (gx, gy): the tallest one ("max") or their sum ("sum")."""
+def kernel_surface(gx: np.ndarray, gy: np.ndarray, layer: Layer, sigma0: float, per_level: float, mode: str = "max", power: float = 6.0) -> np.ndarray:
+    """The layer's Gaussian kernels at points (gx, gy), combined as:
+    "pmean" (default for v2): (sum of kernel ** power) ** (1 / power). A peak stays at its own height (neighbours add
+    almost nothing there) while the ground between two hills rises into a rounded saddle instead of a sharp crease.
+    "max": the tallest kernel only. "sum": kernels add up (crowds pile up)."""
     z = np.zeros_like(np.asarray(gx, float))
     for (px, py), a, lv in zip(layer.xy, layer.amp, layer.levels):
         sigma = sigma0 * (per_level ** int(lv))
         k = a * np.exp(-((gx - px) ** 2 + (gy - py) ** 2) / (2 * sigma ** 2))
-        z = np.maximum(z, k) if mode == "max" else z + k
-    return z
+        z = np.maximum(z, k) if mode == "max" else z + k ** power if mode == "pmean" else z + k
+    return z ** (1.0 / power) if mode == "pmean" else z
 
 
 def height_grid(layer: Layer, extent_xy: np.ndarray, cfg: dict) -> dict:
     gx, gy, x, y = axes(extent_xy, int(cfg["grid_size"]), float(cfg["margin"]))
-    z = kernel_surface(gx, gy, layer, float(cfg["bandwidth_level0"]), float(cfg["bandwidth_per_level"]), cfg.get("combine", "max"))
+    z = kernel_surface(gx, gy, layer, float(cfg["bandwidth_level0"]), float(cfg["bandwidth_per_level"]), cfg.get("combine", "max"), float(cfg.get("pmean_power", 6)))
     return {"n": int(cfg["grid_size"]), "x": x, "y": y, "values": np.round(z, DECIMALS).ravel().tolist()}   # row-major, row = y
 
 

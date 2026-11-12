@@ -23,7 +23,7 @@ import numpy as np
 import pandas as pd
 
 from .common import interim_dir, load_config, public_dir, report_dir
-from .layout import MIN_SEP, canonical, pct_rank, spread
+from .layout import canonical, pct_rank, spread
 from .layout_anchored import K_SUB, R_SUB_MIN, parent_radius, pct_distance, place_children
 
 DECIMALS = 6
@@ -106,6 +106,12 @@ def classical_init(d: np.ndarray) -> np.ndarray:
     return vecs[:, idx] * np.sqrt(np.maximum(vals[idx], 0))
 
 
+def fill_box(xy: np.ndarray) -> np.ndarray:
+    """Scale each axis on its own to -1..1, so the hills reach every edge of the map rather than a disc."""
+    c = (xy.max(axis=0) + xy.min(axis=0)) / 2
+    return (xy - c) / ((xy.max(axis=0) - xy.min(axis=0)) / 2)
+
+
 def spiral(n: int, r: float) -> np.ndarray:
     """Deterministic small offsets (golden-angle spiral) used to start children next to their parent."""
     k = np.arange(n)
@@ -166,7 +172,7 @@ def run() -> int:
     # ---- Level 0
     s0, d0 = level_similarity(data["l0"], cfg)
     x0 = stress_layout(d0, neighbour_weights(s0, int(c0["k"]), float(c0["far_weight"])), classical_init(d0), iters=int(cfg["iters"]))
-    x0 = np.round(spread(canonical(x0), MIN_SEP), DECIMALS)
+    x0 = np.round(fill_box(spread(canonical(x0), float(cfg["min_sep_level0"]), iters=1500)), DECIMALS)
     ids0 = data["l0"]["ids"]
     l0 = {i: [float(a), float(b)] for i, (a, b) in zip(ids0, x0)}
 
@@ -182,7 +188,7 @@ def run() -> int:
     for _, idx in pd.Series(range(len(ids1))).groupby([data["parent"][i] for i in ids1]):
         init[idx.to_numpy()] += spiral(len(idx), 0.03)
     x1 = stress_layout(d1s, w1, init, anchor=anchor, lam=float(cfg["anchor"]) * w1.sum(axis=1).mean(), iters=int(cfg["iters"]))
-    x1 = spread(x1, float(cfg["min_sep_level1"]), pull=0.05)
+    x1 = fill_box(spread(x1, float(cfg["min_sep_level1"]), iters=1500, pull=0.05))
     pos = {i: [round(float(a), DECIMALS), round(float(b), DECIMALS)] for i, (a, b) in zip(ids1, x1)}
 
     # ---- Level 2: deep: categories around their new Level 1 parent

@@ -1,7 +1,7 @@
 import { SETTING_MEASURE, type Measure, type NodeRec, type SizeSetting } from "./data";
 import type { Computed } from "./footprint";
 
-export type FootprintMode = "off" | "career" | "network";
+export type FootprintMode = "off" | "career";
 
 
 export type LodSetting = "auto" | "0" | "1" | "2";

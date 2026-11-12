@@ -29,11 +29,21 @@ const privateFootprint = (): Plugin => {
   return { name: "private-footprint", configureServer: (s) => { s.middlewares.use(handler as never); }, configurePreviewServer: (s) => { s.middlewares.use(handler as never); } };
 };
 
+// The two config files above are read once; restart the dev server when either changes so edits show up.
+const restartOnConfig = (): Plugin => ({
+  name: "restart-on-config",
+  configureServer: (s) => {
+    const files = ["../config/viewer.yaml", "../config/site.yaml"].map((f) => new URL(f, import.meta.url).pathname);
+    s.watcher.add(files);
+    s.watcher.on("change", (f) => { if (files.includes(f)) void s.restart(); });
+  },
+});
+
 export default defineConfig({
   base: "./",
   // The viewer loads the tracked public bundle straight from data/public.
   publicDir: "../data/public",
   server: { fs: { allow: [".."] } },
   define: { __VIEWER__: JSON.stringify(viewer) },
-  plugins: [siteName(), privateFootprint()],
+  plugins: [siteName(), privateFootprint(), restartOnConfig()],
 });

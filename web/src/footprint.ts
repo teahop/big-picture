@@ -7,7 +7,7 @@
  *  it holds at least `touched_threshold` of the total. The Python twin is pipeline/src/imap/footprint.py. */
 
 export interface Entry { kind: "role" | "degree"; label: string; years?: number; end_year?: number | null; nodes: Record<string, number> }
-export interface FootprintData { schema: number; as_of: number; entries: Entry[]; layers?: { connections?: Record<string, number> }; note?: string }
+export interface FootprintData { schema: number; as_of: number; entries: Entry[]; note?: string }
 export interface FootprintCfg { half_life_years: number; degree_years: number; touched_threshold: number }
 export interface HierNode { id: string; level: number; parent: string | null; replaces_share?: Record<string, number> }
 export type Weights = Map<string, number>;
@@ -65,13 +65,9 @@ export interface Computed {
   unknown: string[];
 }
 
-/** Career footprint from entries, or the private network layer (aggregate weights per node, no entries). */
-export function compute(fp: FootprintData, h: Hierarchy, cfg: FootprintCfg, mode: "career" | "network" = "career"): Computed {
+/** Weights of a footprint from its entries. */
+export function compute(fp: FootprintData, h: Hierarchy, cfg: FootprintCfg): Computed {
   const fromFinest = (f: Weights) => rollUp(f, h);
-  if (mode === "network") {
-    const r = fromFinest(new Map(Object.entries(fp.layers?.connections ?? {})));
-    return { levels: r.levels, touched: r.levels.map((l) => touched(l, cfg.touched_threshold)) as Computed["touched"], perEntry: [], unknown: r.unknown };
-  }
   const total: Weights = new Map();
   const perEntry = fp.entries.map((entry) => {
     const weight = entryWeight(entry, fp.as_of, cfg);

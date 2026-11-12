@@ -79,16 +79,19 @@ really mixed in the layout.
   services, hospitals, and the higher-education deep zone.
 - **Height is the industry's own size.** Each industry's peak is
   (size / largest industry at that level) ** `height_exponent` (0.5, square
-  root). Each point takes the tallest peak there (`combine: max`), so a cluster
-  of small industries never stacks into a mountain taller than any of them.
+  root). Kernels are blended by a power mean (`combine: pmean`): each peak keeps
+  its own height, a cluster of small industries never stacks above a large one,
+  and neighbouring hills meet in rounded saddles, like rolling hills.
 - **Position is similarity.** Industries are compared by their distinctive
   occupation mix (TF-IDF weighted, so jobs found everywhere count for little)
   blended with text similarity, and laid out by stress majorisation on a
   nearest-neighbour graph. Level 1 is laid out as one set with a soft pull
   toward its sector, so a detailed industry may sit outside its sector's area.
   The v1 rule that positions never move is dropped.
-- **Colour is height only** for now; the visual skin (a mountain, with the
-  footprint as wildflowers) comes later.
+- **Look:** California hills in spring under a full-page blue sky (a moonlit
+  night in dark mode). Industries are spread apart and the land runs past every
+  edge of the view, with a decorative rolling base and haze toward the horizon.
+  The footprint is drawn as wildflowers (section 6.3).
 
 ### 5.3 Size measures
 One switch, two settings:
@@ -141,8 +144,7 @@ A node is **touched** when its weight is at least a small fraction of the
 footprint's total (threshold in config), so stray shares do not light up the
 whole map.
 
-Connections remain a separate, private-only layer for the owner, off by
-default. Visitors do not have it.
+The v1 connections layer was removed in v2 (owner, 2026-11-11).
 
 ### 6.3 How it is drawn
 The v1 footprint was a soft heat blended over two terrains. v2 makes it
@@ -262,8 +264,7 @@ v1 §9 stands. Additions:
    adding a CV? Default: yes, synthetic.
 4. **Your own footprint in public:** stays off (`publish.personal: none`)
    unless you decide otherwise.
-5. **Connections layer:** keep as a private-only extra, or remove with the
-   other v1 features? Default: keep, off by default.
+5. **Connections layer:** removed (owner, 2026-11-11).
 6. **Repository and URL rename** from `industry-map`: when, and to what.
 
 ## 11. Out of scope for v2

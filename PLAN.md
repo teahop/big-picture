@@ -17,7 +17,7 @@ live site, so `main` is not touched until Phase 4.
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
-| 2 | Clear footprint | owner chose Wildflowers 2026-11-10; awaiting owner check of the reworked look | Education mapping and weights confirmed. California super-bloom skin: spring-green hills, untouched hills recede to dry sage; each touched hill blooms over its share of the career, in drifts of poppy, goldfields, lupine, owl's clover and popcorn flower. Only career labels show by default. Outline look and trial switches removed |
+| 2 | Clear footprint | reworked 2026-11-11 after owner review; label pass next | Wildflowers kept. Hills spread apart, rolling (power-mean kernels) and running past every edge; full-page blue sky, moonlit night with a moon; toggles instead of drop-downs; network layer removed. Next: labels |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 
@@ -29,7 +29,7 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 |---|---|---|
 | One-map design accepted | Phase 1 | Do not proceed to Phase 2 |
 | Footprint treatment | Phase 2 | Do not proceed to Phase 3 |
-| Connections layer kept (private only) | Phase 2 | Keep, off by default |
+| Connections layer kept (private only) | Phase 2 | Removed by owner 2026-11-11 |
 | Sample synthetic footprint on the public site | Phase 3 | Yes |
 | Own footprint in public | Phase 4 | No |
 | Rename repository and URL | Phase 4 | Leave as `industry-map` |

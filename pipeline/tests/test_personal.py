@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from imap.personal.connections import norm_name, tie_normalised
 from imap.personal.footprint import expand, role_entries, year_of
 from imap.personal.roles import Role, allocate_months, mi, parse_dates, parse_duration
 
@@ -75,20 +74,10 @@ def test_role_entries_carry_years_after_the_umbrella_rule_and_skip_excluded_role
     assert got[0]["nodes"] == {"deep:a": 0.5, "deep:b": 0.5} and year_of(None) is None
 
 
-def test_tie_strength_is_log_scaled_into_unit_interval():
-    t = tie_normalised(pd.Series([0.0, 2.0, 35.0]))
-    assert t.iloc[0] == 0 and t.iloc[-1] == pytest.approx(1.0) and 0 < t.iloc[1] < 1
-    assert tie_normalised(pd.Series([3.0]), max_tie=3.0).iloc[0] == pytest.approx(1.0)
-
-
-def test_connection_specs_split_equally_or_by_employment():
+def test_node_specs_split_equally_or_by_employment():
     members = {"ind:S": pd.Series({"ind:x": 300.0, "ind:y": 100.0})}
     assert expand("deep:a;deep:b", members) == {"deep:a": 0.5, "deep:b": 0.5}
     assert expand("sector:S", members) == {"ind:x": 0.75, "ind:y": 0.25}
-
-
-def test_company_name_normalisation_ignores_suffixes_and_case():
-    assert norm_name("Example Corp.") == norm_name("example") == "example"
 
 
 def test_public_export_does_not_import_the_personal_package():

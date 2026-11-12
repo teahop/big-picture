@@ -1,6 +1,6 @@
 type RGB = [number, number, number];
 /** Terrain colours: ground (flat) and peak (highest band). */
-export interface Theme { bg: string; fg: string; accent: string; footprint: string; sky: string; ground: RGB; peak: RGB; muted: RGB }
+export interface Theme { bg: string; fg: string; accent: string; footprint: string; horizon: string; ground: RGB; peak: RGB; muted: RGB }
 
 function hex(s: string): RGB {
   const v = s.trim().replace("#", "");
@@ -12,7 +12,7 @@ export function readTheme(): Theme {
   const get = (n: string) => cs.getPropertyValue(n).trim();
   return {
     bg: get("--bg"), fg: get("--fg"), accent: get("--accent"), footprint: get("--footprint"),
-    sky: get("--sky"), ground: hex(get("--terrain-ground")), peak: hex(get("--terrain-peak")), muted: hex(get("--terrain-muted")),
+    horizon: get("--horizon"), ground: hex(get("--terrain-ground")), peak: hex(get("--terrain-peak")), muted: hex(get("--terrain-muted")),
   };
 }
 
