@@ -24,7 +24,7 @@ const LABEL_SLOTS: [number, number][] = [[0, 0], [0, -1], [0, -2], [0.55, -1], [
 const MESH_N = 256;   // mesh points per side
 const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
 const BASE = 0.3;     // rolling base hills (decoration, no data), as a share of the peak height
-const RIDGE = 2.2;    // how much taller the base grows far beyond the map (distant ridges)
+const RIDGE = 1.5;    // how much taller the base grows far beyond the map (distant ridges)
 
 export class Scene3D {
   private renderer: THREE.WebGLRenderer;
@@ -107,9 +107,20 @@ export class Scene3D {
    *  beyond the map. Decoration only; every industry's height comes from the data on top of it. */
   private baseAt(x: number, y: number): number {
     const g = this.b.grids[0]!, half = (g.x[1] - g.x[0]) / 2, r = Math.hypot(x - this.cx, y - this.cy) / half;
-    const n = 0.7 * noise(x * 40, y * 40, 34, 3) + 0.3 * noise(x * 40, y * 40, 15, 4);
+    // warp the coordinates so nothing lines up, then: broad undulation, ridgelines and narrow creek valleys
+    const X = x * 40 + 9 * (noise(x * 40, y * 40, 23, 11) - 0.5), Y = y * 40 + 9 * (noise(x * 40, y * 40, 23, 12) - 0.5);
+    const broad = 0.65 * noise(X, Y, 34, 3) + 0.35 * noise(X, Y, 15, 4);
+    const ridge = 1 - Math.abs(2 * noise(X, Y, 21, 5) - 1);
+    const creek = Math.pow(1 - Math.abs(2 * noise(X, Y, 27, 6) - 1), 7);
     const far = Math.min(1, Math.max(0, (r - 1.1) / 1.0));
-    return CFG.peak_height * BASE * n * (1 + RIDGE * far * far);
+    const relief = 0.24 * broad + 0.1 * ridge * ridge - 0.22 * creek;
+    return CFG.peak_height * BASE / 0.3 * relief * (1 + RIDGE * far * far);
+  }
+
+  /** Small irregularities on a hill's shoulders (none at the foot or the summit, so peak heights stay true). */
+  private shoulder(x: number, y: number, d: number): number {
+    const t = d / CFG.peak_height;
+    return (noise(x * 40, y * 40, 6, 9) - 0.5) * 0.9 * d * t * (1 - t);
   }
 
   private buildMesh(): void {
@@ -137,7 +148,8 @@ export class Scene3D {
   private dataAt(x: number, y: number): number {
     const g = this.grid();
     if (x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1]) return 0;
-    return this.h(sampleAt(g, this.values(), x, y));
+    const d = this.h(sampleAt(g, this.values(), x, y));
+    return d + this.shoulder(x, y, d);
   }
   /** Ground height (world units) at a layout point: data plus the rolling base. */
   private heightAt(x: number, y: number): number { return this.dataAt(x, y) + this.baseAt(x, y); }
@@ -157,7 +169,7 @@ export class Scene3D {
     const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
     const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
     for (let k = 0; k < MESH_N * MESH_N; k++) {          // every hill the same green; only the flowers mark a career
-      const [r, gg, b] = terrainColour(t, pos.getY(k) / top);
+      const [r, gg, b] = terrainColour(t, Math.max(0, pos.getY(k) + 0.6) / (top + 0.6));   // creeks dip below zero
       col.setXYZ(k, r / 255, gg / 255, b / 255);
     }
     col.needsUpdate = true;

@@ -4,6 +4,7 @@ export interface NodeRec {
   provenance: "official" | "estimated"; size: Record<string, number>; growth: number | null; xy: [number, number];
   naics_code?: string; top_occupations?: Occupation[]; remainder?: boolean;
   size_proxy?: string; value_added_basis?: string; weak_proxy?: boolean; replaces?: string[]; replaces_share?: Record<string, number>; zone?: string; members?: string[];
+  hill?: [number, number];   // the hill's stretch (1 = round) and the angle of its long axis
 }
 export interface Edge { source: string; target: string; type: "ind-ind"; weight: number }
 export type Measure = "employment" | "value_added" | "va_per_job";

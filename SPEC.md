@@ -90,7 +90,10 @@ really mixed in the layout.
   The v1 rule that positions never move is dropped.
   Because the axes carry no meaning, sectors are then set on a lightly jittered
   staggered grid (nearest spots, so neighbours stay roughly together) and the
-  hills are broad enough to cover most of the land.
+  hills are broad enough to cover most of the land. Each hill is a ridge with its
+  own fixed stretch and direction (`hill_stretch_max`, same area, peak height
+  unchanged), and the ground between hills varies (decorative undulation,
+  ridgelines and creek valleys in the page).
 - **Look:** California hills in spring under a full-page blue sky (a moonlit
   night in dark mode). Industries are spread apart and the land runs past every
   edge of the view, with a decorative rolling base and haze toward the horizon.

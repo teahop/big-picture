@@ -86,7 +86,7 @@ export function makeGrassLabel(label: string, centre: [number, number], width: n
     // offsets across (du) and up the text (dv), turned by `angle` so neighbouring names do not line up
     const du = (u - 0.5) * width, dv = (0.5 - v) * height * towardViewer, ca = Math.cos(angle), sa = Math.sin(angle);
     const p = ground(centre[0] + du * ca - dv * sa, centre[1] + du * sa + dv * ca);
-    pos.set([p.x, p.y + 0.025, p.z], k * 3); uv.set([u, v], k * 2);
+    pos.set([p.x, p.y + 0.07, p.z], k * 3); uv.set([u, v], k * 2);
     if (i < cols - 1 && j < rows - 1) idx.push(k, k + 1, k + cols, k + 1, k + cols + 1, k + cols);
   }
   const geo = new THREE.BufferGeometry();

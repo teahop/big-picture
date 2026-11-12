@@ -26,11 +26,22 @@ SETTINGS: dict[str, str] = {"activity": "employment", "dollars": "value_added"}
 
 @dataclass
 class Layer:
-    """Kernel sources at one level: ids, positions, node levels (for the bandwidth), amplitudes."""
+    """Kernel sources at one level: ids, positions, node levels (for the bandwidth), amplitudes, and optionally each
+    hill's shape (stretch, angle); without shapes every hill is round."""
     ids: list[str]
     xy: np.ndarray
     levels: np.ndarray
     amp: np.ndarray
+    shapes: np.ndarray | None = None
+
+
+def hill_shape(node_id: str, stretch_max: float) -> tuple[float, float]:
+    """A hill's stretch (1 = round, up to `stretch_max` times as long as wide, same area) and the angle of its long axis,
+    fixed per node id so hills keep their shape. Real hills are ridges pointing every which way, not round domes."""
+    import hashlib
+    h = hashlib.sha256(node_id.encode()).digest()
+    u1, u2 = int.from_bytes(h[:4], "big") / 2 ** 32, int.from_bytes(h[4:8], "big") / 2 ** 32
+    return round(1.0 + (stretch_max - 1.0) * u1, 3), round(float(np.pi) * u2, 3)
 
 
 def size_amplitude(sizes: np.ndarray, exponent: float) -> np.ndarray:
@@ -53,9 +64,13 @@ def kernel_surface(gx: np.ndarray, gy: np.ndarray, layer: Layer, sigma0: float, 
     almost nothing there) while the ground between two hills rises into a rounded saddle instead of a sharp crease.
     "max": the tallest kernel only. "sum": kernels add up (crowds pile up)."""
     z = np.zeros_like(np.asarray(gx, float))
-    for (px, py), a, lv in zip(layer.xy, layer.amp, layer.levels):
+    shapes = layer.shapes if layer.shapes is not None else np.tile([1.0, 0.0], (len(layer.xy), 1))
+    for (px, py), a, lv, (stretch, ang) in zip(layer.xy, layer.amp, layer.levels, shapes):
         sigma = sigma0 * (per_level ** int(lv))
-        k = a * np.exp(-((gx - px) ** 2 + (gy - py) ** 2) / (2 * sigma ** 2))
+        dx, dy = gx - px, gy - py
+        u, v = dx * np.cos(ang) + dy * np.sin(ang), -dx * np.sin(ang) + dy * np.cos(ang)   # along and across the ridge
+        sa, sb = sigma * np.sqrt(stretch), sigma / np.sqrt(stretch)
+        k = a * np.exp(-(u ** 2 / (2 * sa ** 2) + v ** 2 / (2 * sb ** 2)))
         z = np.maximum(z, k) if mode == "max" else z + k ** power if mode == "pmean" else z + k
     return z ** (1.0 / power) if mode == "pmean" else z
 
@@ -70,6 +85,7 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
     """layers[level][setting] and the shared extent (all Level 0 positions). Every node is sized by its own figure
     (jobs or value added), on one scale per level: the industries drawn at a level are compared with each other."""
     p = float(cfg.get("height_exponent", 0.5))
+    stretch = float(cfg.get("hill_stretch_max", 1.0))
     layout = json.loads((public_dir() / "layout.json").read_text())["nodes"]
     totals = pd.read_csv(interim_dir() / "bls" / "sector_totals.csv", dtype={"ind_code": str})
     ind_ids = [f"ind:{c}" for c in totals["ind_code"]]
@@ -111,7 +127,8 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
                 sizes["2"]["value_added"] = (ids1, one, va1)
     layers: dict[str, dict[str, Layer]] = {}
     for level, by_measure in sizes.items():
-        layers[level] = {s: Layer(by_measure[m][0], np.array([pos[i] for i in by_measure[m][0]]), by_measure[m][1], size_amplitude(by_measure[m][2], p))
+        layers[level] = {s: Layer(by_measure[m][0], np.array([pos[i] for i in by_measure[m][0]]), by_measure[m][1], size_amplitude(by_measure[m][2], p),
+                                  np.array([hill_shape(i, stretch) for i in by_measure[m][0]]))
                          for s, m in SETTINGS.items() if m in by_measure}
     return layers, extent
 

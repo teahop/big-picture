@@ -16,8 +16,8 @@
   },
   "growth": 1.48,
   "xy": [
-   0.120308,
-   1.031335
+   0.094,
+   1.067892
   ],
   "top_occupations": [
    {
@@ -46,7 +46,11 @@
     "share_pct": 2.8
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.038,
+   2.088
+  ]
  },
  {
   "id": "ind:210000",
@@ -65,8 +69,8 @@
   },
   "growth": 0.66,
   "xy": [
-   -0.940674,
-   0.986293
+   -0.871461,
+   0.970301
   ],
   "top_occupations": [
    {
@@ -95,7 +99,11 @@
     "share_pct": 4.4
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.166,
+   1.236
+  ]
  },
  {
   "id": "ind:220000",
@@ -114,8 +122,8 @@
   },
   "growth": 9.78,
   "xy": [
-   -0.964534,
-   0.035363
+   -0.923157,
+   0.076619
   ],
   "top_occupations": [
    {
@@ -144,7 +152,11 @@
     "share_pct": 3.7
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.002,
+   0.44
+  ]
  },
  {
   "id": "ind:230000",
@@ -163,8 +175,8 @@
   },
   "growth": 4.97,
   "xy": [
-   -0.668582,
-   0.522096
+   -0.615262,
+   0.547875
   ],
   "top_occupations": [
    {
@@ -193,7 +205,11 @@
     "share_pct": 4.7
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.401,
+   1.313
+  ]
  },
  {
   "id": "ind:31-330",
@@ -212,8 +228,8 @@
   },
   "growth": 0.57,
   "xy": [
-   -0.450813,
-   -0.004174
+   -0.476762,
+   -0.009043
   ],
   "top_occupations": [
    {
@@ -242,7 +258,11 @@
     "share_pct": 2.4
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.26,
+   2.975
+  ]
  },
  {
   "id": "ind:420000",
@@ -261,8 +281,8 @@
   },
   "growth": 2.07,
   "xy": [
-   -0.196189,
-   0.497896
+   -0.258409,
+   0.495442
   ],
   "top_occupations": [
    {
@@ -291,7 +311,11 @@
     "share_pct": 4.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.36,
+   2.028
+  ]
  },
  {
   "id": "ind:44-450",
@@ -310,8 +334,8 @@
   },
   "growth": -0.18,
   "xy": [
-   0.759984,
-   1.022681
+   0.813299,
+   1.049143
   ],
   "top_occupations": [
    {
@@ -340,7 +364,11 @@
     "share_pct": 2.9
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.551,
+   0.556
+  ]
  },
  {
   "id": "ind:48-490",
@@ -359,8 +387,8 @@
   },
   "growth": 3.12,
   "xy": [
-   -0.388456,
-   0.984526
+   -0.341654,
+   0.966472
   ],
   "top_occupations": [
    {
@@ -389,7 +417,11 @@
     "share_pct": 5.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.753,
+   2.377
+  ]
  },
  {
   "id": "ind:510000",
@@ -408,8 +440,8 @@
   },
   "growth": 5.28,
   "xy": [
-   -0.704051,
-   -0.463343
+   -0.69211,
+   -0.420577
   ],
   "top_occupations": [
    {
@@ -438,7 +470,11 @@
     "share_pct": 3.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.359,
+   0.082
+  ]
  },
  {
   "id": "ind:520000",
@@ -457,8 +493,8 @@
   },
   "growth": 2.29,
   "xy": [
-   -0.371696,
-   -0.999862
+   -0.305341,
+   -0.999701
   ],
   "top_occupations": [
    {
@@ -487,7 +523,11 @@
     "share_pct": 4.3
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.419,
+   0.917
+  ]
  },
  {
   "id": "ind:530000",
@@ -506,8 +546,8 @@
   },
   "growth": 3.38,
   "xy": [
-   0.108444,
-   0.007673
+   0.068295,
+   0.016626
   ],
   "top_occupations": [
    {
@@ -536,7 +576,11 @@
     "share_pct": 4.3
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.054,
+   0.562
+  ]
  },
  {
   "id": "ind:540000",
@@ -555,8 +599,8 @@
   },
   "growth": 8.6,
   "xy": [
-   -1.028383,
-   -0.997135
+   -1.061497,
+   -0.993793
   ],
   "top_occupations": [
    {
@@ -585,7 +629,11 @@
     "share_pct": 3.3
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.317,
+   1.098
+  ]
  },
  {
   "id": "ind:550000",
@@ -604,8 +652,8 @@
   },
   "growth": 4.07,
   "xy": [
-   -0.187872,
-   -0.486554
+   -0.24039,
+   -0.470866
   ],
   "top_occupations": [
    {
@@ -634,7 +682,11 @@
     "share_pct": 3.3
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.648,
+   1.231
+  ]
  },
  {
   "id": "ind:560000",
@@ -653,8 +705,8 @@
   },
   "growth": 0.89,
   "xy": [
-   0.421917,
-   -0.519482
+   0.414153,
+   -0.54221
   ],
   "top_occupations": [
    {
@@ -683,7 +735,11 @@
     "share_pct": 4.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.467,
+   1.005
+  ]
  },
  {
   "id": "ind:610000",
@@ -702,8 +758,8 @@
   },
   "growth": 0.66,
   "xy": [
-   1.018761,
-   -0.479139
+   1.040648,
+   -0.4548
   ],
   "top_occupations": [
    {
@@ -732,7 +788,11 @@
     "share_pct": 2.9
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.601,
+   3.055
+  ]
  },
  {
   "id": "ind:620000",
@@ -751,8 +811,8 @@
   },
   "growth": 9.2,
   "xy": [
-   0.097526,
-   -1.02055
+   0.04464,
+   -1.044524
   ],
   "top_occupations": [
    {
@@ -781,7 +841,11 @@
     "share_pct": 3.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.224,
+   0.422
+  ]
  },
  {
   "id": "ind:710000",
@@ -800,8 +864,8 @@
   },
   "growth": 5.71,
   "xy": [
-   0.733009,
-   -0.046086
+   0.754853,
+   -0.099853
   ],
   "top_occupations": [
    {
@@ -830,7 +894,11 @@
     "share_pct": 3.2
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.533,
+   1.851
+  ]
  },
  {
   "id": "ind:720000",
@@ -849,8 +917,8 @@
   },
   "growth": 4.28,
   "xy": [
-   0.980881,
-   0.518762
+   0.958575,
+   0.540652
   ],
   "top_occupations": [
    {
@@ -879,7 +947,11 @@
     "share_pct": 4.4
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.322,
+   2.761
+  ]
  },
  {
   "id": "ind:810000",
@@ -898,8 +970,8 @@
   },
   "growth": 3.75,
   "xy": [
-   0.761944,
-   -1.018186
+   0.817546,
+   -1.039403
   ],
   "top_occupations": [
    {
@@ -928,7 +1000,11 @@
     "share_pct": 3.8
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.559,
+   2.219
+  ]
  },
  {
   "id": "ind:900000",
@@ -947,8 +1023,8 @@
   },
   "growth": 0.31,
   "xy": [
-   0.393964,
-   0.440708
+   0.353589,
+   0.371534
   ],
   "top_occupations": [
    {
@@ -977,6 +1053,10 @@
     "share_pct": 2.7
    }
   ],
-  "value_added_basis": "BEA value added by sector (government value added shared by payroll)"
+  "value_added_basis": "BEA value added by sector (government value added shared by payroll)",
+  "hill": [
+   1.641,
+   2.874
+  ]
  }
 ]

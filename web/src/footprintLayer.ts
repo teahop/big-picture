@@ -15,13 +15,16 @@ export function owners(g: LevelGrids, nodes: NodeRec[], measure: Measure, t: Met
     const amp = Math.pow(Math.max(node.size[measure] ?? 0, 0) / max, t.height_exponent);
     if (amp <= 0) return;
     floor[idx] = amp * Math.exp(-2);                       // two kernel widths out
-    const sigma = t.bandwidth_level0 * Math.pow(t.bandwidth_per_level, node.level), r = 3 * sigma;
+    const sigma = t.bandwidth_level0 * Math.pow(t.bandwidth_per_level, node.level);
+    const [stretch, ang] = node.hill ?? [1, 0], sa = sigma * Math.sqrt(stretch), sb = sigma / Math.sqrt(stretch), r = 3 * sa;
+    const ca = Math.cos(ang), sn = Math.sin(ang);
     const [px, py] = node.xy;
     const i0 = Math.max(0, Math.floor((px - r - g.x[0]) / dx)), i1 = Math.min(n - 1, Math.ceil((px + r - g.x[0]) / dx));
     const j0 = Math.max(0, Math.floor((py - r - g.y[0]) / dy)), j1 = Math.min(n - 1, Math.ceil((py + r - g.y[0]) / dy));
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const x = g.x[0] + dx * i - px, y = g.y[0] + dy * j - py;
-      const v = amp * Math.exp(-(x * x + y * y) / (2 * sigma * sigma)), k = j * n + i;
+      const u = x * ca + y * sn, w = -x * sn + y * ca;   // along and across the ridge (the pipeline's hill shape)
+      const v = amp * Math.exp(-(u * u / (2 * sa * sa) + w * w / (2 * sb * sb))), k = j * n + i;
       if (v > best[k]) { best[k] = v; owner[k] = idx; }
     }
   });

@@ -6,10 +6,10 @@ import json
 import numpy as np
 import pandas as pd
 
-from .common import interim_dir, public_dir, sha256
+from .common import interim_dir, load_config, public_dir, sha256
 from .bls import MATRIX_PATH
 from .sectors import SECTOR_CODES, SHORT_LABEL
-from .terrain import SETTINGS
+from .terrain import SETTINGS, hill_shape
 
 SOURCE = {
     "name": "BLS National Employment Matrix",
@@ -156,6 +156,9 @@ def run(target: str) -> int:
             "layout": {"stage": layout["stage"], "seed": layout["seed"]}, "terrain": terrain["params"],
             "display_name_source": "config/site.yaml"}
     add_dollar_measures(nodes)
+    stretch = float(load_config()["terrain"].get("hill_stretch_max", 1.0))
+    add_hill = lambda ns: [n.update(hill=list(hill_shape(n["id"], stretch))) for n in ns]   # each hill's stretch and angle
+    add_hill(nodes)
     (out / "nodes.json").write_text(json.dumps(nodes, indent=1) + "\n")
     (out / "edges.json").write_text(json.dumps(records, indent=1) + "\n")
     levels = terrain["levels"]
@@ -164,7 +167,7 @@ def run(target: str) -> int:
     if have_l1:
         ch = json.loads((out / "layout_children.json").read_text())
         n1, n2 = level1_nodes(ch["nodes"]), deep_nodes(ch["nodes"])
-        add_dollar_measures(n1); add_dollar_measures(n2)
+        add_dollar_measures(n1); add_dollar_measures(n2); add_hill(n1); add_hill(n2)
         (out / "nodes_l1.json").write_text(json.dumps(n1, separators=(",", ":")) + "\n")
         (out / "nodes_l2.json").write_text(json.dumps(n2, separators=(",", ":")) + "\n")
         e1 = level1_edges()
