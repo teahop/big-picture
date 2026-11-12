@@ -17,6 +17,8 @@ const CFG = __VIEWER__;
 const RING = new THREE.RingGeometry(0.82, 1, 24);
 
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
+/** Label slots tried in order, in label widths (x) and label heights (y, negative = up). */
+const LABEL_SLOTS: [number, number][] = [[0, 0], [0, -1], [0, -2], [0.55, -1], [-0.55, -1], [0, -3], [0.55, -2], [-0.55, -2], [0, -4], [1.1, -1], [-1.1, -1], [0, 1], [0.55, 0], [-0.55, 0]];
 const RECEDE = 0.35;  // how far untouched hills move toward the dry-sage colour while a career is shown
 const MESH_N = 256;   // mesh points per side
 const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
@@ -48,7 +50,13 @@ export class Scene3D {
   private labelsShown = 0;
   onAutoLevel: (level: number) => void = () => {};
 
+  private stemPath: SVGPathElement;
+
   constructor(private host: HTMLElement, private labelLayer: HTMLElement, private b: Bundle, private state: State) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "stems"); svg.setAttribute("aria-hidden", "true");
+    this.stemPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    svg.appendChild(this.stemPath); labelLayer.appendChild(svg);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });   // see-through: the page's sky shows behind the hills
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -387,7 +395,10 @@ export class Scene3D {
     const w = this.host.clientWidth, h = this.host.clientHeight, v = new THREE.Vector3();
     const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
     const setVis = (m: Marker, on: boolean) => { if (m.vis !== on) { m.vis = on; m.label.style.visibility = on ? "visible" : "hidden"; } };
-    for (const { node: n, m } of this.drawOrder) {          // largest nodes claim label space first
+    const stems: string[] = [];
+    const free = (r: { x0: number; x1: number; y0: number; y1: number }) =>
+      r.x0 >= 2 && r.x1 <= w - 2 && r.y0 >= 2 && r.y1 <= h - 2 && !placed.some((p) => r.x0 < p.x1 + 3 && r.x1 > p.x0 - 3 && r.y0 < p.y1 + 2 && r.y1 > p.y0 - 2);
+    for (const { node: n, m } of this.drawOrder) {          // career labels first, then the largest nodes
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
       m.ring.visible = this.ringed(n.id);
@@ -398,13 +409,22 @@ export class Scene3D {
       if (v.z >= 1) { setVis(m, false); continue; }
       const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * h;
       if (!m.w) { m.w = m.label.offsetWidth || 120; m.h = m.label.offsetHeight || 20; }   // measured once, not every frame
-      const r = { x0: x - m.w / 2, x1: x + m.w / 2, y0: y - m.h, y1: y };
-      let clash = false;
-      for (let i = 0; i < placed.length && !clash; i++) { const p = placed[i]; clash = r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0; }
-      const show = priority || !clash;
-      setVis(m, show);
-      if (show) { placed.push(r); m.label.style.transform = "translate(-50%, -100%) translate(" + x.toFixed(1) + "px, " + y.toFixed(1) + "px)"; }
+      // Career and hovered labels look for a free slot nearby (stacked up, then shifted sideways) instead of overlapping;
+      // other labels only take their own spot.
+      let best: { x0: number; x1: number; y0: number; y1: number } | null = null, bx = x, by = y;
+      for (const [dx, dy] of priority ? LABEL_SLOTS : [[0, 0]]) {
+        const cx = Math.min(Math.max(x + dx * m.w, m.w / 2 + 2), w - m.w / 2 - 2), cy = y + dy * (m.h + 4);
+        const r = { x0: cx - m.w / 2, x1: cx + m.w / 2, y0: cy - m.h, y1: cy };
+        if (free(r)) { best = r; bx = cx; by = cy; break; }
+      }
+      if (!best && priority) { bx = x; by = y; best = { x0: x - m.w / 2, x1: x + m.w / 2, y0: y - m.h, y1: y }; }   // nowhere free: draw it anyway
+      setVis(m, !!best);
+      if (!best) continue;
+      placed.push(best);
+      m.label.style.transform = "translate(-50%, -100%) translate(" + bx.toFixed(1) + "px, " + by.toFixed(1) + "px)";
+      if (Math.abs(bx - x) > 1 || Math.abs(by - y) > 1) stems.push("M" + x.toFixed(1) + " " + y.toFixed(1) + "L" + bx.toFixed(1) + " " + by.toFixed(1));
     }
+    this.stemPath.setAttribute("d", stems.join(""));
     this.labelsShown = placed.length;
     this.frameMs = this.frameMs ? 0.9 * this.frameMs + 0.1 * (performance.now() - t0) : performance.now() - t0;
   }

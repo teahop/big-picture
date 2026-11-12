@@ -3,7 +3,7 @@ import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type FootprintMode, type LodSetting } from "./state";
 import { compute, hierarchy, loadFootprint } from "./footprint";
 import { buildFootprintPanel, touchedChildren } from "./fpui";
-import { effectiveTheme, onThemeChange, restoreTheme, setTheme } from "./theme";
+import { effectiveTheme, onThemeChange, restoreTheme, setTheme, type ThemeChoice } from "./theme";
 import { buildPanel } from "./ui";
 import { Toggle } from "./controls";
 
@@ -17,7 +17,7 @@ async function start(): Promise<void> {
   about.addEventListener("click", (e) => { if (e.target === about) about.close(); });
   const state = new State();
   const gl = webglAvailable();
-  // Without WebGL there is no map: say so in one line and leave the lists, search and details working.
+  // Without WebGL there is no map: say so in one line and leave the lists and details working.
   const NO_GL = "This browser cannot show the 3D map (WebGL is off or unavailable). The lists below still work.";
   const maxLevel = Math.max(...bundle.meta.levels);
 
@@ -88,13 +88,15 @@ async function start(): Promise<void> {
     (window as unknown as { __fp: object }).__fp = { stepInto, stepTo, set, data: fpData };
   }
   buildPanel(bundle, state, pick, extra);
+  const theme = new Toggle<ThemeChoice>("theme");          // Day / Night
+  const syncTheme = () => { theme.value = effectiveTheme(); };
   onThemeChange(() => { scene3d?.applyTheme(); syncTheme(); });
-  const themeBtn = $<HTMLButtonElement>("theme");
-  const syncTheme = () => { themeBtn.textContent = effectiveTheme() === "dark" ? "Light mode" : "Dark mode"; };
-  themeBtn.addEventListener("click", () => setTheme(effectiveTheme() === "dark" ? "light" : "dark"));
+  theme.onChange((v) => setTheme(v));
   syncTheme();
-  const panelBtn = $<HTMLButtonElement>("panel-toggle");
-  panelBtn.addEventListener("click", () => { const hide = document.querySelector("aside")!.toggleAttribute("hidden"); panelBtn.textContent = hide ? "Show panel" : "Hide panel"; panelBtn.setAttribute("aria-pressed", String(hide)); });
+  const aside = document.querySelector("aside")!, showBtn = $<HTMLButtonElement>("panel-show");
+  const showPanel = (on: boolean) => { aside.hidden = !on; showBtn.hidden = on; (on ? $("panel-hide") : showBtn).focus(); };
+  $("panel-hide").addEventListener("click", () => showPanel(false));
+  showBtn.addEventListener("click", () => showPanel(true));
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },

@@ -34,22 +34,17 @@ function details(b: Bundle, n: NodeRec): string {
 }
 
 export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void, extra: (n: NodeRec) => string = () => ""): void {
-  const search = el<HTMLInputElement>("search"), panel = el("details"), list = el<HTMLUListElement>("list-ind");
+  const panel = el("details"), list = el<HTMLUListElement>("list-ind");
   const items = new Map<string, HTMLButtonElement>();
-  const query = () => search.value.trim().toLowerCase();
-  // With no query the list shows the industries drawn at the current level; a query searches every loaded level.
-  const pool = () => {
-    const q = query(), m = state.measure;
-    return b.nodes.filter((n) => (q ? n.label.toLowerCase().includes(q) || n.title.toLowerCase().includes(q) : state.visibleIds.has(n.id)))
-      .sort((a, c) => (c.size[m] ?? 0) - (a.size[m] ?? 0));
-  };
+  // The list shows the industries drawn at the current level, largest first.
+  const pool = () => { const m = state.measure; return b.nodes.filter((n) => state.visibleIds.has(n.id)).sort((a, c) => (c.size[m] ?? 0) - (a.size[m] ?? 0)); };
 
   const build = () => {
     items.clear(); list.innerHTML = "";
     for (const n of pool()) {
       const li = document.createElement("li"), btn = document.createElement("button");
       btn.type = "button";
-      btn.innerHTML = "<span>" + (n.provenance === "estimated" ? "≈ " : "") + esc(n.label) + (query() ? " <small>L" + n.level + "</small>" : "") + "</span><small>" + fmtMeasure(state.measure, n.size[state.measure]) + "</small>";
+      btn.innerHTML = "<span>" + (n.provenance === "estimated" ? "≈ " : "") + esc(n.label) + "</span><small>" + fmtMeasure(state.measure, n.size[state.measure]) + "</small>";
       btn.addEventListener("click", () => onPick(n));
       btn.addEventListener("pointerenter", () => state.setHover(n));
       btn.addEventListener("pointerleave", () => state.setHover(null));
@@ -57,22 +52,14 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
       btn.addEventListener("blur", () => state.setHover(null));
       li.appendChild(btn); list.appendChild(li); items.set(n.id, btn);
     }
-    el("search-count").textContent = query() ? items.size + " match" + (items.size === 1 ? "" : "es") : "";
   };
-  search.addEventListener("input", build);
-  search.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    const first = b.nodes.find((n) => items.has(n.id) && state.isVisible(n)) ?? b.nodes.find((n) => items.has(n.id));
-    if (first) onPick(first);
-  });
-
   let lastSize = state.size, lastLevel = -1;
   const render = () => {
     if (state.size !== lastSize || state.level !== lastLevel) { lastSize = state.size; lastLevel = state.level; build(); }
     el("head-ind").textContent = (state.level === 0 ? "Industry sectors" : "Industries") + " by " + (state.size === "activity" ? "employment" : "value added");
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
-    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added under Dollars); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
+    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
     panel.innerHTML = extra(n) + details(b, n);
   };
   state.subscribe(render); render();

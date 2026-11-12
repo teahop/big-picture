@@ -17,7 +17,7 @@ live site, so `main` is not touched until Phase 4.
 | Prep | v2 spec, plan and handoffs | drafted 2026-11-10, awaiting owner review | v1 documents moved to `docs/v1/`. Committed on branch `v2` |
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
-| 2 | Clear footprint | reworked 2026-11-11 after owner review; label pass next | Wildflowers kept. Hills spread apart, rolling (power-mean kernels) and running past every edge; full-page blue sky, moonlit night with a moon; toggles instead of drop-downs; network layer removed. Next: labels |
+| 2 | Clear footprint | reworked 2026-11-11 after owner review; awaiting owner check | Wildflowers on rolling hills to every edge, blue sky and moonlit night. Career labels placed without overlap (stems to their hills), others on hover. Green panel, Day/Night toggle, Hide panel link, search removed, network removed |
 | 3 | Add your CV | not started | |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 

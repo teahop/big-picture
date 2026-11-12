@@ -47,7 +47,7 @@ button { cursor: pointer; }
 button:focus-visible, input:focus-visible, canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { opacity: .5; cursor: default; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-#search-count, #notice, .source, .sub, small, .hint { color: var(--muted); }
+#notice, .source, .sub, small, .hint { color: var(--muted); }
 #notice { margin: 0; padding: 0 16px; }
 #notice:empty { display: none; }
 main { flex: 1; min-height: 0; display: flex; }
@@ -76,7 +76,6 @@ dt { color: var(--muted); } dd { margin: 0; }
   header { padding: 8px 12px; gap: 8px; }
   .map { flex: none; height: 62vh; }                       /* the map gets most of the first screen; the page scrolls to the panel */
   aside { width: auto; border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
-  label.search { flex: 1 1 100%; } label.search input { width: 100%; }
 }
 
 label.size { display: flex; flex-direction: column; font-size: 11px; color: var(--muted); }
@@ -131,7 +130,18 @@ label.switch[hidden] { display: none; }
 /* sky: header on the sky, translucent panel, moon at night */
 header { border-bottom: 0; }
 header h1, header h1 .subtitle { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .25); }
-aside { background: color-mix(in srgb, var(--panel) 90%, transparent); border-left: 0; backdrop-filter: blur(6px); }
+/* the panel is a meadow: green that blends with the hills, light text, goldfields accents, poppy bars */
+aside { --fg: #f7f4e6; --muted: #d4e3b6; --line: rgb(255 255 255 / .2); --accent: #ffd166; --footprint: #f5a524; --panel: transparent;
+  color: var(--fg); background: color-mix(in srgb, #3b6420 92%, transparent); border-left: 0; backdrop-filter: blur(6px); }
+:root[data-theme="dark"] aside { --fg: #e9efe0; --muted: #a8bb90; --line: rgb(255 255 255 / .14); background: color-mix(in srgb, #12210f 92%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) aside { --fg: #e9efe0; --muted: #a8bb90; --line: rgb(255 255 255 / .14); background: color-mix(in srgb, #12210f 92%, transparent); } }
+aside button { color: inherit; }
+.panel-link { float: right; border: 0; background: none; padding: 0; font-size: 12px; color: var(--muted); text-decoration: underline; cursor: pointer; }
+.panel-link.floating { position: absolute; right: 12px; top: 10px; float: none; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .4); }
+.panel-link[hidden] { display: none; }
+/* label stems: a thin line from a moved label back to its hill */
+.labels svg.stems { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.labels svg.stems path { stroke: rgb(255 255 255 / .85); stroke-width: 1.2; fill: none; filter: drop-shadow(0 0 1px rgb(0 0 0 / .5)); }
 #notice { color: #fff; }
 .moon { display: none; position: absolute; top: 18px; left: 34%; width: 64px; height: 64px; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle at 38% 36%, #fffdf4 0%, #f3edd9 55%, #d9d1b8 100%);
