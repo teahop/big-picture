@@ -265,15 +265,22 @@ export class Scene3D {
       // on screen, size follows the share (career) or stays small (other sectors), not how near the hill happens to be
       const here = this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]));
       const far = Math.min(1.4, Math.max(0.55, here.distanceTo(eye) / eye.distanceTo(this.flyTo ?? this.controls.target)));
-      const base = [0.45, 0.25, 0.17][lvl] ?? 0.17, step = [0.038, 0.021, 0.015][lvl] ?? 0.015;
+      const base = [0.74, 0.34, 0.24][lvl] ?? 0.24, step = [0.038, 0.021, 0.015][lvl] ?? 0.015;
       const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.66) * far;
       const ground = (x: number, y: number) => this.local(x, y, this.heightAt(x, y));
       if (lvl === 0) {
         // sectors: always lettered, just below the summit on the viewer's side, each with its own small offset and tilt
         const j1 = hash01(id, 1), j2 = hash01(id, 2), j3 = hash01(id, 3);
-        const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12, node.xy[1] + 0.1 + (j2 - 0.5) * 0.06];
-        const mesh = makeGrassLabel(node.label, c, width, ground, 1, !career, (j3 - 0.5) * 0.28);
-        rects.push(mesh.userData.rect as number[]); this.group.add(mesh); this.fpObjects.push(mesh); this.lettered.set(id, mesh);
+        // if it would run into a name already placed, shrink it in steps and nudge it sideways (the larger shares go first)
+        const overlaps = (r: number[]) => rects.some((q) => r[0] < q[1] + 0.015 && r[1] > q[0] - 0.015 && r[2] < q[3] + 0.01 && r[3] > q[2] - 0.01);
+        let mesh: THREE.Mesh | null = null;
+        for (const f of [1, 0.85, 0.72, 0.6]) for (const dx of [0, -0.08, 0.08, -0.15, 0.15]) {
+          if (mesh && !overlaps(mesh.userData.rect as number[])) break;
+          if (mesh) { mesh.geometry.dispose(); (mesh.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh.material as THREE.Material).dispose(); }
+          const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12 + dx, node.xy[1] + 0.1 + (j2 - 0.5) * 0.06];
+          mesh = makeGrassLabel(node.label, c, width * f, ground, 1, !career, (j3 - 0.5) * 0.28);
+        }
+        rects.push(mesh!.userData.rect as number[]); this.group.add(mesh!); this.fpObjects.push(mesh!); this.lettered.set(id, mesh!);
         continue;
       }
       // finer levels: try spots down the slope facing the viewer (and a little to each side); keep the first whose whole
