@@ -13,7 +13,7 @@
     "EFFORT": "low",
     // Origins allowed to call the proxy, comma separated: the published site (GitHub Pages) and the local preview.
     // Add the Squarespace domain only if the page is hosted there directly; an iframe keeps the Pages origin.
-    "ALLOWED_ORIGINS": "http://localhost:4173"
+    "ALLOWED_ORIGINS": "https://teahop.github.io,http://localhost:4173"
   },
   // Approximate per-location limit (Cloudflare Workers rate limiting binding; period must be 10 or 60 seconds).
   "ratelimits": [{ "name": "LIMITER", "namespace_id": "4401", "simple": { "limit": 5, "period": 60 } }]

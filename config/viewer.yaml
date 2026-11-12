@@ -9,6 +9,7 @@ footprint:           # how a footprint's entries become weights (the page and th
   touched_threshold: 0.03  # a node is touched when it holds at least this share of the footprint's total weight
 
 cv:                  # "Add your CV": the page sends CV text to `endpoint`, which asks the model and returns guesses
-  endpoint: "/api/cv"          # dev server route; set to the Cloudflare Worker's URL for the published site
-  model: "gpt-6.1-sol"         # OpenAI model (see data/SOURCES.md); gpt-6-luna is the low-cost option
+  endpoint: "/api/cv"          # the dev server's route (web/vite.config.ts)
+  proxy_url: "https://big-picture-cv.big-picture-cv-worker.workers.dev"   # the Cloudflare Worker (worker/); `vite build` points the page here
+  model: "gpt-6.1-sol"         # OpenAI model for the dev route (see data/SOURCES.md); the Worker's is in worker/wrangler.jsonc
   effort: "low"                # reasoning effort for the model

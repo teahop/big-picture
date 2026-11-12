@@ -18,7 +18,7 @@ live site, so `main` is not touched until Phase 4.
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
 | 2 | Clear footprint | done 2026-11-11, accepted by owner | Entry-list footprint, weights in the page and pipeline (roll-up tested), public bundle identical without personal data. Wildflowers (drawn per species) on rolling California hills, each touched hill blooming over its share; career labels without overlap; step-down with breadcrumb and entries; Day/Night, toggles, green panel. Network and search removed |
-| 3 | Add your CV | done 2026-11-11, awaiting owner review | Model call (gpt-6.1-sol) through the dev route and a Cloudflare Worker (built and run locally, not deployed); rules check the guesses and stand in when the proxy is off. Hit rates on 3 synthetic CVs: 100% of roles and degrees, text and PDF; rules alone 33% of roles, 100% of degrees. Built page: CSP limited to origin and proxy; only the proxy is contacted, and storage is unchanged. Public site opens with the made-up sample career (default) |
+| 3 | Add your CV | done 2026-11-11, accepted by owner 2026-11-12 | Model call (gpt-6.1-sol) through the dev route and a Cloudflare Worker (deployed 2026-11-12 with the owner's yes; origin allow-list and approximate rate limit checked live); rules check the guesses and stand in when the proxy is off. Hit rates on 3 synthetic CVs: 100% of roles and degrees, text and PDF; rules alone 33% of roles, 100% of degrees. Built page: CSP limited to origin and proxy; only the proxy is contacted, and storage is unchanged. Public site opens with the made-up sample career (default) |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 
 ## Owner decisions (from SPEC section 10)
@@ -30,7 +30,7 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 | One-map design accepted | Phase 1 | Do not proceed to Phase 2 |
 | Footprint treatment | Phase 2 | Do not proceed to Phase 3 |
 | Connections layer kept (private only) | Phase 2 | Removed by owner 2026-11-11 |
-| Sample synthetic footprint on the public site | Phase 3 | Yes (applied as default 2026-11-11; owner to confirm) |
+| Sample synthetic footprint on the public site | Phase 3 | Yes (default applied 2026-11-11) |
 | Own footprint in public | Phase 4 | No |
 | Rename repository and URL | Phase 4 | Leave as `industry-map` |
 
