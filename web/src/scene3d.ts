@@ -24,7 +24,7 @@ const LABEL_SLOTS: [number, number][] = [[0, 0], [0, -1], [0, -2], [0.55, -1], [
 const MESH_N = 256;   // mesh points per side
 const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
 const BASE = 0.3;     // rolling base hills (decoration, no data), as a share of the peak height
-const RIDGE = 1.5;    // how much taller the base grows far beyond the map (distant ridges)
+const RIDGE = 1.1;    // how much taller the base grows far beyond the map (distant ridges)
 
 export class Scene3D {
   private renderer: THREE.WebGLRenderer;
@@ -112,14 +112,16 @@ export class Scene3D {
     const broad = 0.65 * noise(X, Y, 34, 3) + 0.35 * noise(X, Y, 15, 4);
     const ridge = 1 - Math.abs(2 * noise(X, Y, 21, 5) - 1);
     const creek = Math.pow(1 - Math.abs(2 * noise(X, Y, 27, 6) - 1), 7);
-    const far = Math.min(1, Math.max(0, (r - 1.1) / 1.0));
-    const relief = 0.24 * broad + 0.1 * ridge * ridge - 0.22 * creek;
+    const far = Math.min(1, Math.max(0, (r - 1.1) / 1.0)), near = 1 - Math.min(1, Math.max(0, (r - 0.95) / 0.5));
+    // beyond the map only the broad shapes remain (no ridgelines or creeks), so the distant hills stay soft
+    const relief = 0.24 * broad + near * (0.1 * ridge * ridge - 0.22 * creek);
     return CFG.peak_height * BASE / 0.3 * relief * (1 + RIDGE * far * far);
   }
 
   /** Small irregularities on a hill's shoulders (none at the foot or the summit, so peak heights stay true). */
   private shoulder(x: number, y: number, d: number): number {
     const t = d / CFG.peak_height;
+    if (t <= 0) return 0;
     return (noise(x * 40, y * 40, 6, 9) - 0.5) * 0.9 * d * t * (1 - t);
   }
 
@@ -266,6 +268,7 @@ export class Scene3D {
     const lvl = this.state.level, m = this.state.measure, eye = this.viewPoint();
     const viewCam = this.camera.clone(); viewCam.position.copy(eye); viewCam.lookAt(this.flyTo ?? this.controls.target); viewCam.updateMatrixWorld();
     const visible = this.b.nodes.filter((x) => this.state.visibleIds.has(x.id));
+    const topSize = Math.max(...visible.map((x) => x.size[m] ?? 0), 1e-9);   // the level's largest industry
     const topShare = touched?.size ? Math.max(...touched.values()) : 1;
     const others = lvl === 0 ? visible.filter((x) => !touched?.has(x.id)).sort((p, q) => (q.size[m] ?? 0) - (p.size[m] ?? 0)).map((x) => [x.id, 0] as [string, number]) : [];
     const queue: [string, number][] = [...(touched ?? new Map()), ...others];
@@ -289,7 +292,9 @@ export class Scene3D {
         for (const f of [1, 0.85, 0.72, 0.6]) for (const dx of [0, -0.08, 0.08, -0.15, 0.15]) {
           if (mesh && !overlaps(mesh.userData.rect as number[])) break;
           if (mesh) { mesh.geometry.dispose(); (mesh.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh.material as THREE.Material).dispose(); }
-          const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12 + dx, node.xy[1] + 0.1 + (j2 - 0.5) * 0.06];
+          // offset and jitter scale with the hill's size, so a small hill keeps its name near its top
+        const hill = Math.pow(Math.max(node.size[m] ?? 0, 0) / topSize, 0.35), k = 0.35 + 0.65 * hill;
+        const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12 * k + dx, node.xy[1] + (0.1 + (j2 - 0.5) * 0.06) * k];
           mesh = makeGrassLabel(node.label, c, width * f, ground, 1, !career, (j3 - 0.5) * 0.28);
         }
         rects.push(mesh!.userData.rect as number[]); this.group.add(mesh!); this.fpObjects.push(mesh!); this.lettered.set(id, mesh!);
@@ -402,7 +407,7 @@ export class Scene3D {
 
   applyTheme(): void {
     const t = readTheme();
-    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 30, 90);   // distant hills fade into the horizon haze
+    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 24, 78);   // distant hills fade softly into the haze   // distant hills fade into the horizon haze
     const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
     this.hemi.intensity = dark ? 0.6 : 1.1; this.sun.intensity = dark ? 0.9 : 2.2;   // moonlit hills at night
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
