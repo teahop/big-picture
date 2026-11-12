@@ -83,12 +83,12 @@
  },
  "terrain": {
   "grid_size": 128,
-  "margin": 0.55,
-  "bandwidth_level0": 0.15,
+  "margin": 0.75,
+  "bandwidth_level0": 0.23,
   "bandwidth_per_level": 0.55,
   "combine": "pmean",
   "pmean_power": 6,
-  "height_exponent": 0.5
+  "height_exponent": 0.35
  },
  "display_name_source": "config/site.yaml",
  "level_notes": {

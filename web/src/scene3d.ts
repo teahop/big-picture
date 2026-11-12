@@ -266,9 +266,18 @@ export class Scene3D {
       const here = this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]));
       const far = Math.min(1.4, Math.max(0.55, here.distanceTo(eye) / eye.distanceTo(this.flyTo ?? this.controls.target)));
       const base = [0.45, 0.25, 0.17][lvl] ?? 0.17, step = [0.038, 0.021, 0.015][lvl] ?? 0.015;
-      const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.55) * far;
-      // try spots down the slope facing the viewer (and a little to each side); keep the first whose whole text area is
-      // in line of sight and faces the camera
+      const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.66) * far;
+      const ground = (x: number, y: number) => this.local(x, y, this.heightAt(x, y));
+      if (lvl === 0) {
+        // sectors: always lettered, just below the summit on the viewer's side, each with its own small offset and tilt
+        const j1 = hash01(id, 1), j2 = hash01(id, 2), j3 = hash01(id, 3);
+        const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12, node.xy[1] + 0.1 + (j2 - 0.5) * 0.06];
+        const mesh = makeGrassLabel(node.label, c, width, ground, 1, !career, (j3 - 0.5) * 0.28);
+        rects.push(mesh.userData.rect as number[]); this.group.add(mesh); this.fpObjects.push(mesh); this.lettered.set(id, mesh);
+        continue;
+      }
+      // finer levels: try spots down the slope facing the viewer (and a little to each side); keep the first whose whole
+      // text area is in line of sight and faces the camera
       let best: [number, number] = [node.xy[0], node.xy[1] + step], bestSeen = -1;
       for (const k of [4, 3, 5, 2, 6, 1, 7]) for (const side of [0, -0.25, 0.25]) {
         const c: [number, number] = [node.xy[0] + side * width, node.xy[1] + k * step];
@@ -277,7 +286,7 @@ export class Scene3D {
         if (seen > bestSeen) { best = c; bestSeen = seen; }
         if (seen === pts.length) break;
       }
-      const mesh = makeGrassLabel(node.label, best, width, (x, y) => this.local(x, y, this.heightAt(x, y)), 1, !career);
+      const mesh = makeGrassLabel(node.label, best, width, ground, 1, !career);
       const r = mesh.userData.rect as number[], pad = 0.02;
       const sr = this.screenBox(mesh, viewCam), spad = 6;
       const clash = bestSeen < 9 || rects.some((q) => r[0] < q[1] + pad && r[1] > q[0] - pad && r[2] < q[3] + pad && r[3] > q[2] - pad)
@@ -291,13 +300,7 @@ export class Scene3D {
     }
     if (!touched || !touched.size) return;
     const o = this.ownerGrid(), n = this.grid().n;
-    let fl = flowers(bloomCells(o, touched, n, this.values()), n);
-    if (rects.length) {                                    // lettering is mown: no flowers on it
-      const g = this.grid();
-      const gx = (i: number) => g.x[0] + ((g.x[1] - g.x[0]) * i) / (n - 1), gy = (j: number) => g.y[0] + ((g.y[1] - g.y[0]) * j) / (n - 1);
-      // mown: no flowers on the lettering or just uphill of it, where tall sprites would cover the text on screen
-      fl = fl.filter(([i, j]) => { const x = gx(i), y = gy(j); return !rects.some((q) => x >= q[0] && x <= q[1] && y >= q[2] - (q[3] - q[2]) * 0.6 && y <= q[3]); });
-    }
+    const fl = flowers(bloomCells(o, touched, n, this.values()), n);
     const size = [0.24, 0.18, 0.14][this.state.level] ?? 0.14;
     SPECIES.forEach((sp, c) => {
       const mine = fl.filter((f) => f[2] === c);
@@ -543,6 +546,13 @@ export class Scene3D {
     if (on && !this.running) { this.running = true; this.resize(); requestAnimationFrame(this.frame); }
     if (!on) this.running = false;
   }
+}
+
+/** A stable number in [0, 1) from a node id (so each hill's lettering offset is the same every time). */
+function hash01(id: string, salt: number): number {
+  let h = 2166136261 ^ salt;
+  for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 16777619);
+  return ((h >>> 0) % 10007) / 10007;
 }
 
 export function webglAvailable(): boolean {

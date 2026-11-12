@@ -78,8 +78,8 @@ really mixed in the layout.
   show up where they employ people: colleges and universities, scientific R&D
   services, hospitals, and the higher-education deep zone.
 - **Height is the industry's own size.** Each industry's peak is
-  (size / largest industry at that level) ** `height_exponent` (0.5, square
-  root). Kernels are blended by a power mean (`combine: pmean`): each peak keeps
+  (size / largest industry at that level) ** `height_exponent` (0.35, so small
+  sectors still form hills). Kernels are blended by a power mean (`combine: pmean`): each peak keeps
   its own height, a cluster of small industries never stacks above a large one,
   and neighbouring hills meet in rounded saddles, like rolling hills.
 - **Position is similarity.** Industries are compared by their distinctive
@@ -88,6 +88,9 @@ really mixed in the layout.
   nearest-neighbour graph. Level 1 is laid out as one set with a soft pull
   toward its sector, so a detailed industry may sit outside its sector's area.
   The v1 rule that positions never move is dropped.
+  Because the axes carry no meaning, sectors are then set on a lightly jittered
+  staggered grid (nearest spots, so neighbours stay roughly together) and the
+  hills are broad enough to cover most of the land.
 - **Look:** California hills in spring under a full-page blue sky (a moonlit
   night in dark mode). Industries are spread apart and the land runs past every
   edge of the view, with a decorative rolling base and haze toward the horizon.

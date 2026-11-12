@@ -112,6 +112,25 @@ def fill_box(xy: np.ndarray) -> np.ndarray:
     return (xy - c) / ((xy.max(axis=0) - xy.min(axis=0)) / 2)
 
 
+def grid_points(rows: int, cols: int) -> np.ndarray:
+    """A staggered grid (odd rows shifted half a step) scaled to fill -1..1 on both axes."""
+    p = np.array([[c + (0.5 if r % 2 else 0.0), r] for r in range(rows) for c in range(cols)], float)
+    return (p - p.min(axis=0)) / (p.max(axis=0) - p.min(axis=0)) * 2 - 1
+
+
+def snap_to_grid(xy: np.ndarray, rows: int, cols: int, jitter: float, seed: int) -> np.ndarray:
+    """Give each node the grid spot that keeps the arrangement closest to `xy` overall (assignment problem), then a
+    small seeded jitter so the hills do not stand in rows. The axes carry no meaning, so this keeps neighbours roughly
+    together while the hills tile the map."""
+    from scipy.optimize import linear_sum_assignment
+    g = grid_points(rows, cols)
+    if len(g) < len(xy):
+        raise ValueError(f"level0_grid has {len(g)} spots for {len(xy)} sectors")
+    r, c = linear_sum_assignment(((xy[:, None] - g[None]) ** 2).sum(axis=-1))
+    out = g[c[np.argsort(r)]]
+    return out + np.random.default_rng(seed).uniform(-jitter, jitter, out.shape)
+
+
 def spiral(n: int, r: float) -> np.ndarray:
     """Deterministic small offsets (golden-angle spiral) used to start children next to their parent."""
     k = np.arange(n)
@@ -172,7 +191,11 @@ def run() -> int:
     # ---- Level 0
     s0, d0 = level_similarity(data["l0"], cfg)
     x0 = stress_layout(d0, neighbour_weights(s0, int(c0["k"]), float(c0["far_weight"])), classical_init(d0), iters=int(cfg["iters"]))
-    x0 = np.round(fill_box(spread(canonical(x0), float(cfg["min_sep_level0"]), iters=1500)), DECIMALS)
+    x0 = fill_box(spread(canonical(x0), float(cfg["min_sep_level0"]), iters=1500))
+    if cfg.get("level0_grid"):
+        gcfg = cfg["level0_grid"]
+        x0 = snap_to_grid(x0, int(gcfg["rows"]), int(gcfg["cols"]), float(gcfg["jitter"]), seed)
+    x0 = np.round(x0, DECIMALS)
     ids0 = data["l0"]["ids"]
     l0 = {i: [float(a), float(b)] for i, (a, b) in zip(ids0, x0)}
 

@@ -41,14 +41,16 @@ function letteringTexture(lines: string[], soft: boolean): { tex: THREE.CanvasTe
 /** A patch of `cols` x `rows` points on the ground. `centre` and `width` are in layout units; the text runs along x and
  *  reads from the viewer's side (its top edge is the side further from the camera). `ground(x, y)` gives a world point. */
 export function makeGrassLabel(label: string, centre: [number, number], width: number,
-                               ground: (x: number, y: number) => THREE.Vector3, towardViewer: number, soft = false): THREE.Mesh {
+                               ground: (x: number, y: number) => THREE.Vector3, towardViewer: number, soft = false, angle = 0): THREE.Mesh {
   const { tex, aspect } = letteringTexture(wrapLabel(label, 24), soft);
   const height = width / aspect, cols = 40, rows = 16;
   const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2), idx: number[] = [];
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
     const u = i / (cols - 1), v = j / (rows - 1), k = j * cols + i;
     // v = 1 is the top of the text: further from the viewer
-    const p = ground(centre[0] + (u - 0.5) * width, centre[1] + (0.5 - v) * height * towardViewer);
+    // offsets across (du) and up the text (dv), turned by `angle` so neighbouring names do not line up
+    const du = (u - 0.5) * width, dv = (0.5 - v) * height * towardViewer, ca = Math.cos(angle), sa = Math.sin(angle);
+    const p = ground(centre[0] + du * ca - dv * sa, centre[1] + du * sa + dv * ca);
     pos.set([p.x, p.y + 0.025, p.z], k * 3); uv.set([u, v], k * 2);
     if (i < cols - 1 && j < rows - 1) idx.push(k, k + 1, k + cols, k + 1, k + cols + 1, k + cols);
   }
@@ -58,6 +60,7 @@ export function makeGrassLabel(label: string, centre: [number, number], width: n
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.name = "grass-label";
+  mesh.renderOrder = 2;                                    // drawn over the flowers (written across the bloom)
   // the lettering's area in layout units, so flowers can leave it clear (mown)
   const y0 = centre[1] - height / 2, y1 = centre[1] + height / 2;
   mesh.userData.rect = [centre[0] - width / 2, centre[0] + width / 2, Math.min(y0, y1), Math.max(y0, y1)];

@@ -12,7 +12,8 @@ until the v2 release step.
 ## What exists now
 
 - **One industry terrain:** every industry raises the ground; height is its own
-  size, square-root scaled, and each peak shows only its own industry.
+  size (compressed so small sectors still form hills), and each peak shows only
+  its own industry.
 - **Two size settings:** Activity (jobs, BLS Employment Matrix 2025) and Dollars
   (value added, BEA 2025).
 - **Layout by similarity:** industries sit near others with a similar,
