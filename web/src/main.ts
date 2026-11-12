@@ -78,7 +78,7 @@ async function start(): Promise<void> {
     const stepTo = async (depth: number) => {
       const path = state.focus.slice(0, depth);
       state.setFocus(path); state.setSelected(null);
-      if (!depth) { await goLevel(0, true); scene3d?.frameAll(); return; }
+      if (!depth) { await goLevel(0); scene3d?.frameAll(); return; }
       await goLevel(depth);
       const id = path[depth - 1];
       scene3d?.frameNodes(touchedChildren(state, h, id, depth - 1));

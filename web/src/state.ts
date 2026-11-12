@@ -11,7 +11,7 @@ export class State {
   hover: NodeRec | null = null;
   selected: NodeRec | null = null;
   size: SizeSetting = "activity";
-  lod: LodSetting = "auto";
+  lod: LodSetting = "0";
   level = 0;                       // level of detail currently drawn
   visibleIds = new Set<string>();  // nodes drawn at that level
   fpMode: FootprintMode = "off";

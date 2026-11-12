@@ -20,17 +20,19 @@ until the v2 release step.
   outside its sector's area.
 - **Three levels of detail:** 20 sectors, 304 detailed industries, then a few
   hand-built deep zones.
-- **Private footprint (local only):** its control is hidden while it is rebuilt
-  for the industry terrain (next step). It is never published.
+- **Career footprint:** a career is drawn as California wildflowers on the
+  hills it touched, each hill blooming over its share of the career; step down
+  into sectors, industries and deep zones. The owner's own footprint is local
+  only and never published.
+- **Look:** rolling hills to every edge under a blue sky, or a moonlit night.
 
 Without WebGL the page shows a one-line message and the searchable node lists.
 
 ## Planned for v2
 
-1. A clearer footprint: touched areas highlighted, with steps down into finer levels.
-2. Add your CV: a visitor gets a footprint from a CV in the browser. Nothing is
+1. Add your CV: a visitor gets a footprint from a CV in the browser. Nothing is
    stored or sent.
-3. Download one JPG of the map and footprint.
+2. Download one JPG of the map and footprint.
 
 Removed from v1: the "where next" score, the pay, mission and geography toggles,
 the 2D contour map, the footprint centroid marker, the four layer modes and the

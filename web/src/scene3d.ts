@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
 import { readTheme, terrainColour } from "./theme";
-import { SPECIES, bloomCells, flowers, noise, owners, touchedMask, type Owners } from "./footprintLayer";
+import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
+import { flowerTexture } from "./flowerSprites";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -19,7 +20,6 @@ const RING = new THREE.RingGeometry(0.82, 1, 24);
 interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 /** Label slots tried in order, in label widths (x) and label heights (y, negative = up). */
 const LABEL_SLOTS: [number, number][] = [[0, 0], [0, -1], [0, -2], [0.55, -1], [-0.55, -1], [0, -3], [0.55, -2], [-0.55, -2], [0, -4], [1.1, -1], [-1.1, -1], [0, 1], [0.55, 0], [-0.55, 0]];
-const RECEDE = 0.35;  // how far untouched hills move toward the dry-sage colour while a career is shown
 const MESH_N = 256;   // mesh points per side
 const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
 const BASE = 0.3;     // rolling base hills (decoration, no data), as a share of the peak height
@@ -150,18 +150,11 @@ export class Scene3D {
   }
 
   private refreshColours(): void {
-    const t = readTheme(), g = this.grid(), gn = g.n, top = CFG.peak_height * (1 + BASE);
+    const t = readTheme(), top = CFG.peak_height * (1 + BASE);
     const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
     const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
-    const touched = this.state.touchedNow(), mask = touched ? touchedMask(this.ownerGrid(), touched) : null;
-    const dx = (g.x[1] - g.x[0]) / (gn - 1), dy = (g.y[1] - g.y[0]) / (gn - 1);
-    for (let k = 0; k < MESH_N * MESH_N; k++) {
-      let [r, gg, b] = terrainColour(t, pos.getY(k) / top);
-      if (mask) {
-        const i = Math.round((this.meshXY[2 * k] - g.x[0]) / dx), j = Math.round((this.meshXY[2 * k + 1] - g.y[0]) / dy);
-        const on = i >= 0 && j >= 0 && i < gn && j < gn && mask[j * gn + i] === 1;
-        if (!on) { r += (t.muted[0] - r) * RECEDE; gg += (t.muted[1] - gg) * RECEDE; b += (t.muted[2] - b) * RECEDE; }
-      }
+    for (let k = 0; k < MESH_N * MESH_N; k++) {          // every hill the same green; only the flowers mark a career
+      const [r, gg, b] = terrainColour(t, pos.getY(k) / top);
       col.setXYZ(k, r / 255, gg / 255, b / 255);
     }
     col.needsUpdate = true;
@@ -255,14 +248,17 @@ export class Scene3D {
     if (!touched || !touched.size) return;
     const o = this.ownerGrid(), n = this.grid().n;
     const fl = flowers(bloomCells(o, touched, n, this.values()), n);
-    const pos = new Float32Array(fl.length * 3), col = new Float32Array(fl.length * 3);
-    const cs = getComputedStyle(document.documentElement);
-    const palette = SPECIES.map((_, i) => new THREE.Color(cs.getPropertyValue("--flower-" + (i + 1)).trim()));
-    fl.forEach(([i, j, c], k) => { const p = this.gridPoint(i, j, 0.03); pos.set([p.x, p.y, p.z], k * 3); col.set([palette[c].r, palette[c].g, palette[c].b], k * 3); });
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: [0.24, 0.16, 0.12][this.state.level] ?? 0.12, vertexColors: true, map: dotTexture(), alphaTest: 0.5, transparent: true }));
-    pts.name = "footprint-flowers"; this.group.add(pts); this.fpObjects.push(pts);
+    const size = [0.3, 0.2, 0.15][this.state.level] ?? 0.15;
+    SPECIES.forEach((sp, c) => {
+      const mine = fl.filter((f) => f[2] === c);
+      if (!mine.length) return;
+      const pos = new Float32Array(mine.length * 3);
+      mine.forEach(([i, j], k) => { const p = this.gridPoint(i, j, 0.04); pos.set([p.x, p.y, p.z], k * 3); });
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: size * (sp.name === "lupine" ? 1.25 : 1), map: flowerTexture(sp.name), alphaTest: 0.35, transparent: true, depthWrite: false }));
+      pts.name = "footprint-flowers-" + sp.name; this.group.add(pts); this.fpObjects.push(pts);
+    });
   }
 
   /** Fly the camera to frame these visible nodes (step-down). */
@@ -449,17 +445,6 @@ export class Scene3D {
     if (on && !this.running) { this.running = true; this.resize(); requestAnimationFrame(this.frame); }
     if (!on) this.running = false;
   }
-}
-
-let dot: THREE.Texture | null = null;
-/** Round point sprite (shared) so flowers draw as dots, not squares. */
-function dotTexture(): THREE.Texture {
-  if (dot) return dot;
-  const c = document.createElement("canvas"); c.width = c.height = 32;
-  const g = c.getContext("2d")!;
-  g.fillStyle = "#fff"; g.beginPath(); g.arc(16, 16, 14, 0, Math.PI * 2); g.fill();
-  dot = new THREE.CanvasTexture(c);
-  return dot;
 }
 
 export function webglAvailable(): boolean {

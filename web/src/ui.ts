@@ -59,7 +59,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     el("head-ind").textContent = (state.level === 0 ? "Industry sectors" : "Industries") + " by " + (state.size === "activity" ? "employment" : "value added");
     const n = state.active;
     for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
-    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Zoom in, or use the Detail control, for finer levels.</p>"; return; }
+    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or step into your footprint.</p>"; return; }
     panel.innerHTML = extra(n) + details(b, n);
   };
   state.subscribe(render); render();

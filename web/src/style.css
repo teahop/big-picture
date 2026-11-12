@@ -9,25 +9,22 @@
   --bg: var(--surface-page); --fg: var(--text-primary); --muted: var(--text-secondary); --panel: var(--surface-card); --line: var(--border-hairline);
   --accent: #1f7a63; --footprint: #19a98a;
   /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
-     career is shown. Flowers: poppy, goldfields, lupine, owl's clover, popcorn flower. */
+     career is shown. Flowers are drawn in web/src/flowerSprites.ts. */
   --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3f6b1a; --terrain-peak: #9cc93f; --terrain-muted: #a3ad7c;
-  --flower-1: #f0821c; --flower-2: #f2c41f; --flower-3: #7a66c6; --flower-4: #d46aa4; --flower-5: #f6f3ea;
   color-scheme: light;
 }
 /* Dark theme derived from the same palette: warm brown surfaces, off-white text, soft teal accent. */
 :root[data-theme="dark"] {
-  --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
+  --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
   --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
-  --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: var(--brown-900); --fg: var(--off-white); --muted: var(--greige); --panel: var(--warm-brown); --line: var(--brown-700);
+    --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
     --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
-  --flower-1: #ff9a3d; --flower-2: #ffd34d; --flower-3: #a493e6; --flower-4: #ef84bd; --flower-5: #e9e6dc;
     color-scheme: dark;
   }
 }
@@ -151,3 +148,5 @@ aside button { color: inherit; }
 .moon::after { width: 9px; height: 9px; top: 38px; left: 18px; }
 :root[data-theme="dark"] .moon { display: block; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .moon { display: block; } }
+
+.header-link { border: 0; background: none; padding: 4px 2px; color: #fff; text-decoration: underline; text-underline-offset: 3px; text-shadow: 0 1px 2px rgb(0 0 0 / .25); cursor: pointer; }

@@ -20,9 +20,8 @@
         <span class="track" aria-hidden="true"></span><span class="switch-label">Footprint</span>
       </label>
       <fieldset class="seg">
-        <legend>Detail</legend>
-        <label><input type="radio" name="lod" value="auto" checked /><span>Auto</span></label>
-        <label><input type="radio" name="lod" value="0" /><span>Sectors</span></label>
+        <legend class="sr">Detail</legend>
+        <label><input type="radio" name="lod" value="0" checked /><span>Sectors</span></label>
         <label><input type="radio" name="lod" value="1" /><span>Industries</span></label>
         <label><input type="radio" name="lod" value="2" /><span>Deep zones</span></label>
       </fieldset>
@@ -31,7 +30,7 @@
         <label><input type="radio" name="theme" value="light" checked /><span>Day</span></label>
         <label><input type="radio" name="theme" value="dark" /><span>Night</span></label>
       </fieldset>
-      <button id="about-open" type="button" aria-haspopup="dialog">About the data</button>
+      <button id="about-open" class="header-link" type="button" aria-haspopup="dialog">About the data</button>
     </header>
     <p id="size-note" class="sr">Activity sizes industries by jobs. Dollars sizes them by value added; below the sector level value added is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status">Loading the map…</p>
