@@ -1,16 +1,28 @@
-/** Lettering laid into the grass of a hillside, like mown letters (prototype): a text texture on a small mesh patch that
- *  follows the ground. */
+/** A hill's name laid into the grass of its slope, like mown letters: a text texture on a small mesh patch that follows
+ *  the ground. */
 import * as THREE from "three";
-import { wrapLabel } from "./billboard";
 
 const FONT = '"DM Sans", system-ui, sans-serif';
 
-function letteringTexture(lines: string[], share: string): { tex: THREE.CanvasTexture; aspect: number } {
+/** Split a label into at most two lines that fit `max` characters, breaking at spaces. */
+export function wrapLabel(text: string, max = 22): string[] {
+  if (text.length <= max) return [text];
+  const words = text.split(" "), lines = [""];
+  for (const w of words) {
+    const cur = lines[lines.length - 1];
+    if ((cur + " " + w).trim().length > max && cur && lines.length < 2) lines.push(w);
+    else lines[lines.length - 1] = (cur + " " + w).trim();
+  }
+  if (lines[1] && lines[1].length > max + 4) lines[1] = lines[1].slice(0, max + 2) + "…";
+  return lines;
+}
+
+function letteringTexture(lines: string[]): { tex: THREE.CanvasTexture; aspect: number } {
   const scale = 4, size = 46, lineH = 52;
   const c = document.createElement("canvas"), g = c.getContext("2d")!;
   g.font = `800 ${size}px ${FONT}`;
-  const w = Math.max(...[...lines, share].map((l) => g.measureText(l).width)) + 24;
-  const h = (lines.length + 1) * lineH + 12;
+  const w = Math.max(...lines.map((l) => g.measureText(l).width)) + 24;
+  const h = lines.length * lineH + 12;
   c.width = w * scale; c.height = h * scale;
   g.scale(scale, scale);
   g.textAlign = "center"; g.textBaseline = "top";
@@ -20,7 +32,6 @@ function letteringTexture(lines: string[], share: string): { tex: THREE.CanvasTe
     g.fillStyle = fill; g.fillText(text, w / 2, y);
   };
   lines.forEach((l, i) => draw(l, 6 + i * lineH, `800 ${size}px ${FONT}`, "#f3f6d2"));         // pale, mown-grass letters
-  draw(share, 6 + lines.length * lineH, `800 ${size - 6}px ${FONT}`, "#ffd166");
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   return { tex, aspect: w / h };
@@ -28,9 +39,9 @@ function letteringTexture(lines: string[], share: string): { tex: THREE.CanvasTe
 
 /** A patch of `cols` x `rows` points on the ground. `centre` and `width` are in layout units; the text runs along x and
  *  reads from the viewer's side (its top edge is the side further from the camera). `ground(x, y)` gives a world point. */
-export function makeGrassLabel(label: string, share: string, centre: [number, number], width: number,
+export function makeGrassLabel(label: string, centre: [number, number], width: number,
                                ground: (x: number, y: number) => THREE.Vector3, towardViewer: number): THREE.Mesh {
-  const { tex, aspect } = letteringTexture(wrapLabel(label, 18), share);
+  const { tex, aspect } = letteringTexture(wrapLabel(label, 24));
   const height = width / aspect, cols = 40, rows = 16;
   const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2), idx: number[] = [];
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {

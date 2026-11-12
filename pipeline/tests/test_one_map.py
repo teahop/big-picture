@@ -79,9 +79,11 @@ def test_industry_edges_are_unchanged_from_v1(name):
 
 
 @pytest.mark.parametrize("name", ["nodes.json", "nodes_l1.json", "nodes_l2.json"])
-def test_industry_nodes_are_unchanged_from_v1_apart_from_position_and_deep_shares(name):
+def test_industry_nodes_are_unchanged_from_v1_apart_from_position_labels_and_deep_shares(name):
     old = _v1(f"data/public/{name}")
     if old is None:
         pytest.skip("v1.0 tag not available")
-    strip = lambda ns: [{k: v for k, v in n.items() if k not in ("xy", "replaces_share")} for n in ns if n["type"] == "ind"]
+    # display labels were shortened and remainder ("Other: ...") titles now use the official sector title
+    skip = lambda n, k: k in ("xy", "replaces_share", "label") or (k == "title" and n["id"].endswith("-other"))
+    strip = lambda ns: [{k: v for k, v in n.items() if not skip(n, k)} for n in ns if n["type"] == "ind"]
     assert strip(json.loads((public_dir() / name).read_text())) == strip(old)

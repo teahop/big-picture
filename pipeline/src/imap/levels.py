@@ -20,6 +20,7 @@ REMAINDER_MIN_K = 5.0
 def industry_level1(inds: pd.DataFrame, cells: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Returns (nodes, occupation cells per node, reconciliation per sector)."""
     tot = cells[cells["occ_code"] == ALL_OCC].set_index("ind_code")
+    official = inds.set_index("ind_code")["ind_title"]
     lines = inds[(inds["ind_type"] == "Line item") & inds["sector_code"].notna() & (inds["level"].astype(str) == "1")]
     detail = cells[(cells["occ_type"] == "Line item") & (cells["occ_code"] != ALL_OCC)]
     nodes, occ_rows, rec = [], [], []
@@ -42,7 +43,8 @@ def industry_level1(inds: pd.DataFrame, cells: pd.DataFrame) -> tuple[pd.DataFra
         if keep:
             code = f"{sector}-other"
             nodes.append({"node_id": f"ind:{code}", "ind_code": code,
-                          "title": f"Other {SHORT_LABEL[sector]} (not separately listed in the matrix)",
+                          # the title feeds the layout's text similarity, so it uses the official sector title, not the display label
+                          "title": f"Other {official[sector]} (not separately listed in the matrix)",
                           "label": f"Other: {SHORT_LABEL[sector]}", "parent_id": f"ind:{sector}", "sector_code": sector,
                           "emp_2025": rem25, "emp_2035": rem35, "remainder": True})
             sec_cells = detail[detail["ind_code"] == sector].set_index("occ_code")["emp_2025"]

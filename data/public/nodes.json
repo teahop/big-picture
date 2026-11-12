@@ -1,7 +1,7 @@
 [
  {
   "id": "ind:110000",
-  "label": "Agriculture & forestry",
+  "label": "Agriculture",
   "title": "Agriculture, forestry, fishing, and hunting",
   "type": "ind",
   "level": 0,
@@ -50,7 +50,7 @@
  },
  {
   "id": "ind:210000",
-  "label": "Mining & oil/gas",
+  "label": "Mining",
   "title": "Mining, quarrying, and oil and gas extraction",
   "type": "ind",
   "level": 0,
@@ -246,7 +246,7 @@
  },
  {
   "id": "ind:420000",
-  "label": "Wholesale trade",
+  "label": "Wholesale",
   "title": "Wholesale trade",
   "type": "ind",
   "level": 0,
@@ -295,7 +295,7 @@
  },
  {
   "id": "ind:44-450",
-  "label": "Retail trade",
+  "label": "Retail",
   "title": "Retail trade",
   "type": "ind",
   "level": 0,
@@ -344,7 +344,7 @@
  },
  {
   "id": "ind:48-490",
-  "label": "Transportation & warehousing",
+  "label": "Transportation",
   "title": "Transportation and warehousing",
   "type": "ind",
   "level": 0,
@@ -442,7 +442,7 @@
  },
  {
   "id": "ind:520000",
-  "label": "Finance & insurance",
+  "label": "Finance",
   "title": "Finance and insurance",
   "type": "ind",
   "level": 0,
@@ -491,7 +491,7 @@
  },
  {
   "id": "ind:530000",
-  "label": "Real estate & leasing",
+  "label": "Real estate",
   "title": "Real estate and rental and leasing",
   "type": "ind",
   "level": 0,
@@ -540,7 +540,7 @@
  },
  {
   "id": "ind:540000",
-  "label": "Professional & technical services",
+  "label": "Professional services",
   "title": "Professional, scientific, and technical services",
   "type": "ind",
   "level": 0,
@@ -589,7 +589,7 @@
  },
  {
   "id": "ind:550000",
-  "label": "Management of companies",
+  "label": "Management",
   "title": "Management of companies and enterprises",
   "type": "ind",
   "level": 0,
@@ -638,7 +638,7 @@
  },
  {
   "id": "ind:560000",
-  "label": "Administrative & waste services",
+  "label": "Business support",
   "title": "Administrative and support and waste management and remediation services",
   "type": "ind",
   "level": 0,
@@ -687,7 +687,7 @@
  },
  {
   "id": "ind:610000",
-  "label": "Educational services",
+  "label": "Education",
   "title": "Educational services; state, local, and private",
   "type": "ind",
   "level": 0,
@@ -736,7 +736,7 @@
  },
  {
   "id": "ind:620000",
-  "label": "Health care & social assistance",
+  "label": "Health care",
   "title": "Healthcare and social assistance",
   "type": "ind",
   "level": 0,
@@ -785,7 +785,7 @@
  },
  {
   "id": "ind:710000",
-  "label": "Arts, entertainment & recreation",
+  "label": "Arts & entertainment",
   "title": "Arts, entertainment, and recreation",
   "type": "ind",
   "level": 0,
@@ -834,7 +834,7 @@
  },
  {
   "id": "ind:720000",
-  "label": "Accommodation & food services",
+  "label": "Hospitality",
   "title": "Accommodation and food services",
   "type": "ind",
   "level": 0,
@@ -932,7 +932,7 @@
  },
  {
   "id": "ind:900000",
-  "label": "Government (excl. education & hospitals)",
+  "label": "Government",
   "title": "Government, excluding state and local education and hospitals",
   "type": "ind",
   "level": 0,
