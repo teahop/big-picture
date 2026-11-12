@@ -4,6 +4,7 @@ import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } fr
 import { readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
+import { makeBillboard } from "./billboard";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -39,6 +40,7 @@ export class Scene3D {
   private flyDir: THREE.Vector3 | null = null; // camera direction from the target to reach while flying
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
+  private billboard: { id: string; group: THREE.Group } | null = null;   // prototype: one sign on the largest touched hill
   private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
   private sun = new THREE.DirectionalLight(0xfff3dc, 2.2);            // low side sun models the slopes
   private running = false;
@@ -235,8 +237,11 @@ export class Scene3D {
   }
 
   private refreshFootprint(): void {
-    for (const o of this.fpObjects) { this.group.remove(o); (o as THREE.Mesh).geometry?.dispose(); ((o as THREE.Mesh).material as THREE.Material)?.dispose(); }
-    this.fpObjects = [];
+    for (const o of this.fpObjects) {
+      this.group.remove(o);
+      o.traverse((c) => { (c as THREE.Mesh).geometry?.dispose(); const m = (c as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined; m?.map?.dispose(); m?.dispose(); });
+    }
+    this.fpObjects = []; this.billboard = null;
     const touched = this.state.touchedNow();
     for (const [id, m] of this.markers) {                  // labels: touched ones carry their share; the rest recede
       const s = touched?.get(id);
@@ -247,6 +252,14 @@ export class Scene3D {
     this.sortLabels();
     if (!touched || !touched.size) return;
     const o = this.ownerGrid(), n = this.grid().n;
+    // prototype: a wooden sign on the largest touched hill instead of its floating label
+    const [topId, topShare] = [...touched][0];
+    const node = this.b.byId.get(topId);
+    if (node) {
+      const sign = makeBillboard(node.label, Math.round(topShare * 100) + "% of your career", [1.1, 0.7, 0.5][this.state.level] ?? 0.5);
+      sign.position.copy(this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]) - 0.02));
+      this.group.add(sign); this.fpObjects.push(sign); this.billboard = { id: topId, group: sign };
+    }
     const fl = flowers(bloomCells(o, touched, n, this.values()), n);
     const size = [0.3, 0.2, 0.15][this.state.level] ?? 0.15;
     SPECIES.forEach((sp, c) => {
@@ -383,6 +396,10 @@ export class Scene3D {
       if (Math.abs(this.flyDist - next) < 0.02) this.flyDist = null;
     }
     this.controls.update();
+    if (this.billboard) {                                  // the sign turns to face the viewer (about its vertical axis only)
+      const p = this.billboard.group.position;
+      this.billboard.group.rotation.y = Math.atan2(this.camera.position.x - p.x, this.camera.position.z - p.z);
+    }
     // Auto level of detail from the camera's distance to its target (with a little hysteresis)
     const dist = this.camera.position.distanceTo(this.controls.target);
     const want = dist < AUTO_L2 * (this.autoLevel === 2 ? 1.08 : 1) ? 2 : dist < AUTO_L1 * (this.autoLevel >= 1 ? 1.08 : 1) ? 1 : 0;
@@ -392,12 +409,24 @@ export class Scene3D {
     const placed: { x0: number; x1: number; y0: number; y1: number }[] = [];
     const setVis = (m: Marker, on: boolean) => { if (m.vis !== on) { m.vis = on; m.label.style.visibility = on ? "visible" : "hidden"; } };
     const stems: string[] = [];
+    if (this.billboard) {                                  // floating labels keep clear of the sign
+      const box = new THREE.Box3().setFromObject(this.billboard.group), c = new THREE.Vector3();
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (const cx of [box.min.x, box.max.x]) for (const cy of [box.min.y, box.max.y]) for (const cz of [box.min.z, box.max.z]) {
+        c.set(cx, cy, cz).project(this.camera);
+        if (c.z >= 1) continue;
+        const sx = ((c.x + 1) / 2) * w, sy = ((1 - c.y) / 2) * h;
+        x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy);
+      }
+      if (x0 < x1) placed.push({ x0, x1, y0, y1 });
+    }
     const free = (r: { x0: number; x1: number; y0: number; y1: number }) =>
       r.x0 >= 2 && r.x1 <= w - 2 && r.y0 >= 2 && r.y1 <= h - 2 && !placed.some((p) => r.x0 < p.x1 + 3 && r.x1 > p.x0 - 3 && r.y0 < p.y1 + 2 && r.y1 > p.y0 - 2);
     for (const { node: n, m } of this.drawOrder) {          // career labels first, then the largest nodes
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
       m.ring.visible = this.ringed(n.id);
+      if (this.billboard?.id === n.id && !active) { setVis(m, false); continue; }   // the sign stands in for this label
       const priority = active || m.label.classList.contains("touched");
       if (this.state.fp && !priority) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
       if (placed.length >= MAX_LABELS && !priority) { setVis(m, false); continue; }
