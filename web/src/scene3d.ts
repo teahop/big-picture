@@ -8,7 +8,7 @@ import { makeGrassLabel } from "./grassLabel";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
-const SPAN = 12;      // world units across the layout
+const SPAN = 16;      // world units across the layout (hills keep their size; more ground between them)
 const MAX_LABELS = 60; // labels drawn at once (largest first); the rest stay hidden until hover or select
 const PICK_PX = 30;   // screen-space radius for hover and click
 const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
@@ -40,7 +40,8 @@ export class Scene3D {
   private flyDir: THREE.Vector3 | null = null; // camera direction from the target to reach while flying
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
-  private lettered = new Map<string, THREE.Mesh>();   // career hills whose name is lettered into the grass
+  private lettered = new Map<string, THREE.Mesh>();   // hills whose name is lettered into the grass
+  private unlettered = new Set<string>();             // hills that wanted lettering but had no clear spot: they keep a floating label
   private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
   private sun = new THREE.DirectionalLight(0xfff3dc, 2.2);            // low side sun models the slopes
   private running = false;
@@ -71,10 +72,10 @@ export class Scene3D {
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
 
-    this.camera.position.set(0, 6.2, 12.5);   // low oblique view across the hills; the horizon sits near the top
+    this.camera.position.set(0, 8.2, 16.4);   // low oblique view across the hills; the horizon sits near the top
     this.controls = new OrbitControls(this.camera, el);
     this.controls.enableDamping = true;
-    this.controls.minDistance = 3; this.controls.maxDistance = 40;
+    this.controls.minDistance = 3; this.controls.maxDistance = 50;
     this.controls.target.set(0, 0.6, 0);
     this.controls.maxPolarAngle = Math.PI * 0.47;   // never below the ground
     this.controls.listenToKeyEvents(el);
@@ -241,51 +242,55 @@ export class Scene3D {
       this.group.remove(o);
       o.traverse((c) => { (c as THREE.Mesh).geometry?.dispose(); const m = (c as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined; m?.map?.dispose(); m?.dispose(); });
     }
-    this.fpObjects = []; this.lettered.clear();
+    this.fpObjects = []; this.lettered.clear(); this.unlettered.clear();
     const touched = this.state.touchedNow();
     for (const [id, m] of this.markers) {                  // career labels are marked; shares stay in the panel
       if (m.label.textContent !== m.text) { m.label.textContent = m.text; m.w = 0; }
       m.label.classList.toggle("touched", !!touched?.has(id));
     }
     this.sortLabels();
-    if (!touched || !touched.size) return;
-    const o = this.ownerGrid(), n = this.grid().n;
-    // every career hill has its name lettered into the grass of its front slope, sized to the hill; a hill whose
-    // lettering would overlap a larger hill's keeps a floating label instead
-    const lvl = this.state.level, m = this.state.measure;
-    const top = Math.max(...this.b.nodes.filter((x) => this.state.visibleIds.has(x.id)).map((x) => x.size[m] ?? 0), 1e-9);
-    const rects: number[][] = [], screen: number[][] = [];
-    const topShare = Math.max(...touched.values()), eye = this.viewPoint();
+    // Names lettered into the grass: every sector at Level 0 (career sectors bold and sized by share, the rest smaller and
+    // softer); at finer levels only the career areas. A hill whose lettering would be hidden or crowded keeps a floating label.
+    const lvl = this.state.level, m = this.state.measure, eye = this.viewPoint();
     const viewCam = this.camera.clone(); viewCam.position.copy(eye); viewCam.lookAt(this.flyTo ?? this.controls.target); viewCam.updateMatrixWorld();
-    for (const [id, share] of touched) {
+    const visible = this.b.nodes.filter((x) => this.state.visibleIds.has(x.id));
+    const topShare = touched?.size ? Math.max(...touched.values()) : 1;
+    const others = lvl === 0 ? visible.filter((x) => !touched?.has(x.id)).sort((p, q) => (q.size[m] ?? 0) - (p.size[m] ?? 0)).map((x) => [x.id, 0] as [string, number]) : [];
+    const queue: [string, number][] = [...(touched ?? new Map()), ...others];
+    const rects: number[][] = [], screen: number[][] = [];
+    for (const [id, share] of queue) {
       const node = this.b.byId.get(id);
       if (!node || node.label.length > 24) continue;      // long names keep a floating label (they would not fit the ground)
-      // larger lettering for a larger share of the career, on the part of the hill facing the viewer that nearer hills
-      // do not hide: try spots down the front slope and a little to each side, keep the first one in clear view
-      const rel = Math.sqrt(share / topShare);
-      // on screen, size follows the share, not how near the hill happens to be: scale by distance from the viewer
+      const career = share > 0;
+      // on screen, size follows the share (career) or stays small (other sectors), not how near the hill happens to be
       const here = this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]));
       const far = Math.min(1.4, Math.max(0.55, here.distanceTo(eye) / eye.distanceTo(this.flyTo ?? this.controls.target)));
-      const width = ([0.6, 0.33, 0.23][lvl] ?? 0.23) * (0.4 + 0.6 * rel) * far, step = [0.05, 0.028, 0.02][lvl] ?? 0.02;
+      const base = [0.45, 0.25, 0.17][lvl] ?? 0.17, step = [0.038, 0.021, 0.015][lvl] ?? 0.015;
+      const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.55) * far;
+      // try spots down the slope facing the viewer (and a little to each side); keep the first whose whole text area is
+      // in line of sight and faces the camera
       let best: [number, number] = [node.xy[0], node.xy[1] + step], bestSeen = -1;
       for (const k of [4, 3, 5, 2, 6, 1, 7]) for (const side of [0, -0.25, 0.25]) {
         const c: [number, number] = [node.xy[0] + side * width, node.xy[1] + k * step];
-        // the whole text area must be in view: corners, edge midpoints and centre (text height is about a fifth of its width)
         const hh = width * 0.11, pts = [[-0.48, -hh], [0, -hh], [0.48, -hh], [-0.48, 0], [0, 0], [0.48, 0], [-0.48, hh], [0, hh], [0.48, hh]];
         const seen = pts.filter(([u, dy]) => this.inView(eye, c[0] + u * width, c[1] + dy)).length;
         if (seen > bestSeen) { best = c; bestSeen = seen; }
         if (seen === pts.length) break;
       }
-      const mesh = makeGrassLabel(node.label, best, width, (x, y) => this.local(x, y, this.heightAt(x, y)), 1);      const r = mesh.userData.rect as number[], pad = 0.02;
+      const mesh = makeGrassLabel(node.label, best, width, (x, y) => this.local(x, y, this.heightAt(x, y)), 1, !career);
+      const r = mesh.userData.rect as number[], pad = 0.02;
       const sr = this.screenBox(mesh, viewCam), spad = 6;
       const clash = bestSeen < 9 || rects.some((q) => r[0] < q[1] + pad && r[1] > q[0] - pad && r[2] < q[3] + pad && r[3] > q[2] - pad)
         || screen.some((q) => sr[0] < q[1] + spad && sr[1] > q[0] - spad && sr[2] < q[3] + spad && sr[3] > q[2] - spad);
       if (clash) {                                         // hidden or crowded: this hill keeps a floating label
+        this.unlettered.add(id);
         mesh.geometry.dispose(); (mesh.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh.material as THREE.Material).dispose();
         continue;
       }
       rects.push(r); screen.push(sr); this.group.add(mesh); this.fpObjects.push(mesh); this.lettered.set(id, mesh);
     }
+    if (!touched || !touched.size) return;
+    const o = this.ownerGrid(), n = this.grid().n;
     let fl = flowers(bloomCells(o, touched, n, this.values()), n);
     if (rects.length) {                                    // lettering is mown: no flowers on it
       const g = this.grid();
@@ -358,7 +363,7 @@ export class Scene3D {
   }
 
   /** Back to the whole map. */
-  frameAll(): void { this.flyTo = new THREE.Vector3(0, 0.6, 0); this.flyDist = 13.9; this.flyDir = new THREE.Vector3(0, 6.2, 12.5).normalize(); this.refreshFootprint(); }
+  frameAll(): void { this.flyTo = new THREE.Vector3(0, 0.6, 0); this.flyDist = 18.3; this.flyDir = new THREE.Vector3(0, 8.2, 16.4).normalize(); this.refreshFootprint(); }
 
   // ---- state sync
   private sync(force: boolean): void {
@@ -375,7 +380,7 @@ export class Scene3D {
 
   applyTheme(): void {
     const t = readTheme();
-    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 24, 70);   // distant hills fade into the horizon haze
+    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 30, 90);   // distant hills fade into the horizon haze
     const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
     this.hemi.intensity = dark ? 0.6 : 1.1; this.sun.intensity = dark ? 0.9 : 2.2;   // moonlit hills at night
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
@@ -492,7 +497,7 @@ export class Scene3D {
       m.ring.visible = this.ringed(n.id);
       if (this.lettered.has(n.id) && !active) { setVis(m, false); continue; }   // the lettering stands in for this label
       const priority = active || m.label.classList.contains("touched");
-      if (this.state.fp && !priority) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
+      if (this.state.fp && !priority && !this.unlettered.has(n.id)) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
       if (placed.length >= MAX_LABELS && !priority) { setVis(m, false); continue; }
       v.copy(m.anchor).project(this.camera);
       if (v.z >= 1) { setVis(m, false); continue; }

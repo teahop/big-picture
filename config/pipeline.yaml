@@ -4,7 +4,7 @@ seed: 20261109
 terrain:
   grid_size: 128           # cells per side
   margin: 0.55             # padding around the node bounding box (layout units); wide enough that edge hills fade out inside the grid
-  bandwidth_level0: 0.2    # Gaussian sigma for Level 0 nodes (layout units); sectors sit about 0.36 apart, so hills merge into rolling ranges
+  bandwidth_level0: 0.15   # Gaussian sigma for Level 0 nodes (layout units); sectors sit about 0.44 apart, with saddles of open grass between
   bandwidth_per_level: 0.55 # sigma multiplier for each deeper level (level 1 = x0.55)
   combine: pmean           # pmean: power mean of the kernels (peaks keep their own size, rounded saddles between); max: tallest only; sum: kernels add up
   pmean_power: 6           # higher = closer to max (sharper creases), lower = softer saddles
@@ -17,6 +17,6 @@ layout:                    # industry layout at every level (pipeline/src/imap/l
   level0: {k: 4, far_weight: 0.05}    # k nearest industries held at full weight; far_weight for every other pair
   level1: {k: 6, far_weight: 0.005}
   anchor: 0.3              # Level 1 pull toward its sector's position, relative to a node's neighbour weight
-  min_sep_level0: 0.36     # sectors are pushed apart to at least this (layout units; the map spans -1..1), so hills spread out
+  min_sep_level0: 0.44     # sectors are pushed apart to at least this (layout units; the map spans -1..1), so hills spread out
   min_sep_level1: 0.07     # Level 1 nodes are pushed apart to at least this
   iters: 400

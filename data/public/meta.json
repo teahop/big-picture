@@ -84,7 +84,7 @@
  "terrain": {
   "grid_size": 128,
   "margin": 0.55,
-  "bandwidth_level0": 0.2,
+  "bandwidth_level0": 0.15,
   "bandwidth_per_level": 0.55,
   "combine": "pmean",
   "pmean_power": 6,

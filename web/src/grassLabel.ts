@@ -17,7 +17,7 @@ export function wrapLabel(text: string, max = 22): string[] {
   return lines;
 }
 
-function letteringTexture(lines: string[]): { tex: THREE.CanvasTexture; aspect: number } {
+function letteringTexture(lines: string[], soft: boolean): { tex: THREE.CanvasTexture; aspect: number } {
   const scale = 4, size = 46, lineH = 52;
   const c = document.createElement("canvas"), g = c.getContext("2d")!;
   g.font = `800 ${size}px ${FONT}`;
@@ -31,7 +31,8 @@ function letteringTexture(lines: string[]): { tex: THREE.CanvasTexture; aspect: 
     g.lineJoin = "round"; g.lineWidth = 6; g.strokeStyle = "rgba(48, 72, 18, 0.35)"; g.strokeText(text, w / 2, y);   // soft cut edge
     g.fillStyle = fill; g.fillText(text, w / 2, y);
   };
-  lines.forEach((l, i) => draw(l, 6 + i * lineH, `800 ${size}px ${FONT}`, "#f3f6d2"));         // pale, mown-grass letters
+  // pale, mown-grass letters; softer (lighter weight, more see-through) for sectors outside the career
+  lines.forEach((l, i) => draw(l, 6 + i * lineH, `${soft ? 700 : 800} ${size}px ${FONT}`, soft ? "rgba(243, 246, 210, 0.8)" : "#f3f6d2"));
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   return { tex, aspect: w / h };
@@ -40,8 +41,8 @@ function letteringTexture(lines: string[]): { tex: THREE.CanvasTexture; aspect: 
 /** A patch of `cols` x `rows` points on the ground. `centre` and `width` are in layout units; the text runs along x and
  *  reads from the viewer's side (its top edge is the side further from the camera). `ground(x, y)` gives a world point. */
 export function makeGrassLabel(label: string, centre: [number, number], width: number,
-                               ground: (x: number, y: number) => THREE.Vector3, towardViewer: number): THREE.Mesh {
-  const { tex, aspect } = letteringTexture(wrapLabel(label, 24));
+                               ground: (x: number, y: number) => THREE.Vector3, towardViewer: number, soft = false): THREE.Mesh {
+  const { tex, aspect } = letteringTexture(wrapLabel(label, 24), soft);
   const height = width / aspect, cols = 40, rows = 16;
   const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2), idx: number[] = [];
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
