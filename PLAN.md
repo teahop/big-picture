@@ -18,7 +18,7 @@ live site, so `main` is not touched until Phase 4.
 | 0 | Rename and strip | done 2026-11-10, accepted by owner | `v1.0` tag on afe0ef1 (local, not pushed). QCEW helpers moved to `qcew.py` for the value-added split. Presence diffusion (halo) and the layer modes stay until Phases 1 and 2 |
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
 | 2 | Clear footprint | done 2026-11-11, accepted by owner | Entry-list footprint, weights in the page and pipeline (roll-up tested), public bundle identical without personal data. Wildflowers (drawn per species) on rolling California hills, each touched hill blooming over its share; career labels without overlap; step-down with breadcrumb and entries; Day/Night, toggles, green panel. Network and search removed |
-| 3 | Add your CV | not started | |
+| 3 | Add your CV | done 2026-11-11, awaiting owner review | Model call (gpt-6.1-sol) through the dev route and a Cloudflare Worker (built and run locally, not deployed); rules check the guesses and stand in when the proxy is off. Hit rates on 3 synthetic CVs: 100% of roles and degrees, text and PDF; rules alone 33% of roles, 100% of degrees. Built page: CSP limited to origin and proxy; only the proxy is contacted, and storage is unchanged. Public site opens with the made-up sample career (default) |
 | 4 | Download and release | not started | Publishing needs an explicit yes |
 
 ## Owner decisions (from SPEC section 10)
@@ -30,7 +30,7 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 | One-map design accepted | Phase 1 | Do not proceed to Phase 2 |
 | Footprint treatment | Phase 2 | Do not proceed to Phase 3 |
 | Connections layer kept (private only) | Phase 2 | Removed by owner 2026-11-11 |
-| Sample synthetic footprint on the public site | Phase 3 | Yes |
+| Sample synthetic footprint on the public site | Phase 3 | Yes (applied as default 2026-11-11; owner to confirm) |
 | Own footprint in public | Phase 4 | No |
 | Rename repository and URL | Phase 4 | Leave as `industry-map` |
 
@@ -87,20 +87,24 @@ Checks:
   is removed. (Done: Wildflowers kept, Outline removed.)
 
 ### Phase 3 — Add your CV
-Goal: a visitor gets a footprint from a CV without any data leaving the page.
+Goal: a visitor gets a footprint from a CV, read by a model through the site's
+proxy, corrected on one confirm screen, with nothing kept (SPEC 7, changed by
+the owner 2026-11-11).
 Checks:
-- Lookup sources verified and recorded in `data/SOURCES.md` before loaders are
-  written; lookup files are within the size budget set in the handoff.
+- Model call through a proxy: key only in `.env` / proxy secrets, never in the
+  bundle; the proxy stores and logs no CV content and limits request size and
+  rate.
 - Three synthetic CVs (PDF and pasted text) each reach a drawn footprint; the
-  manual form alone also does.
-- On the synthetic set, the correct Level 1 industry is among the offered
-  guesses for most roles and for most degrees (targets in the
-  handoff); misses are reported, not hidden.
-- Browser test: after a CV is chosen, no network request leaves the page, and
+  manual form alone also does; the rules-only fallback works with the proxy off.
+- Hit rates on the synthetic set: the correct Level 1 industry is among the
+  offered guesses for at least 70% of roles and 80% of degrees; misses
+  reported.
+- Browser test: after a CV is chosen, the only request goes to the proxy, and
   `localStorage`, `sessionStorage`, IndexedDB, cookies and the URL are
   unchanged.
-- Content-Security-Policy restricts connections to the site's own origin.
-- The page states the privacy promise and the limits in SPEC 7.4.
+- Content-Security-Policy restricts connections to the site's origin and the
+  proxy.
+- The page states the promise and the limits in SPEC 7.4.
 
 ### Phase 4 — Download and release
 Goal: one JPG download, then v2 replaces v1 in public.
@@ -124,7 +128,7 @@ Checks:
 | The footprint is still unclear | Discrete touched set, receding background, list with shares; decided on working variants, not on paper |
 | CV parsing is unreliable | The confirm step is the design, not a fallback; a manual form always works |
 | Company-to-industry guesses are poor without a server | Organisation list plus job-title ranking, alternatives offered, search over all nodes; report hit rates on synthetic CVs |
-| A visitor's CV leaks | No backend, origin-only CSP, no storage, automated no-network test |
+| A visitor's CV leaks | Proxy stores nothing, CSP limited to origin + proxy, no browser storage, automated network test |
 | Personal data reaches the public repo | v1 guards unchanged; synthetic fixtures only |
 | v2 work reaches the live site early | `v2` branch; `main` untouched until the release step |
 | Lookup files make the page slow | Size budget; load them only when the CV flow opens |

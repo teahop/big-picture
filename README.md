@@ -57,5 +57,36 @@ cd web && npm install && npm run dev
 The site is a static build of `web/` from the tracked public bundle in `data/public/`
 (`cd web && npm run build`). `.github/workflows/pages.yml` builds and deploys it to
 GitHub Pages on a push to `main`, and refuses to deploy a build that holds anything
-other than that bundle. The footprint control appears only on a local machine that
-has the private files; the published site shows the base map only.
+other than that bundle. The owner's own footprint appears only on a local machine that
+has the private files; the published site opens with a made-up sample career.
+
+### The CV reader (proxy)
+
+"Add your CV" sends the CV text to a small Cloudflare Worker in `worker/`, which asks
+the model (OpenAI) to read it and returns the structured result. It stores and logs
+nothing, accepts only the site's origins, and limits size and rate. The key never
+reaches the page. Locally, the dev server's `/api/cv` route does the same job and
+reads the key from `.env`.
+
+```
+cd worker && npm install
+npx wrangler secret put OPENAI_API_KEY      # paste the key when asked
+# set ALLOWED_ORIGINS in worker/wrangler.jsonc to the published site's origin
+npx wrangler deploy
+```
+
+Then put the Worker's URL in `config/viewer.yaml` (`cv.proxy_url`) and rebuild. With no
+proxy URL, the published page offers the hand-filled form only. Deploying the Worker and
+pushing `main` are publishing steps.
+
+### On another website (e.g. Squarespace)
+
+Embed the published page with a Code block:
+
+```html
+<iframe src="https://<published site>/" title="The Big Picture" style="width:100%;height:85vh;border:0" loading="lazy"></iframe>
+```
+
+The CV reader keeps working inside the iframe because requests still come from the
+published site's origin. Add the other site's domain to `ALLOWED_ORIGINS` only if the
+page itself is hosted there.

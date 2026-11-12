@@ -20,7 +20,7 @@ export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: 
   const canStep = (n: NodeRec) => n.level < 2 && n.level === state.level && touchedChildren(state, h, n.id, n.level).length > 0;
   let last = "";
   const render = () => {
-    const key = [state.fpVersion, state.level, state.focus.join(">"), state.size].join("|");
+    const key = [state.fpSample, state.fpVersion, state.level, state.focus.join(">"), state.size].join("|");
     if (key === last) return;
     last = key;
     panel.hidden = !state.fp;
@@ -30,7 +30,8 @@ export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: 
     const rows = [...touched].filter(([id]) => !within || (id !== within && descends(h, id, within)));
     const crumbs = ["<button type='button' data-depth='0'>All</button>"].concat(state.focus.map((id, i) =>
       "<span>›</span><button type='button' data-depth='" + (i + 1) + "'>" + esc(b.byId.get(id)?.label ?? id) + "</button>")).join("");
-    const title = "Your footprint", note = "Share of your weighted years (recent roles count more).";
+    const title = state.fpSample ? "Sample career" : "Your footprint";
+    const note = state.fpSample ? "A made-up career, to show how it works. Add your CV to see yours." : "Share of your weighted years (recent roles count more).";
     panel.innerHTML = "<nav class='crumbs' aria-label='Footprint levels'>" + crumbs + "</nav><h3>" + title + "</h3><p class='hint'>" + note + "</p><ul class='fp-list'>"
       + rows.map(([id, s]) => {
         const n = b.byId.get(id);
@@ -58,6 +59,7 @@ export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: 
     const step = canStep(n) ? "<button type='button' class='fp-step' data-step='" + esc(n.id) + "'>Step into " + esc(n.label) + " ›</button>" : "";
     const why = entriesAt(state.fp, n.id, state.level).map(({ entry: e, share }) =>
       "<li>" + esc(e.label) + " <small>" + (e.kind === "role" ? "role, " + (e.years ?? 0).toFixed(1) + " years" + (e.end_year ? ", to " + Math.floor(e.end_year) : "") : "degree") + " &middot; " + pct(share) + " of this area</small></li>").join("");
-    return "<h3>Your footprint here</h3><p>" + pct(s) + " of your footprint.</p>" + step + (why ? "<h3>Why</h3><ul class='fp-why'>" + why + "</ul>" : "");
+    const whose = state.fpSample ? "the sample career" : "your footprint";
+    return "<h3>" + (state.fpSample ? "Sample career here" : "Your footprint here") + "</h3><p>" + pct(s) + " of " + whose + ".</p>" + step + (why ? "<h3>Why</h3><ul class='fp-why'>" + why + "</ul>" : "");
   };
 }

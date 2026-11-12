@@ -28,9 +28,13 @@ to them for everything v2 does not change.
    repo visibility, renaming the repo, or pushing `main` (which redeploys the
    live site) needs an explicit yes in that session. v2 work stays on the `v2`
    branch until the release step.
-6. **A visitor's CV never leaves their browser.** No backend, no third-party
-   request carrying CV content, nothing written to browser storage or the URL.
-   Fixtures for the CV flow are synthetic; the owner's CV is never one.
+6. **A visitor's CV is read by a model through the site's own proxy, and nothing
+   is kept.** The CV text goes only to the proxy, which forwards it to the model
+   provider (OpenAI) and stores nothing; the page writes nothing to browser
+   storage or the URL; the API key lives only in `.env` and the proxy's secrets,
+   never in the browser bundle. Fixtures for the CV flow are synthetic; the
+   owner's CV is never one. (Changed by the owner on 2026-11-11 from "never
+   leaves the browser".)
 
 ## Layout
 

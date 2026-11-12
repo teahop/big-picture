@@ -17,6 +17,7 @@ export class State {
   fpMode: FootprintMode = "off";
   fp: Computed | null = null;      // weights of the footprint being shown (null when off)
   fpVersion = 0;                   // bumps whenever `fp` changes, so views know to redraw
+  fpSample = false;                // true while the made-up sample career is shown
   focus: string[] = [];            // breadcrumb: the touched nodes stepped into, outermost first
   private listeners: (() => void)[] = [];
   subscribe(cb: () => void): void { this.listeners.push(cb); }

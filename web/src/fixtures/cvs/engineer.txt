@@ -1,0 +1,15 @@
+Sam Placeholder
+Software engineer  ·  sam.placeholder@example.org
+
+Work history
+2022–now   Engineering Manager, Example SaaS Co. (B2B workflow software sold to mid-size companies)
+           Lead three teams building the scheduling and billing modules of our subscription product.
+2018–2022  Senior Software Engineer, Example Cloud Inc.
+           Built storage and data-center automation for a cloud hosting provider; on-call for core services.
+2015–2018  Software Engineer, Example Community Bank
+           Maintained online banking and loan-origination systems for a regional bank.
+
+Education
+2011–2015  B.S., Computer Science, Example Institute of Technology
+
+Skills: Go, TypeScript, PostgreSQL, Kubernetes, team leadership

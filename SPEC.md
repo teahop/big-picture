@@ -178,18 +178,22 @@ paper.
 
 ## 7. Add your CV
 
-### 7.1 Promise
-Nothing a visitor provides leaves their browser, and nothing is kept after the
-tab closes. This is enforced, not only stated:
+### 7.1 Promise (changed by the owner, 2026-11-11)
+A visitor's CV is read by a language model, and nothing is kept:
 
-- All parsing and matching runs in the page. There is no backend, no analytics
-  on the CV flow, and no third-party request that carries CV content.
-- A Content-Security-Policy limits network access to the site's own origin.
+- The page sends the CV text to the site's own proxy, which forwards it to the
+  model provider (OpenAI) to read it and returns the result. The proxy stores
+  nothing and logs no CV content. The API key never reaches the browser.
+- PDF text is extracted in the page; only the text is sent.
+- A Content-Security-Policy limits network access to the site's own origin and
+  the proxy.
 - Nothing is written to `localStorage`, `sessionStorage`, IndexedDB, cookies or
   the URL.
-- An automated browser test loads a synthetic CV and asserts that no request
-  leaves the page after the file is chosen and that storage stays empty.
-- The page says this in one sentence beside the upload control.
+- An automated browser test loads a synthetic CV and asserts that the only
+  request after the file is chosen goes to the proxy and that storage stays
+  empty.
+- The page says this in one sentence beside the upload control. A manual form
+  that sends nothing is always available.
 
 ### 7.2 Flow
 1. **Add.** Choose a PDF or paste text. A short manual form (role, organisation,
@@ -204,29 +208,22 @@ tab closes. This is enforced, not only stated:
 4. **See.** The footprint is drawn as in section 6.
 5. **Download.** Section 8.
 
-### 7.3 Matching without a server
-The pipeline builds small public lookup files for the viewer:
+### 7.3 Matching
+The model returns each role and degree with up to three guesses from the map's
+industry ids; the response schema allows only real ids. Deterministic checks in
+the page then guard it:
 
-| Guess | From | Built from |
-|---|---|---|
-| Role → industry (Level 1) | Organisation name, then job title | A public company-to-industry list; job titles to occupation (O*NET titles), occupation to industries (Employment Matrix shares) |
-| Degree → industries (Level 1), PROPOSED, confirm in Phase 2 | Subject of the degree | CIP titles → the occupations graduates enter (CIP-SOC crosswalk) → the industries employing them (Employment Matrix shares) |
+- dates are sane (end not before start, not in the future); years follow from
+  them; a degree counts a fixed number of years (config);
+- each guess is cross-checked against rules built from public data (job title
+  to occupations to industries, O*NET titles and Employment Matrix shares;
+  degree subject to industries through CIP titles); a disagreement is shown on
+  the confirm screen, not accepted silently;
+- if the proxy is unavailable or the visitor prefers, the same rules produce
+  the guesses (and the manual form always works).
 
-Matching is by normalised text and token overlap. The organisation is the
-stronger signal for industry; the title only ranks alternatives. Where there is
-no confident guess the row asks the visitor to pick.
-
-Under hard rule 2, the company list and any new file are verified against their
-current documentation before a loader is written, and recorded in
-`data/SOURCES.md`. Candidates to check: SEC EDGAR company names with SIC codes
-and a SIC-to-NAICS concordance; O*NET 31.0 job titles (already ingested); the
-CIP 2020 code list. If the lookup files cannot be kept small enough to load
-quickly, the build stops and reports options.
-
-Considered and not chosen: sending the CV to a language model (it would leave
-the browser and need a key or a backend); a sentence-embedding model in the
-browser (tens of megabytes for a feature that is "just for fun"; revisit only
-if text matching proves too weak in Phase 3).
+The model and its settings are recorded in `data/SOURCES.md`; the model id is a
+setting so it can be changed without code changes.
 
 ### 7.4 Limits to state on the page
 - Level 2 exists only in a few deep zones, so most visitors' footprints stop at
@@ -275,5 +272,6 @@ v1 §9 stands. Additions:
 
 ## 11. Out of scope for v2
 
-International data; time animation; accounts or a backend; saving or sharing
+International data; time animation; accounts or a backend (beyond the stateless CV
+proxy of section 7); saving or sharing
 footprints by link; comparing two careers; any recommendation of where to go.

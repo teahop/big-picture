@@ -19,6 +19,8 @@
         <input type="checkbox" id="fp-on" role="switch" checked />
         <span class="track" aria-hidden="true"></span><span class="switch-label">Footprint</span>
       </label>
+      <button id="cv-open" class="header-link cv-open" type="button" aria-haspopup="dialog">Add your CV</button>
+      <button id="cv-clear" class="header-link" type="button" hidden>Clear CV</button>
       <fieldset class="seg">
         <legend class="sr">Detail</legend>
         <label><input type="radio" name="lod" value="0" checked /><span>Sectors</span></label>
@@ -68,6 +70,11 @@
       <p>Level 0 shows 20 industry sectors. Zoom in, or use the Detail control, for 304 detailed industries (Level 1), and then the deep zones (Level 2). Finer nodes replace their parent.</p>
       <h3>Limits</h3>
       <p>This is a descriptive map of the present, not a forecast or advice. Classification boundaries, estimates and similarity scores all carry error; the sources and rules are in the project's repository (<code>data/SOURCES.md</code>, <code>SPEC.md</code>).</p>
+    </dialog>
+    <dialog id="cv" aria-labelledby="cv-title">
+      <form method="dialog"><button class="close" aria-label="Close">Close</button></form>
+      <h2 id="cv-title">Add your CV</h2>
+      <div class="cv-body"></div>
     </dialog>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -43,10 +43,14 @@ jobs:
             echo "Private path in web/dist"; exit 1
           fi
           # Only these data files are expected beside the page
-          expected="edges.json edges_l1.json grids.json grids_l1.json grids_l2.json layout.json layout_children.json meta.json nodes.json nodes_l1.json nodes_l2.json"
+          expected="edges.json edges_l1.json grids.json grids_l1.json grids_l2.json layout.json layout_children.json lookup_degrees.json lookup_titles.json meta.json nodes.json nodes_l1.json nodes_l2.json"
           for f in $(find web/dist -maxdepth 1 -type f -name '*.json' -printf '%f\n'); do
             case " $expected " in *" $f "*) ;; *) echo "Unexpected data file in build: $f"; exit 1;; esac
           done
+          # The model call happens in the proxy: no SDK and nothing key-like may reach the page
+          if grep -rqE 'sk-[A-Za-z0-9_-]{20,}|OPENAI_API_KEY|OPEN_API_KEY|api\.openai\.com' web/dist; then
+            echo "Model key or provider call in web/dist"; exit 1
+          fi
           echo "web/dist looks like the public bundle only"
       - uses: actions/upload-pages-artifact@v3
         with:

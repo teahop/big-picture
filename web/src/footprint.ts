@@ -100,15 +100,16 @@ export function descends(h: Hierarchy, id: string, ancestor: string): boolean {
   return false;
 }
 
-/** The owner's private footprint (dev and preview servers only), or the synthetic sample with ?footprint=synthetic in
- *  development. The published site has neither, so it shows no footprint until Phase 3. */
-export async function loadFootprint(): Promise<FootprintData | null> {
-  const want = new URLSearchParams(location.search).get("footprint");
-  if (import.meta.env.DEV && want === "synthetic") return (await import("./fixtures/synthetic_footprint.json")).default as unknown as FootprintData;
-  if (!import.meta.env.DEV && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") return null;
-  try {
-    const res = await fetch("_private/footprint.json", { cache: "no-store" });
-    if (!res.ok || !(res.headers.get("content-type") ?? "").includes("json")) return null;
-    return (await res.json()) as FootprintData;
-  } catch { return null; }
+/** The footprint the page opens with: the owner's private file on the dev and preview servers when it is there,
+ *  otherwise the synthetic sample career (made up; SPEC 10, question 3). `?footprint=synthetic` forces the sample. */
+export async function loadFootprint(): Promise<{ data: FootprintData; sample: boolean } | null> {
+  const sample = async () => ({ data: (await import("./fixtures/synthetic_footprint.json")).default as unknown as FootprintData, sample: true });
+  if (new URLSearchParams(location.search).get("footprint") === "synthetic") return sample();
+  if (import.meta.env.DEV || location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    try {
+      const res = await fetch("_private/footprint.json", { cache: "no-store" });
+      if (res.ok && (res.headers.get("content-type") ?? "").includes("json")) return { data: (await res.json()) as FootprintData, sample: false };
+    } catch { /* no private file: fall through to the sample */ }
+  }
+  return sample();
 }

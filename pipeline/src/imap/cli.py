@@ -6,7 +6,7 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "graph", "layout", "terrain", "export"}
+IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "graph", "layout", "terrain", "export", "lookup"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
@@ -17,6 +17,7 @@ STAGES: dict[str, str] = {
     "layout": "Industry layout at every level (shared occupations and text)",
     "terrain": "Height grids per level and size setting",
     "export": "Write the public JSON bundle (--target public)",
+    "lookup": "Lookup files for the CV flow: job titles and degree programmes to industries",
     "personal": "Private footprint from personal inputs (parts: roles, education, footprint)",
 }
 
@@ -80,6 +81,9 @@ def run_stage(args: argparse.Namespace) -> int:
     if name == "terrain":
         from . import terrain
         return terrain.run()
+    if name == "lookup":
+        from . import lookup
+        return lookup.run()
     from . import export
     return export.run(args.target)
 

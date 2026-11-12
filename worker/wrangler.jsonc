@@ -1,0 +1,20 @@
+// The CV proxy (SPEC 7.5): forwards a visitor's CV text to the model and returns the structured reading. Stores nothing.
+// Deploying is a publishing step: it needs the owner's explicit yes (CLAUDE.md rule 5).
+//   npx wrangler secret put OPENAI_API_KEY      (the key never goes in this file or the page)
+//   npx wrangler deploy
+{
+  "name": "big-picture-cv",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": false },          // no request logs: CV text must not be kept anywhere
+  "vars": {
+    "MODEL": "gpt-6.1-sol",                       // keep in step with config/viewer.yaml cv.model
+    "EFFORT": "low",
+    // Origins allowed to call the proxy, comma separated: the published site (GitHub Pages) and the local preview.
+    // Add the Squarespace domain only if the page is hosted there directly; an iframe keeps the Pages origin.
+    "ALLOWED_ORIGINS": "http://localhost:4173"
+  },
+  // Approximate per-location limit (Cloudflare Workers rate limiting binding; period must be 10 or 60 seconds).
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "4401", "simple": { "limit": 5, "period": 60 } }]
+}
