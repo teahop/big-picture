@@ -115,9 +115,9 @@ for every label at some zoom, and a long tradition of showing height clearly.
   colours (violet at the foot through to red at the summit), over its own
   ground only (the same ownership rule as the v2 flowers). Untouched hills keep
   the plain map tints.
-- How much of a touched hill is coloured: decided by the owner on working
-  variants in Phase 2 (whole hill, or from the summit down in proportion to the
-  share, as the flowers do).
+- The whole touched hill is coloured, down to a fifth of its own height (owner,
+  2026-11-13; colouring only the career's share from the summit down was built
+  and was nearly invisible at full view).
 - The panel keeps the career list and bars; at this level the bars use the same
   rainbow so the panel reads as a legend.
 
@@ -164,7 +164,7 @@ touched until the owner says to release.
    clip, `pull` and how far the separation pass moves things.
 2. **Size setting moves the map** (3.3): keep, or fix y to Jobs in both
    settings.
-3. **Rainbow coverage** (4.4): whole hill or by share.
+3. **Rainbow coverage** (4.4): whole hill (decided 2026-11-13).
 4. **Size as depth** (5.1): confirm the inverted ocean, or draw large
    categories as shallows and islands instead.
 

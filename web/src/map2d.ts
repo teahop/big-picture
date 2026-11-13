@@ -18,7 +18,6 @@ const BORDER = 1.1;          // the neat border, in layout units (the hills fill
 const MIN_ZOOM = 0.8;
 const HILL_FLOOR = 0.2;      // rainbow bands cover a career hill down to this share of its own top (not the flats around it)
 const MARGIN = { top: 70, bottom: 30, left: 60, right: 10 };   // screen space kept clear around the whole map (pixels)        // zooming out past this returns to the 3D Sectors view
-export type Rainbow = "share" | "whole";
 
 const VERT = /* glsl */ `
 varying vec2 vUv;
@@ -87,8 +86,6 @@ export class Map2D {
   private labels = new Map<string, { el: HTMLDivElement; w: number; h: number }>();
   private key = ""; private maskKey = ""; private viewKey = "";
   private w = 1; private h = 1;
-  // whole career hills by default; `?rainbow=share` colours only the career's share of each hill, from the top down
-  rainbow: Rainbow = new URLSearchParams(location.search).get("rainbow") === "share" ? "share" : "whole";
   onLeave: () => void = () => {};
   labelsShown = 0;
 
@@ -153,7 +150,7 @@ export class Map2D {
    *  coloured ground (eased heights), B = hovered. */
   refreshMask(): void {
     const touched = this.state.touchedNow(), act = this.state.active, sel = this.state.selected;
-    const key = [this.key, this.state.fpVersion, this.rainbow, act?.id ?? "", sel?.id ?? ""].join("|");
+    const key = [this.key, this.state.fpVersion, act?.id ?? "", sel?.id ?? ""].join("|");
     if (key === this.maskKey) return;
     this.maskKey = key;
     const lvl = this.state.level, g = this.b.grids[lvl]!, n = g.n, o = this.ownerGrid();
@@ -168,9 +165,9 @@ export class Map2D {
         // the hill itself: not the low ground at its edges that only loosely belongs to it
         const floor = h(ks[0]) * HILL_FLOOR, cut = ks.findIndex((k) => h(k) < floor);
         if (cut > 0) ks.length = cut;
-        const keep = Math.max(1, this.rainbow === "whole" ? ks.length : Math.round(ks.length * Math.min(1, touched.get(o.ids[w]) ?? 0)));
-        const top = h(ks[0]), foot = Math.floor(h(ks[keep - 1]) / CONTOUR) * CONTOUR;   // violet starts at the contour below the lowest coloured ground
-        for (const k of ks.slice(0, keep)) { data[4 * k] = 255; data[4 * k + 1] = Math.round(top * 255); data[4 * k + 3] = Math.round(foot * 255); }
+        // the whole career hill is coloured (owner, 2026-11-13; colouring only the career's share was nearly invisible)
+        const top = h(ks[0]), foot = Math.floor(h(ks[ks.length - 1]) / CONTOUR) * CONTOUR;   // violet starts at the contour below the lowest coloured ground
+        for (const k of ks) { data[4 * k] = 255; data[4 * k + 1] = Math.round(top * 255); data[4 * k + 3] = Math.round(foot * 255); }
       }
     }
     // copy each coloured cell's top and foot one cell outward, so the edge blends into the band colour, not toward red
@@ -294,9 +291,10 @@ export class Map2D {
       s.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`; return s;
     };
     const xs: HTMLElement[] = [], ys: HTMLElement[] = [], m = this.state.measure;
+    let last = -Infinity;
     for (const t of niceTicks(sc.g_lo, sc.g_hi, 5)) {
       const [px] = this.screen(-1 + (2 * (t - sc.g_lo)) / (sc.g_hi - sc.g_lo), 0);
-      if (px > 70 && px < this.w - 190) xs.push(tick("t", (t > 0 ? "+" : "") + t + "%", px, 0));   // clear of the axis title
+      if (px > 70 && px < this.w - 190 && px - last >= 48) { xs.push(tick("t", (t > 0 ? "+" : "") + t + "%", px, 0)); last = px; }   // clear of the title and each other
     }
     xs.push(tick("title", "Projected growth to 2035 →", this.w - 12, 0));
     for (const v of logTicks(sc.s_lo, sc.s_hi)) {
