@@ -24,7 +24,8 @@ const WRAP_SHIFTS = [0, -0.3, 0.3, -0.6, 0.6, -0.9, 0.9];   // turns around the 
 /** Axis lettering on the ground (layout units; the hills fill -1..1): the front row's y, the side column's x, how far
  *  the end words sit in from the corners, word and tick widths, and how far below the words the ticks sit. */
 /** Axis signs (layout units; the hills fill -1..1): where each stands, and the sign height in world units. */
-const SIGNS = { growing: [1.02, 0.55], largerBy: "ind:520000", largerOffset: [-0.3, 0.02], big: 1.9 };   // LARGER stands to the left of the Finance hill
+// LARGER stands just right of the valley between Agriculture and Government (the midpoint of the two hills, nudged right)
+const SIGNS = { growing: [1.02, 0.55], largerBetween: ["ind:110000", "ind:900000"], largerOffset: [0.14, 0], big: 1.9 };
 /** Where the camera starts (and returns to): 19 units from the centre, about 32 degrees above the ground. */
 const HOME = new THREE.Vector3(0, 10.1, 15.9);   // how long the hills take to slide when the size setting changes    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
 
@@ -442,7 +443,7 @@ export class Scene3D {
   }
 
   /** The axes as two hand-lettered signs on sticks (Sectors only; the finer levels get their own views): GROWING at the
-   *  right, and LARGER beside the Finance hill toward the back. */
+   *  right, and LARGER just right of the valley between Agriculture and Government. */
   private letterAxes(): void {
     if (!this.b.meta.axes || this.state.level !== 0) return;
     const night = effectiveTheme() === "dark";
@@ -453,8 +454,8 @@ export class Scene3D {
       this.group.add(sign); this.fpObjects.push(sign);
     };
     put(["Growing →"], SIGNS.growing[0], SIGNS.growing[1], SIGNS.big);
-    const by = this.b.byId.get(SIGNS.largerBy);
-    if (by) put(["Larger ↑"], by.xy[0] + SIGNS.largerOffset[0], by.xy[1] + SIGNS.largerOffset[1], SIGNS.big);
+    const [a, c] = SIGNS.largerBetween.map((id) => this.b.byId.get(id));
+    if (a && c) put(["Larger ↑"], (a.xy[0] + c.xy[0]) / 2 + SIGNS.largerOffset[0], (a.xy[1] + c.xy[1]) / 2 + SIGNS.largerOffset[1], SIGNS.big);
   }
 
   /** Where the camera is, or will be once a step-down flight ends. */
