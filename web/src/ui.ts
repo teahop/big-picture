@@ -1,4 +1,4 @@
-import { type Bundle, type Link, type NodeRec, fmtGrowth, fmtJobs, fmtMeasure, links } from "./data";
+import { type Bundle, type Link, type Measure, type NodeRec, type SizeSetting, axisScale, fmtGrowth, fmtJobs, fmtMeasure, links } from "./data";
 import type { State } from "./state";
 
 const el = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -19,7 +19,18 @@ function lineage(b: Bundle, n: NodeRec): string {
     + (kids ? " &middot; " + kids + " finer nodes (zoom in)" : "") + "." + est + "</p>";
 }
 
-function details(b: Bundle, n: NodeRec): string {
+/** " (beyond the map's scale ...)" when a node's growth or size lies outside the axis scale of its level. */
+function beyondScale(b: Bundle, n: NodeRec, setting: SizeSetting, measure: Measure): { growth: string; size: string } {
+  const sc = axisScale(b, setting, n.level), v = n.size[measure] ?? 0, out = { growth: "", size: "" };
+  if (!sc) return out;
+  if (n.growth !== null && n.growth > sc.g_hi) out.growth = " <small>(beyond the map's scale: drawn at the right edge)</small>";
+  if (n.growth !== null && n.growth < sc.g_lo) out.growth = " <small>(beyond the map's scale: drawn at the left edge)</small>";
+  if (v < sc.s_lo) out.size = " <small>(smaller than the map's scale: drawn at the front edge)</small>";
+  return out;
+}
+
+function details(b: Bundle, n: NodeRec, setting: SizeSetting, measure: Measure): string {
+  const far = beyondScale(b, n, setting, measure);
   const occ = (n.top_occupations ?? []).map((o) => "<li>" + esc(o.title) + " <small>" + o.share_pct.toFixed(1) + "%</small></li>").join("");
   const members = n.members && n.members.length ? "<h3>Example organisations</h3><p>" + n.members.map(esc).join(", ") + "</p>" : "";
   return "<h2>" + (n.provenance === "estimated" ? "≈ " : "") + esc(n.label) + "</h2>" + lineage(b, n)
@@ -27,7 +38,7 @@ function details(b: Bundle, n: NodeRec): string {
     + "<dl><dt>Employment 2025</dt><dd>" + fmtJobs(n.size.employment) + " jobs</dd>"
     + "<dt>Projected 2035</dt><dd>" + fmtJobs(n.size.employment_2035) + " jobs</dd>"
     + (n.size.value_added !== undefined ? "<dt>Value added 2025</dt><dd>" + fmtMeasure("value_added", n.size.value_added) + " <small>(" + esc(n.value_added_basis ?? "") + ")</small></dd><dt>Per job</dt><dd>" + fmtMeasure("va_per_job", n.size.va_per_job) + "</dd>" : "")
-    + "<dt>Projected growth</dt><dd>" + fmtGrowth(n.growth) + " over ten years</dd></dl>"
+    + "<dt>Projected growth</dt><dd>" + fmtGrowth(n.growth) + " over ten years" + far.growth + "</dd></dl>" + (far.size ? "<p class='sub'>" + far.size + "</p>" : "")
     + members
     + section("Most similar industries", simpleList(links(b, n.id, 5)))
     + section("Largest occupations", occ);
@@ -63,8 +74,8 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const key = [n?.id ?? "", state.fpVersion, state.fpSample, state.level, state.size].join("|");
     if (key === lastShown) return;                         // nothing in the box would change: leave the DOM alone
     lastShown = key;
-    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or see your place by uploading your CV.</p>"; return; }
-    panel.innerHTML = extra(n) + details(b, n);
+    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Left to right is projected growth to 2035 (faster growth to the right); front to back is size, with the largest at the back, and height is size too. Industries lean a little toward their sector. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or see your place by uploading your CV.</p>"; return; }
+    panel.innerHTML = extra(n) + details(b, n, state.size, state.measure);
   };
   state.subscribe(render); render();
 

@@ -78,7 +78,7 @@
   }
  ],
  "layout": {
-  "stage": "joint-level0",
+  "stage": "axes-level0",
   "seed": 20261109
  },
  "terrain": {
@@ -90,6 +90,69 @@
   "hill_stretch_max": 2.6,
   "pmean_power": 4,
   "height_exponent": 0.35
+ },
+ "axes": {
+  "scales": {
+   "activity": {
+    "0": {
+     "g_hi": 9.2289,
+     "g_lo": 0.2893,
+     "s_hi": 24454.6,
+     "s_lo": 599.91
+    },
+    "1": {
+     "g_hi": 14.0073,
+     "g_lo": -10.956,
+     "s_hi": 7661.9,
+     "s_lo": 11.22
+    },
+    "2": {
+     "g_hi": 14.0073,
+     "g_lo": -10.956,
+     "s_hi": 7661.9,
+     "s_lo": 11.22
+    }
+   },
+   "dollars": {
+    "0": {
+     "g_hi": 9.2289,
+     "g_lo": 0.2893,
+     "s_hi": 2930.1,
+     "s_lo": 318.03
+    },
+    "1": {
+     "g_hi": 14.0073,
+     "g_lo": -10.956,
+     "s_hi": 1012.0,
+     "s_lo": 2.1294
+    },
+    "2": {
+     "g_hi": 14.0073,
+     "g_lo": -10.956,
+     "s_hi": 1012.0,
+     "s_lo": 2.1294
+    }
+   }
+  },
+  "params": {
+   "growth_clip_pct": [
+    5,
+    95
+   ],
+   "min_sep": {
+    "0": 0.26,
+    "1": 0.06,
+    "2": 0.045
+   },
+   "pull": 0.3,
+   "size_clip_low_pct": 5
+  },
+  "measures": {
+   "activity": "employment",
+   "dollars": "value_added"
+  },
+  "x": "projected employment growth 2025-2035, percent, linear: g_lo at x = -1, g_hi at x = 1",
+  "y": "size, log scale: s_hi (largest) at y = -1 (back), s_lo at y = 1 (front)"
  },
  "display_name_source": "config/site.yaml",
  "level_notes": {

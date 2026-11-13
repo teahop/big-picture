@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
+import { type Bundle, type LevelGrids, type NodeRec, axisScale, levelMaxSize, sampleAt } from "./data";
 import { effectiveTheme, readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
@@ -16,7 +16,13 @@ const AUTO_L2 = 7.0;  // ... and to Level 2
 const CFG = __VIEWER__;
 
 const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
-const GLOW = 0.55;    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
+const GLOW = 0.55;
+const MORPH_MS = 900;
+/** Axis lettering on the ground (layout units; the hills fill -1..1): the front row's y, the side column's x, how far
+ *  the end words sit in from the corners, word and tick widths, and how far below the words the ticks sit. */
+const AXIS = { front: 1.3, side: -0.9, inset: 0.2, word: 0.36, tick: 0.17, tickDrop: -0.02, sideFront: 1.02, sideBack: -1.12 };
+/** Where the camera starts (and returns to): 19 units from the centre, about 32 degrees above the ground. */
+const HOME = new THREE.Vector3(0, 10.1, 15.9);   // how long the hills take to slide when the size setting changes    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
 
 interface Marker { label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 /** Label slots tried in order, in label widths (x) and label heights (y, negative = up). */
@@ -54,6 +60,7 @@ export class Scene3D {
   private base = new Float32Array(MESH_N * MESH_N);          // rolling base height at each mesh point (world units)
   private land: Float32Array = new Float32Array(0);                      // the drawn ground height at each mesh point (softened)
   private autoLevel = 0;
+  private lastLevel = -1;
   private frameMs = 0;        // moving average of CPU time spent per frame (render + label layout)
   private labelsShown = 0;
   onAutoLevel: (level: number) => void = () => {};
@@ -70,14 +77,14 @@ export class Scene3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     const el = this.renderer.domElement;
     el.tabIndex = 0;
-    el.setAttribute("aria-label", "3D terrain of US industries. Height is size (jobs or value added); similar industries sit near each other. Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
+    el.setAttribute("aria-label", "3D terrain of US industries. Left to right is projected growth, front to back is size (largest at the back); height is size too. Zoom in to reveal finer levels. Arrow keys pan, mouse drag orbits, scroll zooms. Use the lists for keyboard selection.");
     host.appendChild(el);
 
     const g = b.grids[0]!;
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
 
-    this.camera.position.set(0, 8.2, 16.4);   // low oblique view across the hills; the horizon sits near the top
+    this.camera.position.copy(HOME);   // oblique view across the hills, high enough to read the large sectors at the back
     this.controls = new OrbitControls(this.camera, el);
     this.controls.enableDamping = true;
     this.controls.minDistance = 3; this.controls.maxDistance = 50;
@@ -165,15 +172,42 @@ export class Scene3D {
   }
 
   private refreshHeights(): void {
-    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute, n = MESH_N;
-    const raw = new Float32Array(n * n);
+    const n = MESH_N, raw = new Float32Array(n * n);
     for (let k = 0; k < n * n; k++) raw[k] = this.dataAt(this.meshXY[2 * k], this.meshXY[2 * k + 1]) + this.base[k];
     this.land = blur(raw, n, SOFTEN);                       // round every summit and saddle a little
-    for (let k = 0; k < n * n; k++) {
-      const p = this.local(this.meshXY[2 * k], this.meshXY[2 * k + 1], this.land[k]);
+    this.showLand(this.land);
+  }
+
+  /** Put the mesh at these ground heights. */
+  private showLand(land: Float32Array): void {
+    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
+    for (let k = 0; k < MESH_N * MESH_N; k++) {
+      const p = this.local(this.meshXY[2 * k], this.meshXY[2 * k + 1], land[k]);
       pos.setXYZ(k, p.x, p.y, p.z);
     }
     pos.needsUpdate = true; this.mesh.geometry.computeVertexNormals();
+  }
+
+  /** The size setting moves the hills (y follows the size measure): slide the ground and the labels from where they were
+   *  to where they now belong, then redraw the colours, lettering and flowers on the new ground. */
+  private morph: { t0: number; from: Float32Array; anchors: Map<string, [THREE.Vector3, THREE.Vector3]> } | null = null;
+  private startMorph(): void {
+    const from = Float32Array.from(this.land), before = new Map<string, THREE.Vector3>();
+    for (const [id, m] of this.markers) before.set(id, m.anchor.clone());
+    this.refreshHeights(); this.placeMarkers();
+    const anchors = new Map<string, [THREE.Vector3, THREE.Vector3]>();
+    for (const [id, m] of this.markers) { const a = before.get(id); if (a) { anchors.set(id, [a, m.anchor.clone()]); m.anchor.copy(a); } }
+    this.showLand(from);
+    for (const o of this.fpObjects) o.visible = false;     // lettering and flowers belong to the new ground
+    this.morph = { t0: performance.now(), from, anchors };
+  }
+  private stepMorph(): void {
+    const mo = this.morph!, t = Math.min(1, (performance.now() - mo.t0) / MORPH_MS), e = t * t * (3 - 2 * t);
+    const cur = new Float32Array(this.land.length);
+    for (let k = 0; k < cur.length; k++) cur[k] = mo.from[k] + (this.land[k] - mo.from[k]) * e;
+    this.showLand(cur);
+    for (const [id, [a, b]] of mo.anchors) this.markers.get(id)?.anchor.copy(a).lerp(b, e);
+    if (t >= 1) { this.morph = null; this.refreshColours(); this.refreshFootprint(); }
   }
 
   private refreshColours(): void {
@@ -322,6 +356,7 @@ export class Scene3D {
     const others = lvl === 0 ? visible.filter((x) => !touched?.has(x.id)).sort((p, q) => (q.size[m] ?? 0) - (p.size[m] ?? 0)).map((x) => [x.id, 0] as [string, number]) : [];
     const queue: [string, number][] = [...(touched ?? new Map()), ...others];
     const rects: number[][] = [], screen: number[][] = [];
+    this.letterAxes(rects);                                  // the axes first: hill names keep clear of them
     for (const [id, share] of queue) {
       const node = this.b.byId.get(id);
       if (!node || node.label.length > 24) continue;      // long names keep a floating label (they would not fit the ground)
@@ -336,17 +371,25 @@ export class Scene3D {
         // sectors: always lettered, just below the summit on the viewer's side, each with its own small offset and tilt
         const j1 = hash01(id, 1), j2 = hash01(id, 2), j3 = hash01(id, 3);
         // if it would run into a name already placed, shrink it in steps and nudge it sideways (the larger shares go first)
-        const overlaps = (r: number[]) => rects.some((q) => r[0] < q[1] + 0.015 && r[1] > q[0] - 0.015 && r[2] < q[3] + 0.01 && r[3] > q[2] - 0.01);
+        // (on the ground and on screen: names at the back are seen at a low angle and can collide there only)
+        const spad = 4, onScreen = (sr: number[]) => screen.some((q) => sr[0] < q[1] + spad && sr[1] > q[0] - spad && sr[2] < q[3] + spad && sr[3] > q[2] - spad);
+        const overlaps = (mm: THREE.Mesh) => { const r = mm.userData.rect as number[];
+          return rects.some((q) => r[0] < q[1] + 0.015 && r[1] > q[0] - 0.015 && r[2] < q[3] + 0.01 && r[3] > q[2] - 0.01) || onScreen(this.screenBox(mm, viewCam)); };
         let mesh: THREE.Mesh | null = null;
         for (const f of [1, 0.85, 0.72, 0.6]) for (const dx of [0, -0.08, 0.08, -0.15, 0.15]) {
-          if (mesh && !overlaps(mesh.userData.rect as number[])) break;
+          if (mesh && !overlaps(mesh)) break;
           if (mesh) { mesh.geometry.dispose(); (mesh.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh.material as THREE.Material).dispose(); }
           // offset and jitter scale with the hill's size, so a small hill keeps its name near its top
         const hill = Math.pow(Math.max(node.size[m] ?? 0, 0) / topSize, 0.35), k = 0.35 + 0.65 * hill;
         const c: [number, number] = [node.xy[0] + (j1 - 0.5) * 0.12 * k + dx, node.xy[1] + (0.1 + (j2 - 0.5) * 0.06) * k];
           mesh = makeGrassLabel(node.label, c, width * f, ground, 1, !career, (j3 - 0.5) * 0.28);
         }
-        rects.push(mesh!.userData.rect as number[]); this.group.add(mesh!); this.fpObjects.push(mesh!); this.lettered.set(id, mesh!);
+        if (!career && overlaps(mesh!)) {                  // no clear spot: an untouched sector's name shows on hover instead
+          mesh!.geometry.dispose(); (mesh!.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh!.material as THREE.Material).dispose();
+          continue;
+        }
+        rects.push(mesh!.userData.rect as number[]); screen.push(this.screenBox(mesh!, viewCam));
+        this.group.add(mesh!); this.fpObjects.push(mesh!); this.lettered.set(id, mesh!);
         continue;
       }
       // finer levels: try spots down the slope facing the viewer (and a little to each side); keep the first whose whole
@@ -385,6 +428,32 @@ export class Scene3D {
       const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: size * (sp.name === "lupine" ? 1.25 : 1), map: flowerTexture(sp.name), alphaTest: 0.35, transparent: true, depthWrite: false }));
       pts.name = "footprint-flowers-" + sp.name; this.group.add(pts); this.fpObjects.push(pts);
     });
+  }
+
+  /** The axes laid into the ground like the hill names: growth along the front edge (SHRINKING ... GROWING, with ticks
+   *  from the bundle's scale for this level), size up the left side (SMALLER at the front, LARGER at the back). */
+  private letterAxes(rects: number[][]): void {
+    const sc = axisScale(this.b, this.state.size, this.state.level);
+    if (!sc) return;
+    const ground = (x: number, y: number) => this.local(x, y, this.heightAt(x, y));
+    const k = [1, 0.6, 0.45][this.state.level] ?? 0.45, front = AXIS.front, side = AXIS.side;
+    const put = (text: string, x: number, y: number, w: number, soft: boolean, skipIfCrowded = false) => {
+      const mesh = makeGrassLabel(text, [x, y], w * k, ground, 1, soft), r = mesh.userData.rect as number[];
+      if (skipIfCrowded && rects.some((q) => r[0] < q[1] + 0.02 && r[1] > q[0] - 0.02 && r[2] < q[3] && r[3] > q[2])) {
+        mesh.geometry.dispose(); (mesh.material as THREE.MeshBasicMaterial).map?.dispose(); (mesh.material as THREE.Material).dispose();
+        return;
+      }
+      mesh.name = "axis-label"; rects.push(r);
+      this.group.add(mesh); this.fpObjects.push(mesh);
+    };
+    put("Shrinking", -1 + AXIS.inset, front, AXIS.word, false);
+    put("Growing", 1 - AXIS.inset, front, AXIS.word * 0.85, false);
+    for (const t of niceTicks(sc.g_lo, sc.g_hi, 3)) {
+      const x = -1 + 2 * (t - sc.g_lo) / (sc.g_hi - sc.g_lo);
+      if (Math.abs(x) < 1) put((t > 0 ? "+" : "") + t + "%", x, front + AXIS.tickDrop, AXIS.tick, false, true);
+    }
+    put("Smaller", side, AXIS.sideFront, AXIS.word * 0.8, false, true);
+    put("Larger", side, AXIS.sideBack, AXIS.word * 0.75, false, true);
   }
 
   /** Where the camera is, or will be once a step-down flight ends. */
@@ -439,15 +508,19 @@ export class Scene3D {
   }
 
   /** Back to the whole map. */
-  frameAll(): void { this.flyTo = new THREE.Vector3(0, 0.6, 0); this.flyDist = 18.3; this.flyDir = new THREE.Vector3(0, 8.2, 16.4).normalize(); this.refreshFootprint(); }
+  frameAll(): void { this.flyTo = new THREE.Vector3(0, 0.6, 0); this.flyDist = HOME.length(); this.flyDir = HOME.clone().normalize(); this.refreshFootprint(); }
 
   // ---- state sync
   private sync(force: boolean): void {
     const shape = [this.state.size, this.state.level].join("|");
     const key = [shape, this.state.fpVersion].join("|");
     if (force || key !== this.key) {
+      if (this.morph) { this.morph = null; this.showLand(this.land); for (const o of this.fpObjects) o.visible = true; }   // a new change ends a slide in progress
       const shapeChanged = force || !this.key.startsWith(shape + "|");
       this.key = key;
+      const sizeOnly = !force && this.land.length && this.key && this.lastLevel === this.state.level && shapeChanged;
+      this.lastLevel = this.state.level;
+      if (sizeOnly && !matchMedia("(prefers-reduced-motion: reduce)").matches) { this.key = key; this.startMorph(); this.refreshHighlight(); return; }
       if (shapeChanged) { this.refreshHeights(); this.placeMarkers(); }
       this.refreshColours(); this.refreshFootprint();
     }
@@ -538,6 +611,7 @@ export class Scene3D {
       if (Math.abs(this.flyDist - next) < 0.02) this.flyDist = null;
     }
     this.controls.update();
+    if (this.morph) this.stepMorph();
     // Auto level of detail from the camera's distance to its target (with a little hysteresis)
     const dist = this.camera.position.distanceTo(this.controls.target);
     const want = dist < AUTO_L2 * (this.autoLevel === 2 ? 1.08 : 1) ? 2 : dist < AUTO_L1 * (this.autoLevel >= 1 ? 1.08 : 1) ? 1 : 0;
@@ -638,5 +712,14 @@ function blur(src: Float32Array, n: number, sigma: number): Float32Array<ArrayBu
     let v = 0; for (let t = -r; t <= r; t++) v += tmp[Math.min(n - 1, Math.max(0, j + t)) * n + i] * w[t + r];
     out[j * n + i] = v / sum;
   }
+  return out;
+}
+
+/** About `count` round tick values inside lo..hi (steps of 1, 2, 2.5 or 5 times a power of ten). */
+export function niceTicks(lo: number, hi: number, count: number): number[] {
+  const raw = (hi - lo) / Math.max(1, count), p = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [10, 5, 2.5, 2, 1].map((m) => m * p).find((v) => v <= raw) ?? raw;   // the largest round step that fits
+  const out: number[] = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) out.push(Math.round(t * 100) / 100);
   return out;
 }

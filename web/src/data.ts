@@ -5,6 +5,7 @@ export interface NodeRec {
   naics_code?: string; top_occupations?: Occupation[]; remainder?: boolean;
   size_proxy?: string; value_added_basis?: string; weak_proxy?: boolean; replaces?: string[]; replaces_share?: Record<string, number>; zone?: string; members?: string[];
   hill?: [number, number];   // the hill's stretch (1 = round) and the angle of its long axis
+  xy_by?: Record<SizeSetting, [number, number]>;   // v3: position per size setting (y follows the size measure); `xy` is the active one
 }
 export interface Edge { source: string; target: string; type: "ind-ind"; weight: number }
 export type Measure = "employment" | "value_added" | "va_per_job";
@@ -19,12 +20,16 @@ export interface Meta {
   measure_labels: Record<string, string>;
   levels: number[]; level_notes?: Record<string, string>;
   terrain: { grid_size: number; margin: number; bandwidth_level0: number; bandwidth_per_level: number; combine: string; height_exponent: number };
+  /** v3 axes: per size setting and level, growth clip g_lo..g_hi (percent, x -1..1) and size clip s_lo..s_hi (log, y 1..-1) */
+  axes?: { scales: Record<SizeSetting, Record<string, AxisScale>>; params: { pull: number } };
 }
+export interface AxisScale { g_lo: number; g_hi: number; s_lo: number; s_hi: number }
 export interface Bundle {
   nodes: NodeRec[]; edges: Edge[]; meta: Meta; byId: Map<string, NodeRec>;
   grids: Partial<Record<number, LevelGrids>>;
   maxHeight: Partial<Record<number, Record<SizeSetting, number>>>;
   childCount: Map<string, number>;
+  setting: SizeSetting;   // which size setting node.xy currently follows
 }
 
 async function getJson<T>(name: string): Promise<T> {
@@ -42,6 +47,7 @@ function addGrids(b: Bundle, level: number, g: LevelGrids): void {
 function addNodes(b: Bundle, nodes: NodeRec[]): void {
   for (const n of nodes) {
     b.nodes.push(n); b.byId.set(n.id, n);
+    if (n.xy_by) n.xy = n.xy_by[b.setting];
     for (const p of [n.parent, ...(n.replaces ?? [])]) if (p) b.childCount.set(p, (b.childCount.get(p) ?? 0) + 1);
   }
 }
@@ -50,7 +56,7 @@ export async function loadBundle(): Promise<Bundle> {
   const [nodes, edges, raw, meta] = await Promise.all([
     getJson<NodeRec[]>("nodes.json"), getJson<Edge[]>("edges.json"), getJson<LevelGrids>("grids.json"), getJson<Meta>("meta.json"),
   ]);
-  const b: Bundle = { nodes: [], edges, meta, byId: new Map(), grids: {}, maxHeight: {}, childCount: new Map() };
+  const b: Bundle = { nodes: [], edges, meta, byId: new Map(), grids: {}, maxHeight: {}, childCount: new Map(), setting: "activity" };
   addNodes(b, nodes); addGrids(b, 0, raw);
   return b;
 }
@@ -84,6 +90,17 @@ export function visibleAt(b: Bundle, level: number): NodeRec[] {
 
 export function levelMaxSize(b: Bundle, level: number, measure: string): number {
   return visibleAt(b, level).reduce((m, n) => Math.max(m, n.size[measure] ?? 0), 0) || 1;
+}
+
+/** Move every node to its position for a size setting (y follows the size measure, so the hills move). */
+export function placeFor(b: Bundle, s: SizeSetting): void {
+  b.setting = s;
+  for (const n of b.nodes) if (n.xy_by) n.xy = n.xy_by[s];
+}
+
+/** The axis scale of a level under a size setting (Level 2 shares Level 1's), if the bundle has axes. */
+export function axisScale(b: Bundle, s: SizeSetting, level: number): AxisScale | undefined {
+  return b.meta.axes?.scales[s]?.[String(level)];
 }
 
 /** Bilinear sample of a grid's `values` at layout coordinates (x, y). */

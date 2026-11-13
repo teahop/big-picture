@@ -14,7 +14,7 @@ STAGES: dict[str, str] = {
     "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
     "value": "Industry value added in dollars (BEA), allocated to the map nodes",
     "graph": "Industry similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
-    "layout": "Industry layout at every level (shared occupations and text)",
+    "layout": "Industry layout at every level: growth across, size front to back (--method joint: the v2 similarity layout)",
     "terrain": "Height grids per level and size setting",
     "export": "Write the public JSON bundle (--target public)",
     "lookup": "Lookup files for the CV flow: job titles and degree programmes to industries",
@@ -33,6 +33,8 @@ def build_parser() -> argparse.ArgumentParser:
             p.add_argument("source", choices=["bls-matrix", "qcew", "bea", "cip-soc", "onet"], help="dataset to ingest")
         if name == "personal":
             p.add_argument("part", choices=["roles", "education", "footprint", "all"], help="which personal stage to run")
+        if name == "layout":
+            p.add_argument("--method", choices=["axes", "joint"], default="axes", help="axes (v3, default) or joint (v2 similarity, for comparison)")
         if name == "export":
             p.add_argument("--target", choices=["public", "private"], default="public")
     return parser
@@ -76,8 +78,11 @@ def run_stage(args: argparse.Namespace) -> int:
         from . import levels
         return levels.run()
     if name == "layout":
-        from . import layout_joint
-        return layout_joint.run()
+        if getattr(args, "method", "axes") == "joint":
+            from . import layout_joint
+            return layout_joint.run()
+        from . import layout_axes
+        return layout_axes.run()
     if name == "terrain":
         from . import terrain
         return terrain.run()

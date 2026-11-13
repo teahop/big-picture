@@ -86,7 +86,9 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
     (jobs or value added), on one scale per level: the industries drawn at a level are compared with each other."""
     p = float(cfg.get("height_exponent", 0.5))
     stretch = float(cfg.get("hill_stretch_max", 1.0))
-    layout = json.loads((public_dir() / "layout.json").read_text())["nodes"]
+    lay = json.loads((public_dir() / "layout.json").read_text())
+    layout = lay["nodes"]
+    by_setting = {s: dict(lay.get("by_setting", {}).get(s, layout)) for s in SETTINGS}   # v3: positions per size setting
     totals = pd.read_csv(interim_dir() / "bls" / "sector_totals.csv", dtype={"ind_code": str})
     ind_ids = [f"ind:{c}" for c in totals["ind_code"]]
     extent = np.array([layout[i] for i in ind_ids])
@@ -95,9 +97,10 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
     zeros = lambda k: np.zeros(k, int)
     sizes: dict[str, dict[str, tuple[list[str], np.ndarray, np.ndarray]]] = {
         "0": {"employment": (ind_ids, zeros(len(ind_ids)), totals["emp_2025"].to_numpy(float))}}
-    pos = dict(layout)
     if (lv / "industry_l1.csv").exists() and child_path.exists():
-        pos.update(json.loads(child_path.read_text())["nodes"])
+        ch = json.loads(child_path.read_text())
+        for s in SETTINGS:
+            by_setting[s].update(ch.get("by_setting", {}).get(s, ch["nodes"]))
         ind1 = pd.read_csv(lv / "industry_l1.csv", dtype={"ind_code": str})
         ids1, one = list(ind1["node_id"]), np.ones(len(ind1), int)
         emp1 = ind1["emp_2025"].to_numpy(float)
@@ -127,7 +130,7 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
                 sizes["2"]["value_added"] = (ids1, one, va1)
     layers: dict[str, dict[str, Layer]] = {}
     for level, by_measure in sizes.items():
-        layers[level] = {s: Layer(by_measure[m][0], np.array([pos[i] for i in by_measure[m][0]]), by_measure[m][1], size_amplitude(by_measure[m][2], p),
+        layers[level] = {s: Layer(by_measure[m][0], np.array([by_setting[s][i] for i in by_measure[m][0]]), by_measure[m][1], size_amplitude(by_measure[m][2], p),
                                   np.array([hill_shape(i, stretch) for i in by_measure[m][0]]))
                          for s, m in SETTINGS.items() if m in by_measure}
     return layers, extent

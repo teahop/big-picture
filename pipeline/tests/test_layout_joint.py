@@ -55,6 +55,9 @@ def _v1(path: str):
 
 @built
 def test_layout_keeps_similar_industries_together_at_least_as_well_as_v1():
+    stage = json.loads((public_dir() / "layout.json").read_text())["stage"]
+    if not stage.startswith("joint"):
+        pytest.skip("v3 places industries on growth and size axes (owner, 2026-11-13); similarity is reported, not required")
     cfg, data = load_config()["layout"], lj.load_inputs()
     for level, name, k, within in (("l0", "layout.json", 3, 6), ("l1", "layout_children.json", 5, 15)):
         s, _ = lj.level_similarity(data[level], cfg)

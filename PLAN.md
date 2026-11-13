@@ -15,7 +15,7 @@ live site, so `main` stays at the v2 release until Phase 4.
 | Phase | Name | Status | Notes |
 |---|---|---|---|
 | Prep | v3 spec, plan and handoffs | drafted 2026-11-13, awaiting owner review | v2 documents moved to `docs/v2/`. Owner chose: faster growth to the right; axes at every level, nudged by sector; real values, compressed; rainbow contour bands |
-| 1 | Meaningful axes | not started | |
+| 1 | Meaningful axes | done 2026-11-13, awaiting owner review | `imap layout` now places by growth (5th-95th percentile clip) and log size (5th percentile low clip), pull 0.3, per size setting; `--method joint` keeps the v2 layout. Separation moves at most 0.65 pp growth and size x1.3 (Level 0). Similarity score falls to 0.38 (Level 0, chance 0.32) and 0.14 (Level 1, chance 0.05); v2 was above 0.6. The seven largest sectors share the back quarter under Jobs; untouched sector names that would overlap now show on hover only. Ground axis lettering, animated Jobs/Value added slide, higher default camera |
 | 2 | Industries as a topographic map | not started | |
 | 3 | Deep zones as an ocean | not started | |
 | 4 | Release | not started | |

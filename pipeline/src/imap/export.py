@@ -131,6 +131,13 @@ def level1_edges(k: int = 5) -> list[dict]:
     return [{"source": f"ind:{a}", "target": f"ind:{b}", "type": "ind-ind", "weight": round(float(isim.loc[a, b]), 4)} for a, b in sorted(_topk_pairs(isim, k))]
 
 
+def add_positions(nodes: list[dict], by_setting: dict[str, dict]) -> None:
+    """v3: each node's position per size setting (y follows the active size measure); `xy` stays the Jobs position."""
+    for n in nodes:
+        if by_setting and all(n["id"] in by_setting[s] for s in by_setting):
+            n["xy_by"] = {s: by_setting[s][n["id"]] for s in sorted(by_setting)}
+
+
 def run(target: str) -> int:
     if target != "public":
         print("imap export: only --target public exists (no private target).")
@@ -154,11 +161,16 @@ def run(target: str) -> int:
                 {"name": "BLS QCEW 2025 annual (payroll for the value-added split)", "url": "https://data.bls.gov/cew/data/files/2025/csv/2025_annual_by_area.zip", "retrieved": "2026-11-09"},
                 {"name": "O*NET 31.0 (CC BY 4.0), occupation descriptions for the layout", "url": "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip", "retrieved": "2026-11-09"}],
             "layout": {"stage": layout["stage"], "seed": layout["seed"]}, "terrain": terrain["params"],
+            # v3 axes: per size setting and level, the growth clip (percent) and size clip (log scale) behind x and y
+            **({"axes": {"scales": layout["axes"], "params": layout["params"], "measures": layout["measures"],
+                         "x": "projected employment growth 2025-2035, percent, linear: g_lo at x = -1, g_hi at x = 1",
+                         "y": "size, log scale: s_hi (largest) at y = -1 (back), s_lo at y = 1 (front)"}} if "axes" in layout else {}),
             "display_name_source": "config/site.yaml"}
     add_dollar_measures(nodes)
     stretch = float(load_config()["terrain"].get("hill_stretch_max", 1.0))
     add_hill = lambda ns: [n.update(hill=list(hill_shape(n["id"], stretch))) for n in ns]   # each hill's stretch and angle
     add_hill(nodes)
+    add_positions(nodes, layout.get("by_setting", {}))
     (out / "nodes.json").write_text(json.dumps(nodes, indent=1) + "\n")
     (out / "edges.json").write_text(json.dumps(records, indent=1) + "\n")
     levels = terrain["levels"]
@@ -168,6 +180,7 @@ def run(target: str) -> int:
         ch = json.loads((out / "layout_children.json").read_text())
         n1, n2 = level1_nodes(ch["nodes"]), deep_nodes(ch["nodes"])
         add_dollar_measures(n1); add_dollar_measures(n2); add_hill(n1); add_hill(n2)
+        add_positions(n1, ch.get("by_setting", {})); add_positions(n2, ch.get("by_setting", {}))
         (out / "nodes_l1.json").write_text(json.dumps(n1, separators=(",", ":")) + "\n")
         (out / "nodes_l2.json").write_text(json.dumps(n2, separators=(",", ":")) + "\n")
         e1 = level1_edges()

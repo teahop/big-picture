@@ -1,4 +1,4 @@
-import { ensureLevel, loadBundle, visibleAt, type NodeRec, type SizeSetting } from "./data";
+import { ensureLevel, loadBundle, placeFor, visibleAt, type NodeRec, type SizeSetting } from "./data";
 import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type FootprintMode, type LodSetting } from "./state";
 import { compute, hierarchy, loadFootprint, type FootprintData } from "./footprint";
@@ -45,7 +45,7 @@ async function start(): Promise<void> {
   const lod = new Toggle<LodSetting>("lod");
   lod.onChange((v) => { state.setLod(v); void applyLevel(); });
   const size = new Toggle<SizeSetting>("size");
-  size.onChange((v) => state.setSize(v));
+  size.onChange((v) => { placeFor(bundle, v); state.setSize(v); });
 
   const pick = (n: NodeRec) => {
     if (!state.visibleIds.has(n.id)) { state.setLod(String(n.level) as LodSetting); lod.value = String(n.level) as LodSetting; }
@@ -113,7 +113,7 @@ async function start(): Promise<void> {
   syncTheme();
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
-    setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },
+    setSize: (v: SizeSetting) => { size.value = v; placeFor(bundle, v); state.setSize(v); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };
 }
