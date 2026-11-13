@@ -46,19 +46,23 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
       btn.type = "button";
       btn.innerHTML = "<span>" + (n.provenance === "estimated" ? "≈ " : "") + esc(n.label) + "</span><small>" + fmtMeasure(state.measure, n.size[state.measure]) + "</small>";
       btn.addEventListener("click", () => onPick(n));
-      btn.addEventListener("pointerenter", () => state.setHover(n));
-      btn.addEventListener("pointerleave", () => state.setHover(null));
-      btn.addEventListener("focus", () => state.setHover(n));
-      btn.addEventListener("blur", () => state.setHover(null));
+      // Hovering a line highlights its hill but leaves the details box alone: redrawing the box above the list moved
+      // the lines under the pointer, which hovered the next line, and so on (the flicker).
+      const on = () => { fromList = true; state.setHover(n); }, off = () => { fromList = false; state.setHover(null); };
+      btn.addEventListener("pointerenter", on); btn.addEventListener("pointerleave", off);
+      btn.addEventListener("focus", on); btn.addEventListener("blur", off);
       li.appendChild(btn); list.appendChild(li); items.set(n.id, btn);
     }
   };
-  let lastSize = state.size, lastLevel = -1;
+  let lastSize = state.size, lastLevel = -1, fromList = false, lastShown = "";
   const render = () => {
     if (state.size !== lastSize || state.level !== lastLevel) { lastSize = state.size; lastLevel = state.level; build(); }
     el("head-ind").textContent = (state.level === 0 ? "Industry sectors" : "Industries") + " by " + (state.size === "activity" ? "employment" : "value added");
-    const n = state.active;
-    for (const [id, btn] of items) btn.classList.toggle("active", id === (n?.id ?? ""));
+    for (const [id, btn] of items) btn.classList.toggle("active", id === (state.active?.id ?? ""));
+    const n = fromList ? state.selected : state.active;
+    const key = [n?.id ?? "", state.fpVersion, state.fpSample, state.level, state.size].join("|");
+    if (key === lastShown) return;                         // nothing in the box would change: leave the DOM alone
+    lastShown = key;
     if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or step into your footprint.</p>"; return; }
     panel.innerHTML = extra(n) + details(b, n);
   };

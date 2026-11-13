@@ -100,8 +100,8 @@ export function descends(h: Hierarchy, id: string, ancestor: string): boolean {
   return false;
 }
 
-/** The footprint the page opens with: the owner's private file on the dev and preview servers when it is there,
- *  otherwise the synthetic sample career (made up; SPEC 10, question 3). `?footprint=synthetic` forces the sample. */
+/** The footprint the page opens with: the owner's private file on the dev and preview servers when it is there, or the
+ *  made-up sample with `?footprint=synthetic`. Otherwise none: a footprint comes from Add your CV. */
 export async function loadFootprint(): Promise<{ data: FootprintData; sample: boolean } | null> {
   const sample = async () => ({ data: (await import("./fixtures/synthetic_footprint.json")).default as unknown as FootprintData, sample: true });
   if (new URLSearchParams(location.search).get("footprint") === "synthetic") return sample();
@@ -111,5 +111,5 @@ export async function loadFootprint(): Promise<{ data: FootprintData; sample: bo
       if (res.ok && (res.headers.get("content-type") ?? "").includes("json")) return { data: (await res.json()) as FootprintData, sample: false };
     } catch { /* no private file: fall through to the sample */ }
   }
-  return sample();
+  return null;
 }

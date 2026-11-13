@@ -175,3 +175,6 @@ aside button { color: inherit; }
 .cv-check { margin: 6px 0 0; font-size: 12px; color: #a35a00; }
 .cv-del { position: absolute; top: 4px; right: 12px; }
 @media (max-width: 600px) { .cv-grid { grid-template-columns: 1fr 1fr; } }
+
+/* the name, drawn as outlines of the title font (scripts/title_svg.py) */
+h1 .title-art { display: block; height: 30px; width: auto; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .25)); }

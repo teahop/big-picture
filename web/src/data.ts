@@ -120,6 +120,6 @@ export function fmtMeasure(measure: Measure, v: number | undefined): string {
   }
 }
 export function fmtJobs(thousands: number): string {
-  return thousands >= 1000 ? (thousands / 1000).toFixed(1) + " million" : Math.round(thousands) + " thousand";
+  return thousands >= 1000 ? (thousands / 1000).toFixed(1) + " million" : (thousands < 10 ? thousands.toFixed(1) : String(Math.round(thousands))) + "k";
 }
 export function fmtGrowth(pct: number | null): string { return pct === null ? "n/a" : (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%"; }

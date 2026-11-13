@@ -9,16 +9,8 @@
   </head>
   <body>
     <header>
-      <h1 id="title">%DISPLAY_NAME% <span class="subtitle">%SUBTITLE%</span></h1>
-      <fieldset class="seg" aria-describedby="size-note">
-        <legend>Size</legend>
-        <label><input type="radio" name="size" value="activity" checked /><span>Jobs</span></label>
-        <label><input type="radio" name="size" value="dollars" /><span>Value added</span></label>
-      </fieldset>
-      <label class="switch" id="fp-wrap" hidden>
-        <input type="checkbox" id="fp-on" role="switch" checked />
-        <span class="track" aria-hidden="true"></span><span class="switch-label">Footprint</span>
-      </label>
+      <h1 id="title">%TITLE_ART% <span class="subtitle">%SUBTITLE%</span></h1>
+      <button id="about-open" class="header-link" type="button" aria-haspopup="dialog">About the data</button>
       <button id="cv-open" class="header-link cv-open" type="button" aria-haspopup="dialog">Add your CV</button>
       <button id="cv-clear" class="header-link" type="button" hidden>Clear CV</button>
       <fieldset class="seg">
@@ -32,7 +24,11 @@
         <label><input type="radio" name="theme" value="light" checked /><span>Day</span></label>
         <label><input type="radio" name="theme" value="dark" /><span>Night</span></label>
       </fieldset>
-      <button id="about-open" class="header-link" type="button" aria-haspopup="dialog">About the data</button>
+      <fieldset class="seg" aria-describedby="size-note">
+        <legend class="sr">Size</legend>
+        <label><input type="radio" name="size" value="activity" checked /><span>Jobs</span></label>
+        <label><input type="radio" name="size" value="dollars" /><span>Value added</span></label>
+      </fieldset>
     </header>
     <p id="size-note" class="sr">Activity sizes industries by jobs. Dollars sizes them by value added; below the sector level value added is estimated by splitting each BEA industry by payroll.</p>
     <p id="notice" role="status">Loading the map…</p>

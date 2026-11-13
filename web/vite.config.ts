@@ -11,9 +11,14 @@ const site = parse(readFileSync(new URL("../config/site.yaml", import.meta.url),
 // Settings tuned by eye (peak height, footprint weights) live in ../config/viewer.yaml.
 const viewer = parse(readFileSync(new URL("../config/viewer.yaml", import.meta.url), "utf8")) as Record<string, unknown>;
 
+// The heading's lettering: outlines of the name in the owner's title font (scripts/title_svg.py), or plain text.
+const titleArt = (): string => {
+  const f = new URL("./src/title.svg", import.meta.url);
+  return existsSync(f) ? readFileSync(f, "utf8").trim() : site.display_name;
+};
 const siteName = (): Plugin => ({
   name: "site-name",
-  transformIndexHtml: (html) => html.replaceAll("%DISPLAY_NAME%", site.display_name).replaceAll("%SUBTITLE%", site.subtitle),
+  transformIndexHtml: (html) => html.replaceAll("%TITLE_ART%", titleArt()).replaceAll("%DISPLAY_NAME%", site.display_name).replaceAll("%SUBTITLE%", site.subtitle),
 });
 
 // Local-only route for the owner's private footprint. It exists only on the dev and preview servers and reads
@@ -61,7 +66,7 @@ const cvRoute = (): Plugin => ({
 const restartOnConfig = (): Plugin => ({
   name: "restart-on-config",
   configureServer: (s) => {
-    const files = ["../config/viewer.yaml", "../config/site.yaml"].map((f) => new URL(f, import.meta.url).pathname);
+    const files = ["../config/viewer.yaml", "../config/site.yaml", "./src/title.svg"].map((f) => new URL(f, import.meta.url).pathname);
     s.watcher.add(files);
     s.watcher.on("change", (f) => { if (files.includes(f)) void s.restart(); });
   },

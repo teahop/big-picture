@@ -58,7 +58,7 @@ The site is a static build of `web/` from the tracked public bundle in `data/pub
 (`cd web && npm run build`). `.github/workflows/pages.yml` builds and deploys it to
 GitHub Pages on a push to `main`, and refuses to deploy a build that holds anything
 other than that bundle. The owner's own footprint appears only on a local machine that
-has the private files; the published site opens with a made-up sample career.
+has the private files; on the published site a footprint appears only after a visitor adds a CV.
 
 ### The CV reader (proxy)
 

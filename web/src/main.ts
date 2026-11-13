@@ -54,7 +54,8 @@ async function start(): Promise<void> {
   // ---- footprint: the owner's private file on a local server, the synthetic sample in development, or a visitor's CV.
   // The machinery is built on first use; `useFootprint(null)` clears it.
   let fpData: FootprintData | null = null, fpReady: Promise<void> | null = null;
-  const fpWrap = $("fp-wrap"), on = $<HTMLInputElement>("fp-on"), clear = $<HTMLButtonElement>("cv-clear");
+  const clear = $<HTMLButtonElement>("cv-clear"), add = $<HTMLButtonElement>("cv-open");
+  const showCvButton = (loaded: boolean) => { clear.hidden = !loaded; add.hidden = loaded; };   // one or the other
   const panelExtra: { fn?: (n: NodeRec) => string } = {};
   const setMode = (m: FootprintMode) => {
     const c = m === "off" || !fpData ? null : compute(fpData, h(), __VIEWER__.footprint);
@@ -82,28 +83,27 @@ async function start(): Promise<void> {
     scene3d?.frameNodes(touchedChildren(state, h(), path[depth - 1], depth - 1));
   };
   let fpTicket = 0;
-  const useFootprint = async (data: FootprintData | null, fromCv = false, sample = false) => {
+  const useFootprint = async (data: FootprintData | null, sample = false) => {
     const ticket = ++fpTicket;                            // a later call (e.g. Clear) wins over one still loading
     fpData = data;
-    if (!data) { setMode("off"); fpWrap.hidden = true; clear.hidden = true; return; }
+    if (!data) { state.fpSample = false; setMode("off"); showCvButton(false); return; }
     fpReady ??= (async () => {
       await ensureLevel(bundle, 2);                       // weights roll up across every level
       hier = null;
       panelExtra.fn = buildFootprintPanel(bundle, state, h(), { stepInto: (n) => void stepInto(n), stepTo: (d) => void stepTo(d), select: pick });
-      on.addEventListener("change", () => setMode(on.checked ? "career" : "off"));
     })();
     await fpReady;
     if (ticket !== fpTicket) return;
-    fpWrap.hidden = false; on.checked = true; clear.hidden = !fromCv; state.fpSample = sample;
+    showCvButton(true); state.fpSample = sample;
     setMode("career");
     if (state.level) void stepTo(0);
   };
-  const cvDialog = buildCvDialog(bundle, (fp) => void useFootprint(fp, true));
-  $("cv-open").addEventListener("click", () => { void ensureLevel(bundle, 2).then(() => cvDialog.open()); });
+  const cvDialog = buildCvDialog(bundle, (fp) => void useFootprint(fp));
+  add.addEventListener("click", () => { void ensureLevel(bundle, 2).then(() => cvDialog.open()); });
   const initial = await loadFootprint();
-  // Clear drops the CV's footprint from memory and goes back to the one the page opened with (the sample, publicly).
-  clear.addEventListener("click", () => void (initial ? useFootprint(initial.data, false, initial.sample) : useFootprint(null)));
-  if (initial) await useFootprint(initial.data, false, initial.sample);
+  // Add your CV draws a footprint; Clear removes it (and drops it from memory). There is no separate on/off switch.
+  clear.addEventListener("click", () => void useFootprint(null));
+  if (initial) await useFootprint(initial.data, initial.sample);
   (window as unknown as { __fp: object }).__fp = { stepInto, stepTo, set: setMode, use: useFootprint, data: () => fpData };
   buildPanel(bundle, state, pick, (n) => panelExtra.fn?.(n) ?? "");
   const theme = new Toggle<ThemeChoice>("theme");          // Day / Night
