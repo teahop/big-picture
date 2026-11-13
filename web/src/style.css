@@ -10,21 +10,21 @@
   --accent: #1f7a63; --footprint: #19a98a;
   /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
      career is shown. Flowers are drawn in web/src/flowerSprites.ts. */
-  --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3f6b1a; --terrain-peak: #9cc93f; --terrain-muted: #a3ad7c;
+  --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3d7f12; --terrain-peak: #b4dd3b; --haze: #a9c3dc; --terrain-muted: #a3ad7c;
   color-scheme: light;
 }
 /* Dark theme derived from the same palette: warm brown surfaces, off-white text, soft teal accent. */
 :root[data-theme="dark"] {
   --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
-  --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+  --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
-    --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
+    --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
     color-scheme: dark;
   }
 }

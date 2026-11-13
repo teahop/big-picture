@@ -10,7 +10,7 @@ import pandas as pd
 
 from .common import interim_dir, raw_dir, repo_root, report_dir, sha256
 
-USER_AGENT = "industry-map-research (github.com/teahop/industry-map)"
+USER_AGENT = "industry-map-research (github.com/teahop/big-picture)"
 CIP_URL = "https://nces.ed.gov/ipeds/cipcode/Files/CIP2020_SOC2018_Crosswalk.xlsx"
 ONET_URL = "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip"
 ONET_DIR = "db_31_0_excel"

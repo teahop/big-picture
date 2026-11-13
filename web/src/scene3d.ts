@@ -25,6 +25,8 @@ const MESH_N = 256;   // mesh points per side
 const EXTEND = 2.2;   // the mesh covers this many times the data area, so land runs past every edge of the view
 const BASE = 0.3;     // rolling base hills (decoration, no data), as a share of the peak height
 const RIDGE = 1.1;    // how much taller the base grows far beyond the map (distant ridges)
+const HEIGHT_EASE = 0.8;   // industry heights to this power: the order stays, small hills read better (looks over exactness)
+const SOFTEN = 1.6;   // blur of the drawn land, in mesh cells (rounds summits and saddles)
 
 export class Scene3D {
   private renderer: THREE.WebGLRenderer;
@@ -48,6 +50,7 @@ export class Scene3D {
   private key = "";
   private meshXY = new Float32Array(MESH_N * MESH_N * 2);   // layout coordinates of each mesh point
   private base = new Float32Array(MESH_N * MESH_N);          // rolling base height at each mesh point (world units)
+  private land: Float32Array = new Float32Array(0);                      // the drawn ground height at each mesh point (softened)
   private autoLevel = 0;
   private frameMs = 0;        // moving average of CPU time spent per frame (render + label layout)
   private labelsShown = 0;
@@ -80,7 +83,12 @@ export class Scene3D {
     this.controls.maxPolarAngle = Math.PI * 0.47;   // never below the ground
     this.controls.listenToKeyEvents(el);
 
-    this.scene.add(this.hemi, this.sun); this.sun.position.set(-12, 5, 3);
+    this.scene.add(this.hemi, this.sun);
+    // low sun from the back left: long shadows fall across the slopes toward the viewer, as in late-afternoon light
+    this.sun.position.set(-17, 5.2, -2.5); this.sun.castShadow = true;
+    const sc = this.sun.shadow.camera; sc.left = -30; sc.right = 30; sc.top = 30; sc.bottom = -30; sc.near = 1; sc.far = 80;
+    this.sun.shadow.mapSize.set(2048, 2048); this.sun.shadow.bias = -0.0006; this.sun.shadow.normalBias = 0.04; this.sun.shadow.radius = 4;
+    this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.scene.add(this.group);
 
     this.buildMesh();
@@ -96,33 +104,24 @@ export class Scene3D {
   private grid(): LevelGrids { return this.b.grids[this.state.level]!; }
   private values(): number[] { return this.grid().settings[this.state.size].height; }
   private maxH(): number { return this.b.maxHeight[this.state.level]![this.state.size]; }
-  private h(v: number): number { return (v / this.maxH()) * CFG.peak_height; }
+  private h(v: number): number { return Math.pow(Math.max(0, v / this.maxH()), HEIGHT_EASE) * CFG.peak_height; }   // closer heights, same order
   private rel(n: NodeRec): number {
     const m = this.state.measure;
     return (n.size[m] ?? 0) / levelMaxSize(this.b, this.state.level, m);
   }
   private local(x: number, y: number, h = 0): THREE.Vector3 { return new THREE.Vector3((x - this.cx) * this.scale * STRETCH_X, h, (y - this.cy) * this.scale * STRETCH_Z); }
 
-  /** Rolling base hills in world units at layout point (x, y): two octaves of smooth noise, swelling into ridges
-   *  beyond the map. Decoration only; every industry's height comes from the data on top of it. */
+  /** Rolling base land in world units at layout point (x, y): three octaves of smooth noise on warped coordinates, so
+   *  the ground between the industries' hills rolls like grassland, swelling into soft ranges beyond the map.
+   *  No creases or cuts: everything is rounded (decoration only; the industries' heights sit on top). */
   private baseAt(x: number, y: number): number {
     const g = this.b.grids[0]!, half = (g.x[1] - g.x[0]) / 2, r = Math.hypot(x - this.cx, y - this.cy) / half;
-    // warp the coordinates so nothing lines up, then: broad undulation, ridgelines and narrow creek valleys
-    const X = x * 40 + 9 * (noise(x * 40, y * 40, 23, 11) - 0.5), Y = y * 40 + 9 * (noise(x * 40, y * 40, 23, 12) - 0.5);
-    const broad = 0.65 * noise(X, Y, 34, 3) + 0.35 * noise(X, Y, 15, 4);
-    const ridge = 1 - Math.abs(2 * noise(X, Y, 21, 5) - 1);
-    const creek = Math.pow(1 - Math.abs(2 * noise(X, Y, 27, 6) - 1), 7);
-    const far = Math.min(1, Math.max(0, (r - 1.1) / 1.0)), near = 1 - Math.min(1, Math.max(0, (r - 0.95) / 0.5));
-    // beyond the map only the broad shapes remain (no ridgelines or creeks), so the distant hills stay soft
-    const relief = 0.24 * broad + near * (0.1 * ridge * ridge - 0.22 * creek);
-    return CFG.peak_height * BASE / 0.3 * relief * (1 + RIDGE * far * far);
-  }
-
-  /** Small irregularities on a hill's shoulders (none at the foot or the summit, so peak heights stay true). */
-  private shoulder(x: number, y: number, d: number): number {
-    const t = d / CFG.peak_height;
-    if (t <= 0) return 0;
-    return (noise(x * 40, y * 40, 6, 9) - 0.5) * 0.9 * d * t * (1 - t);
+    const X = x * 40 + 11 * (noise(x * 40, y * 40, 26, 11) - 0.5), Y = y * 40 + 11 * (noise(x * 40, y * 40, 26, 12) - 0.5);
+    const far = Math.min(1, Math.max(0, (r - 1.05) / 1.1));
+    const fine = 1 - 0.8 * far;                           // far away only the broad swells remain (soft distant ranges)
+    const roll = (0.5 * noise(X, Y, 30, 3) + fine * (0.32 * noise(X, Y, 14, 4) + 0.18 * noise(X, Y, 7, 5))) / (0.5 + fine * 0.5);
+    const swell = roll * roll * (3 - 2 * roll);           // smoothstep: round tops, soft hollows
+    return CFG.peak_height * BASE / 0.3 * 0.34 * swell * (1 + RIDGE * 1.4 * far * far);
   }
 
   private buildMesh(): void {
@@ -143,6 +142,7 @@ export class Scene3D {
     geo.setIndex(idx);
     const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
     this.mesh = new THREE.Mesh(geo, mat);
+    this.mesh.castShadow = true; this.mesh.receiveShadow = true;
     this.group.add(this.mesh);
   }
 
@@ -150,17 +150,25 @@ export class Scene3D {
   private dataAt(x: number, y: number): number {
     const g = this.grid();
     if (x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1]) return 0;
-    const d = this.h(sampleAt(g, this.values(), x, y));
-    return d + this.shoulder(x, y, d);
+    return this.h(sampleAt(g, this.values(), x, y));
   }
   /** Ground height (world units) at a layout point: data plus the rolling base. */
-  private heightAt(x: number, y: number): number { return this.dataAt(x, y) + this.baseAt(x, y); }
+  private heightAt(x: number, y: number): number {
+    // the drawn (softened) land, so lettering and markers sit on what is shown
+    const g = this.b.grids[0]!, n = MESH_N;
+    const fi = ((x - this.cx) / ((g.x[1] - g.x[0]) * EXTEND) + 0.5) * (n - 1), fj = ((y - this.cy) / ((g.y[1] - g.y[0]) * EXTEND) + 0.5) * (n - 1);
+    if (!this.land.length || fi < 0 || fj < 0 || fi > n - 1 || fj > n - 1) return this.dataAt(x, y) + this.baseAt(x, y);
+    const i0 = Math.min(n - 2, Math.floor(fi)), j0 = Math.min(n - 2, Math.floor(fj)), a = fi - i0, c = fj - j0, L = this.land;
+    return (L[j0 * n + i0] * (1 - a) + L[j0 * n + i0 + 1] * a) * (1 - c) + (L[(j0 + 1) * n + i0] * (1 - a) + L[(j0 + 1) * n + i0 + 1] * a) * c;
+  }
 
   private refreshHeights(): void {
-    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
-    for (let k = 0; k < MESH_N * MESH_N; k++) {
-      const x = this.meshXY[2 * k], y = this.meshXY[2 * k + 1];
-      const p = this.local(x, y, this.dataAt(x, y) + this.base[k]);
+    const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute, n = MESH_N;
+    const raw = new Float32Array(n * n);
+    for (let k = 0; k < n * n; k++) raw[k] = this.dataAt(this.meshXY[2 * k], this.meshXY[2 * k + 1]) + this.base[k];
+    this.land = blur(raw, n, SOFTEN);                       // round every summit and saddle a little
+    for (let k = 0; k < n * n; k++) {
+      const p = this.local(this.meshXY[2 * k], this.meshXY[2 * k + 1], this.land[k]);
       pos.setXYZ(k, p.x, p.y, p.z);
     }
     pos.needsUpdate = true; this.mesh.geometry.computeVertexNormals();
@@ -169,10 +177,13 @@ export class Scene3D {
   private refreshColours(): void {
     const t = readTheme(), top = CFG.peak_height * (1 + BASE);
     const pos = this.mesh.geometry.getAttribute("position") as THREE.BufferAttribute;
-    const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute;
+    const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute, c = new THREE.Color();
     for (let k = 0; k < MESH_N * MESH_N; k++) {          // every hill the same green; only the flowers mark a career
-      const [r, gg, b] = terrainColour(t, Math.max(0, pos.getY(k) + 0.6) / (top + 0.6));   // creeks dip below zero
-      col.setXYZ(k, r / 255, gg / 255, b / 255);
+      const x = this.meshXY[2 * k], y = this.meshXY[2 * k + 1];
+      const patch = noise(x * 40, y * 40, 9, 21) - 0.5;   // meadow patches: some grass a little yellower, some deeper
+      const [r, gg, b] = terrainColour(t, Math.max(0, pos.getY(k)) / top, patch);
+      c.setRGB(r / 255, gg / 255, b / 255, THREE.SRGBColorSpace);   // the palette is sRGB; the renderer works in linear
+      col.setXYZ(k, c.r, c.g, c.b);
     }
     col.needsUpdate = true;
   }
@@ -407,9 +418,10 @@ export class Scene3D {
 
   applyTheme(): void {
     const t = readTheme();
-    this.scene.fog = new THREE.Fog(new THREE.Color(t.horizon), 24, 78);   // distant hills fade softly into the haze   // distant hills fade into the horizon haze
+    this.scene.fog = new THREE.Fog(new THREE.Color(t.haze), 22, 82);   // atmospheric haze: far ridges turn soft and blue
     const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
-    this.hemi.intensity = dark ? 0.6 : 1.1; this.sun.intensity = dark ? 0.9 : 2.2;   // moonlit hills at night
+    this.hemi.intensity = dark ? 0.8 : 0.6; this.sun.intensity = dark ? 1.7 : 3.4;   // moonlit hills at night
+    this.hemi.color.set(dark ? 0x9fb4e0 : 0xcfe2ff); this.hemi.groundColor.set(dark ? 0x10180f : 0x2c4a1c);
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
   }
 
@@ -582,4 +594,20 @@ function hash01(id: string, salt: number): number {
 export function webglAvailable(): boolean {
   try { return !!document.createElement("canvas").getContext("webgl2") || !!document.createElement("canvas").getContext("webgl"); }
   catch { return false; }
+}
+
+/** Separable Gaussian blur of an n x n grid (sigma in cells), clamped at the edges. */
+function blur(src: Float32Array, n: number, sigma: number): Float32Array<ArrayBuffer> {
+  const r = Math.ceil(sigma * 2.5), w: number[] = [];
+  for (let i = -r; i <= r; i++) w.push(Math.exp(-(i * i) / (2 * sigma * sigma)));
+  const sum = w.reduce((a, b) => a + b, 0), tmp = new Float32Array(n * n), out = new Float32Array(n * n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    let v = 0; for (let t = -r; t <= r; t++) v += src[j * n + Math.min(n - 1, Math.max(0, i + t))] * w[t + r];
+    tmp[j * n + i] = v / sum;
+  }
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    let v = 0; for (let t = -r; t <= r; t++) v += tmp[Math.min(n - 1, Math.max(0, j + t)) * n + i] * w[t + r];
+    out[j * n + i] = v / sum;
+  }
+  return out;
 }

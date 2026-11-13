@@ -6,7 +6,7 @@ A 3D terrain of American industries, built only from public data, that a
 person can place a career on. Research and academia show up as the industries
 that do them (colleges and universities, scientific R&D services).
 
-This is version 2, live at https://teahop.github.io/industry-map/.
+This is version 2, live at https://teahop.github.io/big-picture/.
 
 ## What it does
 

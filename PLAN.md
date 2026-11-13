@@ -32,7 +32,7 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 | Connections layer kept (private only) | Phase 2 | Removed by owner 2026-11-11 |
 | Sample synthetic footprint on the public site | Phase 3 | No: owner removed the footprint switch 2026-11-12, so a footprint comes only from Add your CV (Clear removes it) |
 | Own footprint in public | Phase 4 | No |
-| Rename repository and URL | Phase 4 | Leave as `industry-map` (to ask after release) |
+| Rename repository and URL | Phase 4 | Renamed to `big-picture` by the owner 2026-11-13 (site: teahop.github.io/big-picture) |
 
 ## Carried over from v1 (not blocking)
 

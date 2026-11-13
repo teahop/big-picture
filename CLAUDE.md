@@ -1,4 +1,4 @@
-# CLAUDE.md — The Big Picture (repo: industry-map)
+# CLAUDE.md — The Big Picture (repo: big-picture)
 
 Read `SPEC.md` (what and why) and `PLAN.md` (order and status) before any work.
 Work one phase at a time using the matching file in `handoffs/`.

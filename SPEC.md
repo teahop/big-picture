@@ -44,8 +44,8 @@ the three levels of detail, the deep zones, the privacy rules, static hosting.
   `subtitle: "Visualizing a career"`. The viewer header, page title, page
   description, README title and the exported image read both from there.
 - Code identifiers (`imap`, package and file names) do not change.
-- The repository name and the published URL still say `industry-map`. Renaming
-  them changes a public address, so it is a separate, confirmed step (section 10).
+- The repository and the published URL were renamed to `big-picture` by the owner
+  on 2026-11-13 (https://teahop.github.io/big-picture/).
 
 ## 4. Removed
 
@@ -259,7 +259,7 @@ v1 §9 stands. Additions:
 4. **Your own footprint in public:** stays off (`publish.personal: none`)
    unless you decide otherwise.
 5. **Connections layer:** removed (owner, 2026-11-11).
-6. **Repository and URL rename** from `industry-map`: when, and to what.
+6. **Repository and URL rename:** done, to `big-picture` (owner, 2026-11-13).
 
 ## 11. Out of scope for v2
 
