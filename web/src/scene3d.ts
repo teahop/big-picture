@@ -18,16 +18,19 @@ const CFG = __VIEWER__;
 const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
 const GLOW = 0.55;
 const MORPH_MS = 900;
-const OWN_SHARE = 0.7;   // at least this share of a name must lie on its own hill's ground
-const WRAP_RADII = [0.8, 0.65, 1.0, 0.5, 0.38, 0.26];
+const OWN_SHARE = 0.7;
+const LETTER_SEEN = 0.93;    // at least this share of a name must be in clear sight
+const LETTER_SEEN_CAREER = 0.85;   // ...a little less for a career hill, so its name shows when a sliver is hidden
+const LETTER_FACING = 0.18;  // ...on ground that faces the camera at least this much (cosine; 0 = edge-on)   // at least this share of a name must lie on its own hill's ground
+const WRAP_RADII = [0.8, 0.65, 1.0, 0.5, 0.4];
 const WRAP_SHIFTS = [0, -0.3, 0.3, -0.6, 0.6, -0.9, 0.9];   // turns around the hill from the side facing the camera (radians)   // where a name curves around its hill, in kernel widths from the summit (tried in order)
 /** Axis lettering on the ground (layout units; the hills fill -1..1): the front row's y, the side column's x, how far
  *  the end words sit in from the corners, word and tick widths, and how far below the words the ticks sit. */
 /** Axis signs (layout units; the hills fill -1..1): where each stands, and the sign height in world units. */
-// LARGER stands just right of the valley between Agriculture and Government (the midpoint of the two hills, nudged right)
-const SIGNS = { growing: [1.02, 0.55], largerBetween: ["ind:110000", "ind:900000"], largerOffset: [0.14, 0], big: 1.9 };
-/** Where the camera starts (and returns to): 19 units from the centre, about 32 degrees above the ground. */
-const HOME = new THREE.Vector3(0, 10.1, 15.9);   // how long the hills take to slide when the size setting changes    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
+// LARGER stands on the flat ground at the front middle (it points back, toward the largest industries)
+const SIGNS = { growing: [1.02, 0.55], larger: [0.0, 1.12], big: 1.9 };
+/** Where the camera starts (and returns to): 19 units from the centre, about 40 degrees above the ground. */
+const HOME = new THREE.Vector3(0, 12.4, 14.6);   // how long the hills take to slide when the size setting changes    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
 
 interface Marker { label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 /** Label slots tried in order, in label widths (x) and label heights (y, negative = up). */
@@ -368,7 +371,7 @@ export class Scene3D {
       const here = this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]));
       const far = Math.min(1.4, Math.max(0.55, here.distanceTo(eye) / eye.distanceTo(this.flyTo ?? this.controls.target)));
       const base = [0.74, 0.34, 0.24][lvl] ?? 0.24;
-      const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.66) * far;
+      const width = base * (career ? 0.55 + 0.45 * Math.sqrt(share / topShare) : 0.72) * far;   // readable even for small shares and untouched hills
       const ground = (x: number, y: number) => this.local(x, y, this.heightAt(x, y));
       // the name curves around the front of its hill, partway up the flank (top of the letters toward the summit)
       // long names go on two lines, lettered larger: the strip is as long as the longer line, letters 35% taller
@@ -400,7 +403,7 @@ export class Scene3D {
         for (const i of [0, 16, 32, 47, 63]) for (const j of [0, 5, 9]) {
           const k = j * cols + i, lx = pa.getX(k) / (this.scale * STRETCH_X) + this.cx, ly = pa.getZ(k) / (this.scale * STRETCH_Z) + this.cy;
           if (mine(lx, ly)) own++;
-          if (this.inView(eye, lx, ly)) n++;
+          if (this.inView(eye, lx, ly, LETTER_FACING)) n++;
         }
         return own / 15 >= OWN_SHARE ? n / 15 : 0;
       };
@@ -413,7 +416,7 @@ export class Scene3D {
         if (sv === 1) break search;
       }
       mesh = keep;
-      if (!mesh || keepSeen < (career ? 0.75 : 0.85)) {    // no clear spot: the name shows on hover (move the map to see it)
+      if (!mesh || keepSeen < (career ? LETTER_SEEN_CAREER : LETTER_SEEN)) {    // no clear spot: the name shows on hover (move the map to see it)
         if (mesh) drop(mesh);
         lettering.tex.dispose();
         continue;
@@ -443,7 +446,7 @@ export class Scene3D {
   }
 
   /** The axes as two hand-lettered signs on sticks (Sectors only; the finer levels get their own views): GROWING at the
-   *  right, and LARGER just right of the valley between Agriculture and Government. */
+   *  right, and LARGER on the flat ground at the front middle, pointing back. */
   private letterAxes(): void {
     if (!this.b.meta.axes || this.state.level !== 0) return;
     const night = effectiveTheme() === "dark";
@@ -454,8 +457,7 @@ export class Scene3D {
       this.group.add(sign); this.fpObjects.push(sign);
     };
     put(["Growing →"], SIGNS.growing[0], SIGNS.growing[1], SIGNS.big);
-    const [a, c] = SIGNS.largerBetween.map((id) => this.b.byId.get(id));
-    if (a && c) put(["Larger ↑"], (a.xy[0] + c.xy[0]) / 2 + SIGNS.largerOffset[0], (a.xy[1] + c.xy[1]) / 2 + SIGNS.largerOffset[1], SIGNS.big);
+    put(["Larger ↑"], SIGNS.larger[0], SIGNS.larger[1], SIGNS.big);
   }
 
   /** Where the camera is, or will be once a step-down flight ends. */
@@ -479,12 +481,12 @@ export class Scene3D {
   }
 
   /** True when the ground at layout point (x, y) can be seen from `eye`: no hill in between, and facing the viewer. */
-  private inView(eye: THREE.Vector3, x: number, y: number): boolean {
+  private inView(eye: THREE.Vector3, x: number, y: number, minFacing = 0.3): boolean {
     const p = this.local(x, y, this.heightAt(x, y) + 0.05), steps = 48;
     // the ground must face the viewer, not just be in line of sight (grazing slopes squash lettering to nothing)
     const e = 0.01, sx = this.scale * STRETCH_X, sz = this.scale * STRETCH_Z;
     const nrm = new THREE.Vector3(-(this.heightAt(x + e, y) - this.heightAt(x - e, y)) / (2 * e * sx), 1, -(this.heightAt(x, y + e) - this.heightAt(x, y - e)) / (2 * e * sz)).normalize();
-    if (nrm.dot(eye.clone().sub(p).normalize()) < 0.3) return false;
+    if (nrm.dot(eye.clone().sub(p).normalize()) < minFacing) return false;
     for (let i = 1; i < steps; i++) {
       const t = i / steps, q = eye.clone().lerp(p, t);
       const lx = q.x / (this.scale * STRETCH_X) + this.cx, ly = q.z / (this.scale * STRETCH_Z) + this.cy;

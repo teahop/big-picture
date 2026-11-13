@@ -39,7 +39,7 @@ function seeded(text: string): () => number {
 /** Letters like a hillside sign of laid white stones: capitals spaced wide apart, each letter slightly tilted and off the
  *  baseline, cut by thin breaks so it reads as separate slabs, with a few weathered specks. */
 export function letteringTexture(lines: string[], soft: boolean): { tex: THREE.CanvasTexture; aspect: number } {
-  const scale = 4, size = 46, lineH = 60, track = size * 0.26, font = `700 ${size}px ${FONT}`;
+  const scale = 4, size = 46, lineH = 60, track = size * 0.26, font = `800 ${size}px ${FONT}`;
   const rows = lines.map((l) => l.toUpperCase());
   const c = document.createElement("canvas"), g = c.getContext("2d")!;
   g.font = font;
@@ -49,8 +49,10 @@ export function letteringTexture(lines: string[], soft: boolean): { tex: THREE.C
   g.scale(scale, scale);
   const rnd = seeded(rows.join("|"));
   g.font = font; g.textBaseline = "top"; g.textAlign = "left";
-  g.fillStyle = soft ? "rgba(250, 250, 244, 0.72)" : "#fbfbf6";
-  g.shadowColor = "rgba(30, 50, 10, 0.25)"; g.shadowBlur = 1.5; g.shadowOffsetY = 0.8;
+  // heavy capitals with a soft dark drop shadow, so names read on bright and shaded grass alike
+  g.fillStyle = soft ? "rgba(250, 250, 244, 0.9)" : "#fbfbf6";
+  g.strokeStyle = g.fillStyle; g.lineWidth = 1.6; g.lineJoin = "round";
+  g.shadowColor = "rgba(18, 32, 8, 0.6)"; g.shadowBlur = 3; g.shadowOffsetX = 0.6; g.shadowOffsetY = 1.8;
   const boxes: [number, number, number][] = [];               // x, y, width of each letter (for the breaks)
   rows.forEach((r, li) => {
     let x = (w - rowWidth(r)) / 2;
@@ -62,6 +64,7 @@ export function letteringTexture(lines: string[], soft: boolean): { tex: THREE.C
         g.translate(x + cw / 2, y0 + size / 2 + (rnd() - 0.5) * 3);
         g.rotate((rnd() - 0.5) * 0.08);
         g.scale(1 + (rnd() - 0.5) * 0.06, 1 + (rnd() - 0.5) * 0.06);
+        g.strokeText(ch, -cw / 2, -size / 2);   // a thin outline in the same colour thickens the strokes (bold)
         g.fillText(ch, -cw / 2, -size / 2);
         g.restore();
         boxes.push([x, y0, cw]);
