@@ -24,6 +24,7 @@ export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: 
     if (key === last) return;
     last = key;
     panel.hidden = !state.fp;
+    panel.classList.toggle("rainbow", state.level >= 1);   // on the 2D map the career is rainbow bands: the bars match
     if (!state.fp) { panel.innerHTML = ""; return; }
     const touched = state.touchedNow() ?? new Map<string, number>();
     const within = state.focus.length && state.focus.length === state.level ? state.focus[state.focus.length - 1] : null;

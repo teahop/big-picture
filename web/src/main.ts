@@ -82,6 +82,7 @@ async function start(): Promise<void> {
     await goLevel(depth);
     scene3d?.frameNodes(touchedChildren(state, h(), path[depth - 1], depth - 1));
   };
+  if (scene3d) scene3d.onLeave2D = () => void stepTo(0);   // zooming out past the whole 2D map returns to the Sectors hills
   let fpTicket = 0;
   const useFootprint = async (data: FootprintData | null, sample = false) => {
     const ticket = ++fpTicket;                            // a later call (e.g. Clear) wins over one still loading
@@ -112,7 +113,7 @@ async function start(): Promise<void> {
   theme.onChange((v) => setTheme(v));
   syncTheme();
   (window as unknown as { __viewer: object }).__viewer = {
-    state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
+    state, bundle, applyLevel, scene: scene3d, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; placeFor(bundle, v); state.setSize(v); },
     setLod: (l: LodSetting) => { lod.value = l; state.setLod(l); return applyLevel(); },
   };

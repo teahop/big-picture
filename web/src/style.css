@@ -8,6 +8,9 @@
 :root, :root[data-theme="light"] {
   --bg: var(--surface-page); --fg: var(--text-primary); --muted: var(--text-secondary); --panel: var(--surface-card); --line: var(--border-hairline);
   --accent: #1f7a63; --footprint: #19a98a;
+  /* the 2D topographic map: paper, elevation tints (low to high), contour ink, and the hover accent */
+  --topo-paper: #f4efdf; --topo-low: #c2d5a0; --topo-mid: #e7dcae; --topo-high: #c29d73; --topo-line: #7a5b3a; --topo-accent: #c8352b;
+  --topo-ink: #3b2f22; --topo-halo: #f4efdf;
   /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
      career is shown. Flowers are drawn in web/src/flowerSprites.ts. */
   --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3d7f12; --terrain-peak: #b4dd3b; --haze: #a9c3dc; --terrain-muted: #a3ad7c;
@@ -17,6 +20,8 @@
 :root[data-theme="dark"] {
   --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
+  --topo-paper: #161d29; --topo-low: #2a3b30; --topo-mid: #4a4834; --topo-high: #6e5a42; --topo-line: #c9c2ae; --topo-accent: #ff8a65;
+  --topo-ink: #ece5d2; --topo-halo: #161d29;
   --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
   color-scheme: dark;
 }
@@ -24,6 +29,8 @@
   :root:not([data-theme="light"]) {
     --bg: #0b1426; --fg: #eef1f6; --muted: #a9b6cc; --panel: #132139; --line: #2a3b57;   /* night: navy to match the sky */
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
+    --topo-paper: #161d29; --topo-low: #2a3b30; --topo-mid: #4a4834; --topo-high: #6e5a42; --topo-line: #c9c2ae; --topo-accent: #ff8a65;
+    --topo-ink: #ece5d2; --topo-halo: #161d29;
     --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
     color-scheme: dark;
   }
@@ -196,3 +203,26 @@ h1 .title-art { display: block; height: 30px; width: auto; filter: drop-shadow(0
 :root[data-theme="dark"] .clouds { display: none; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .clouds { display: none; } }
 @media (prefers-reduced-motion: reduce) { .clouds i { animation-play-state: paused; } }
+
+/* ---- the 2D topographic map (Industries, Deep zones): lettering, margin axes, rainbow panel bars */
+.map2d { position: absolute; inset: 0; pointer-events: none; }
+.map2d[hidden] { display: none; }
+.map2d-labels { position: absolute; inset: 0; }
+.map-label { position: absolute; left: 0; top: 0; pointer-events: none; white-space: pre; text-align: center; line-height: 1.12;
+  font: 500 11px/1.12 var(--font-body); color: var(--topo-ink); letter-spacing: .01em;
+  text-shadow: 0 0 2px var(--topo-halo), 0 0 2px var(--topo-halo), 0 0 3px var(--topo-halo), 0 0 4px var(--topo-halo); }
+.map-label.big { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .1em; }
+.map-label.career { font-weight: 800; color: #000; }
+:root[data-theme="dark"] .map-label.career { color: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map-label.career { color: #fff; } }
+.map-label.est { font-style: italic; }
+.map-label.active { color: var(--topo-accent); text-decoration: underline; text-underline-offset: 2px; }
+.map2d-axis { position: absolute; font: 500 11px var(--font-body); color: var(--topo-ink); }
+.map2d-axis.x { left: 0; right: 0; bottom: 0; height: 28px; background: color-mix(in srgb, var(--topo-paper) 88%, transparent); border-top: 1px solid color-mix(in srgb, var(--topo-line) 40%, transparent); }
+.map2d-axis.y { left: 0; top: 0; bottom: 28px; width: 58px; background: color-mix(in srgb, var(--topo-paper) 88%, transparent); border-right: 1px solid color-mix(in srgb, var(--topo-line) 40%, transparent); }
+.map2d-axis span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+.map2d-axis.x span.t { top: 7px; margin-left: -14px; }
+.map2d-axis.x span.title { top: 7px; font-weight: 700; translate: -100% 0; }
+.map2d-axis.y span.t { left: 6px; margin-top: -7px; font-size: 10.5px; }
+.map2d-axis.y span.title { left: 6px; font-weight: 700; }
+#fp-panel.rainbow .fp-bar i { background: linear-gradient(90deg, #8f5bd6, #3f7fe0, #3fb36b, #e8c93b, #f08a2c, #e0432f); }

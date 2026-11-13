@@ -6,6 +6,7 @@ import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./foot
 import { flowerTexture } from "./flowerSprites";
 import { balancedLines, letteringTexture, makeWrapLabel } from "./grassLabel";
 import { makeSign } from "./signs";
+import { Map2D } from "./map2d";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -71,6 +72,13 @@ export class Scene3D {
   private frameMs = 0;        // moving average of CPU time spent per frame (render + label layout)
   private labelsShown = 0;
   onAutoLevel: (level: number) => void = () => {};
+  /** Zooming out past the whole 2D map asks to go back to the 3D Sectors view. */
+  onLeave2D: () => void = () => {};
+  /** Industries and Deep zones are drawn as a flat 2D map; Sectors as 3D hills. "tilting" = the camera is turning to
+   *  look straight down before the 2D map takes over. */
+  private mode: "3d" | "tilting" | "2d" = "3d";
+  map2d!: Map2D;
+  private pendingFrame: string[] | null = null;
 
   private stemPath: SVGPathElement;
 
@@ -90,6 +98,9 @@ export class Scene3D {
     const g = b.grids[0]!;
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
+
+    this.map2d = new Map2D(el, labelLayer, b, state, () => this.ownerGrid(), this.scale, this.cx, this.cy, STRETCH_X, STRETCH_Z);
+    this.map2d.onLeave = () => this.onLeave2D();
 
     this.camera.position.copy(HOME);   // oblique view across the hills, high enough to read the large sectors at the back
     this.controls = new OrbitControls(this.camera, el);
@@ -497,6 +508,10 @@ export class Scene3D {
 
   /** Fly the camera to frame these visible nodes (step-down). */
   frameNodes(ids: string[]): void {
+    if (this.state.level >= 1) {                           // the finer levels are the 2D map
+      if (this.mode === "2d") this.map2d.frame(ids); else this.pendingFrame = ids;
+      return;
+    }
     const pts = ids.map((id) => this.markers.get(id)?.anchor).filter((p): p is THREE.Vector3 => !!p);
     if (!pts.length) return;
     const c = pts.reduce((a, p) => a.add(p), new THREE.Vector3()).multiplyScalar(1 / pts.length);
@@ -528,7 +543,33 @@ export class Scene3D {
       if (shapeChanged) { this.refreshHeights(); this.placeMarkers(); }
       this.refreshColours(); this.refreshFootprint();
     }
+    const want2d = this.state.level >= 1;
+    if (want2d && this.mode === "3d") this.enter2D();
+    else if (!want2d && this.mode !== "3d") this.exit2D();
+    if (this.mode === "2d") this.map2d.refresh();
     this.refreshHighlight();
+  }
+
+  /** Turn the camera to look straight down, then let the flat map take over (at once with reduced motion). */
+  private enter2D(): void {
+    this.mode = "tilting";
+    for (const m of this.markers.values()) { m.vis = false; m.label.style.visibility = "hidden"; }
+    this.stemPath.setAttribute("d", "");
+    this.flyDir = new THREE.Vector3(0, 1, 0.002).normalize();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) this.flyDir = null;
+  }
+  private finish2D(): void {
+    this.mode = "2d"; this.controls.enabled = false;
+    this.map2d.resize(this.host.clientWidth, this.host.clientHeight);
+    this.map2d.refresh(); this.map2d.setActive(true);
+    if (this.pendingFrame) this.map2d.frame(this.pendingFrame); else this.map2d.fit();
+    this.pendingFrame = null;
+  }
+  /** Back to the hills: start from straight overhead and tilt back to the usual view. */
+  private exit2D(): void {
+    this.mode = "3d"; this.map2d.setActive(false); this.controls.enabled = true;
+    this.controls.target.set(0, 0.6, 0); this.camera.position.set(0, 0.6 + HOME.length(), 0.02);
+    this.frameAll();
   }
 
   applyTheme(): void {
@@ -537,11 +578,13 @@ export class Scene3D {
     const dark = document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
     this.hemi.intensity = dark ? 0.8 : 0.6; this.sun.intensity = dark ? 1.7 : 3.4;   // moonlit hills at night
     this.hemi.color.set(dark ? 0x9fb4e0 : 0xcfe2ff); this.hemi.groundColor.set(dark ? 0x10180f : 0x2c4a1c);
+    this.map2d?.applyTheme();
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
   }
 
   /** The hovered and selected hills light up and their labels are marked. */
   private refreshHighlight(): void {
+    if (this.mode === "2d") this.map2d.refreshMask();
     const act = this.state.active, sel = this.state.selected;
     for (const [id, m] of this.markers) m.label.classList.toggle("active", act?.id === id || sel?.id === id);
     this.applyGlow();
@@ -562,18 +605,21 @@ export class Scene3D {
     return best;
   }
 
+  private pick(ev: PointerEvent): NodeRec | null { return this.mode === "2d" ? this.map2d.nodeAt(ev) : this.mode === "3d" ? this.nodeNear(ev) : null; }
+
   private bindPointer(el: HTMLElement): void {
     let down: [number, number] | null = null;
-    el.addEventListener("pointermove", (ev) => { if (!down) this.state.setHover(this.nodeNear(ev)); });
+    el.addEventListener("pointermove", (ev) => { if (!down) this.state.setHover(this.pick(ev)); });
     el.addEventListener("pointerleave", () => this.state.setHover(null));
     el.addEventListener("pointerdown", (ev) => { down = [ev.clientX, ev.clientY]; });
     el.addEventListener("pointerup", (ev) => {
-      if (down && Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) < 5) this.state.setSelected(this.nodeNear(ev));
+      if (down && Math.hypot(ev.clientX - down[0], ev.clientY - down[1]) < 5) this.state.setSelected(this.pick(ev));
       down = null;
     });
   }
 
   focus(node: NodeRec): void {
+    if (this.mode === "2d") return this.map2d.center(node);
     const m = this.markers.get(node.id);
     this.flyTo = (m ? m.anchor.clone() : new THREE.Vector3()).add(new THREE.Vector3(0, -0.6, 0));
   }
@@ -586,6 +632,7 @@ export class Scene3D {
     const narrow = Math.max(1, 1.3 / this.camera.aspect);
     this.camera.fov = Math.min(100, (2 * Math.atan(Math.tan((45 * Math.PI) / 360) * narrow) * 180) / Math.PI);
     this.camera.updateProjectionMatrix();
+    this.map2d?.resize(w, h);
   }
 
   private frame = (): void => {
@@ -596,6 +643,12 @@ export class Scene3D {
 
   private tick(): void {
     const t0 = performance.now();
+    if (this.mode === "2d") {
+      this.map2d.render(this.renderer);
+      this.labelsShown = this.map2d.labelsShown;
+      this.frameMs = this.frameMs ? 0.9 * this.frameMs + 0.1 * (performance.now() - t0) : performance.now() - t0;
+      return;
+    }
     if (this.flyTo) {
       const delta = this.flyTo.clone().sub(this.controls.target);
       this.controls.target.add(delta.clone().multiplyScalar(0.12));
@@ -615,6 +668,7 @@ export class Scene3D {
       if (Math.abs(this.flyDist - next) < 0.02) this.flyDist = null;
     }
     this.controls.update();
+    if (this.mode === "tilting" && !this.flyDir) { this.finish2D(); this.map2d.render(this.renderer); return; }
     if (this.morph) this.stepMorph();
     // Auto level of detail from the camera's distance to its target (with a little hysteresis)
     const dist = this.camera.position.distanceTo(this.controls.target);
