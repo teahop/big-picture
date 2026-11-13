@@ -130,6 +130,8 @@ export async function compose(b: Bundle, state: State, snap: Snap, opts: { capti
 
 /** Wire the Download button and its small dialog (optional caption, then save). */
 export function buildDownload(b: Bundle, state: State, snapshot: (w: number, h: number) => Snap | null, site: { name: string; subtitle: string; address: string }): void {
+  // Load the type weights the image uses now, so making the image itself needs no request at all.
+  void Promise.all(["400", "500", "600", "700"].map((w) => document.fonts.load(`${w} 30px 'DM Sans'`))).catch(() => {});
   const dlg = document.getElementById("dl") as HTMLDialogElement;
   const input = dlg.querySelector<HTMLInputElement>("input")!, go = dlg.querySelector<HTMLButtonElement>("[data-act=save]")!;
   const status = dlg.querySelector<HTMLElement>(".dl-status")!;
