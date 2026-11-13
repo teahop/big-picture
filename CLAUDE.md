@@ -2,8 +2,8 @@
 
 Read `SPEC.md` (what and why) and `PLAN.md` (order and status) before any work.
 Work one phase at a time using the matching file in `handoffs/`.
-These describe v2. The finished v1 documents are in `docs/v1/`; `SPEC.md` refers
-to them for everything v2 does not change.
+These describe v3. The finished v2 documents are in `docs/v2/` and v1 in `docs/v1/`;
+`SPEC.md` refers to them for everything v3 does not change.
 
 ## Hard rules
 
@@ -26,7 +26,7 @@ to them for everything v2 does not change.
    table in `PLAN.md`, and wait for the owner before starting the next phase.
 5. **Ask before any step that publishes.** Enabling GitHub Pages, changing
    repo visibility, renaming the repo, or pushing `main` (which redeploys the
-   live site) needs an explicit yes in that session. v2 work stays on the `v2`
+   live site) needs an explicit yes in that session. v3 work stays on the `v3`
    branch until the release step.
 6. **A visitor's CV is read by a model through the site's own proxy, and nothing
    is kept.** The CV text goes only to the proxy, which forwards it to the model
@@ -40,8 +40,8 @@ to them for everything v2 does not change.
 
 ```
 SPEC.md  PLAN.md  CLAUDE.md  README.md
-handoffs/            one kickoff prompt per v2 phase
-docs/v1/             archived v1 spec, plan and handoffs
+handoffs/            one kickoff prompt per v3 phase
+docs/v1/, docs/v2/   archived v1 and v2 spec, plan and handoffs
 config/              profile.example.yaml (public schema, synthetic values)
 pipeline/            Python package: ingest -> graph -> layout -> terrain -> export
 data/raw/            downloaded public data (ignored)

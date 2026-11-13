@@ -34,8 +34,8 @@ v1 (the earlier "Industry Map") is documented only in `docs/v1/`.
 
 Personal data never enters this repository. See `SPEC.md` and `CLAUDE.md`.
 
-Status and build order: `PLAN.md`. Design: `SPEC.md`. The v1 documents are in
-`docs/v1/`.
+Status and build order: `PLAN.md`. Design: `SPEC.md` (v3, in progress on the `v3`
+branch). The v2 documents are in `docs/v2/` and v1 in `docs/v1/`.
 
 ## Setup
 
