@@ -8,7 +8,7 @@ this folder and reference that file. Finish the phase, meet its checks, update
 the table below, commit, then stop and wait for the owner.
 
 **Branch:** all v2 work happens on the `v2` branch. Pushing `main` redeploys the
-live site, so `main` is not touched until Phase 4.
+live site; v2 was released to `main` on 2026-11-13.
 
 ## Status
 
@@ -19,7 +19,7 @@ live site, so `main` is not touched until Phase 4.
 | 1 | One map | done 2026-11-10, accepted by owner (industry-only terrain) | Research fields removed (owner). Heights from each industry's own size (square root, tallest peak wins). Industry layout from distinctive occupations plus text; Level 1 may leave its sector. Footprint control hidden until Phase 2 |
 | 2 | Clear footprint | done 2026-11-11, accepted by owner | Entry-list footprint, weights in the page and pipeline (roll-up tested), public bundle identical without personal data. Wildflowers (drawn per species) on rolling California hills, each touched hill blooming over its share; career labels without overlap; step-down with breadcrumb and entries; Day/Night, toggles, green panel. Network and search removed |
 | 3 | Add your CV | done 2026-11-11, accepted by owner 2026-11-12 | Model call (gpt-6.1-sol) through the dev route and a Cloudflare Worker (deployed 2026-11-12 with the owner's yes; origin allow-list and approximate rate limit checked live); rules check the guesses and stand in when the proxy is off. Hit rates on 3 synthetic CVs: 100% of roles and degrees, text and PDF; rules alone 33% of roles, 100% of degrees. Built page: CSP limited to origin and proxy; only the proxy is contacted, and storage is unchanged. Footprint switch removed (owner): Add your CV draws it, Clear CV removes it |
-| 4 | Release | checks passed on v2 2026-11-12, release awaiting owner's yes | Download removed (owner). Day clouds, bird and bat cursors added. Clean-clone build matches the workflow list; blocklist scan of build, tracked files and full history: 0 hits; built site contacts only itself and the CV proxy; publish.personal is none |
+| 4 | Release | released 2026-11-13 (owner's yes): v2 fast-forwarded into main, Pages deploy passed | Download removed (owner). Day clouds, bird and bat cursors added. Clean-clone build matches the workflow list; blocklist scan of build, tracked files and full history: 0 hits; built site contacts only itself and the CV proxy; publish.personal is none |
 
 ## Owner decisions (from SPEC section 10)
 
@@ -32,7 +32,7 @@ Each is asked in the phase where it matters; none blocks Phase 0.
 | Connections layer kept (private only) | Phase 2 | Removed by owner 2026-11-11 |
 | Sample synthetic footprint on the public site | Phase 3 | No: owner removed the footprint switch 2026-11-12, so a footprint comes only from Add your CV (Clear removes it) |
 | Own footprint in public | Phase 4 | No |
-| Rename repository and URL | Phase 4 | Leave as `industry-map` |
+| Rename repository and URL | Phase 4 | Leave as `industry-map` (to ask after release) |
 
 ## Carried over from v1 (not blocking)
 
