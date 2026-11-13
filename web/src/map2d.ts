@@ -7,7 +7,7 @@
  *  the top of the screen, as in the 3D view. */
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { type Bundle, type NodeRec, axisScale, fmtMeasure } from "./data";
+import { type Bundle, type NodeRec, axisScale, fmtMeasure, sampleAt } from "./data";
 import type { Owners } from "./footprintLayer";
 import { FishSchools, type School } from "./fish";
 import { logTicks, mapLines, niceTicks, placeLabels, type LabelItem } from "./labels2d";
@@ -18,6 +18,7 @@ const CONTOUR = 0.05;        // contour interval (share of the tallest peak, aft
 const BORDER = 1.1;          // the neat border, in layout units (the hills fill -1..1)
 const MIN_ZOOM = 0.8;
 const HILL_FLOOR = 0.2;
+const DEEP_WATER = 0.5;     // below this eased height the sea chart is dark water: names there are lettered light
 const SCHOOL_MIN_PX = 60;    // the least spread of a school at zoom 1 (pixels)
 const FISH_PX = 9;           // a fish's half length on screen at zoom 1 (pixels); fish grow a little as you zoom in      // rainbow bands cover a career hill down to this share of its own top (not the flats around it)
 const MARGIN = { top: 70, bottom: 30, left: 60, right: 10 };   // screen space kept clear around the whole map (pixels)        // zooming out past this returns to the 3D Sectors view
@@ -27,9 +28,10 @@ varying vec2 vUv;
 void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 
 const FRAG = /* glsl */ `
+#define ISLAND 0.722
 uniform sampler2D hTex, mTex;
 uniform vec2 texel, gx, gy;
-uniform float interval, border, ocean, shallows;
+uniform float interval, border, ocean;
 uniform vec3 paper, low, mid, high, line, accent, seaShallow, seaDeep, sand, land;
 varying vec2 vUv;
 vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1.0), k, s); }
@@ -61,12 +63,12 @@ void main() {
   col = mix(col, col * 1.06 + accent * 0.1, hov * 0.55);         // the hovered hill is lit a little...
   col = mix(col, mix(line, accent, hov), clamp(ink + hov * 0.45 * step(0.01, ink), 0.0, 1.0));   // ...and its contours turn red
   vec2 L = vec2(gx.x + vUv.x * (gx.y - gx.x), gy.x + t.y * (gy.y - gy.x));
-  // the sea chart (Deep zones): size as depth, the largest categories the deepest water (or, as the alternative, the
-  // largest as shallows rising into islands); pale isobaths with heavier index lines and a light chart grid
+  // the sea chart (Deep zones): the largest categories rise from deep water into shallows and, at the top, sand and green
+  // islands (owner, 2026-11-13); pale isobaths with heavier index lines and a light chart grid
   if (ocean > 0.001) {
-    float dpt = shallows > 0.5 ? 1.0 - smoothstep(0.0, 0.8, h) : smoothstep(0.0, 0.9, h);
+    float dpt = 1.0 - smoothstep(0.0, 0.8, h);
     vec3 sea = mix(seaShallow, seaDeep, dpt);
-    if (shallows > 0.5) sea = mix(sea, mix(sand, land, smoothstep(0.8, 0.95, h)), smoothstep(0.715, 0.73, h));
+    sea = mix(sea, mix(sand, land, smoothstep(0.8, 0.95, h)), smoothstep(ISLAND - 0.008, ISLAND + 0.008, h));
     sea *= 0.93 + 0.1 * shade;
     float iso = (1.0 - smoothstep(wdt - 0.5, wdt + 0.5, f)) * step(0.004, h) * (idx ? 0.6 : 0.32);
     sea = mix(sea, sea * 1.06 + accent * 0.08, hov * 0.5);
@@ -108,8 +110,6 @@ export class Map2D {
   labelsShown = 0;
   /** Deep zones are an ocean: 0 = land, 1 = water, eased between when the level changes. */
   private oceanMix = 0; private oceanTarget = 0; private last = 0;
-  // size as depth by default; `?depth=shallows` draws the largest categories as shallows and islands instead (to compare)
-  readonly shallows = new URLSearchParams(location.search).get("depth") === "shallows";
   private fish = new FishSchools();
   private bg = { paper: new THREE.Color(), sea: new THREE.Color() };
 
@@ -126,7 +126,7 @@ export class Map2D {
       hTex: { value: null }, mTex: { value: null }, texel: { value: new THREE.Vector2() }, gx: { value: new THREE.Vector2() }, gy: { value: new THREE.Vector2() },
       interval: { value: CONTOUR }, border: { value: BORDER }, paper: { value: new THREE.Color() }, low: { value: new THREE.Color() }, mid: { value: new THREE.Color() },
       high: { value: new THREE.Color() }, line: { value: new THREE.Color() }, accent: { value: new THREE.Color() },
-      ocean: { value: 0 }, shallows: { value: this.shallows ? 1 : 0 }, seaShallow: { value: new THREE.Color() }, seaDeep: { value: new THREE.Color() },
+      ocean: { value: 0 }, seaShallow: { value: new THREE.Color() }, seaDeep: { value: new THREE.Color() },
       sand: { value: new THREE.Color() }, land: { value: new THREE.Color() } } });
     this.plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.mat);
     this.scene.add(this.plane, this.fish.mesh);
@@ -292,6 +292,12 @@ export class Map2D {
     return w >= 0 ? this.b.byId.get(o.ids[w]) ?? null : null;
   }
 
+  /** Eased height (0..1) of the current grid at a layout point. */
+  private heightAt(x: number, y: number): number {
+    const g = this.b.grids[this.state.level]!, max = this.b.maxHeight[this.state.level]![this.state.size];
+    return Math.pow(Math.max(0, sampleAt(g, g.settings[this.state.size].height, x, y) / max), HEIGHT_EASE);
+  }
+
   // ---- lettering and axes
   private buildLabels(): void {
     this.labelsEl.replaceChildren(); this.labels.clear();
@@ -299,7 +305,11 @@ export class Map2D {
     const sizes = vis.map((n) => n.size[m] ?? 0).sort((a, c) => c - a), big = sizes[Math.floor(sizes.length * 0.1)] ?? 0;
     for (const n of vis) {
       const el = document.createElement("div");
-      el.className = "map-label" + ((n.size[m] ?? 0) >= big ? " big" : "") + (n.provenance === "estimated" ? " est" : "");
+      // on the sea chart, a name over deep water is lettered light (dark on the shallows and islands)
+      // (judged by the water across the name's width, not only under its middle)
+      const across = [[0, 0], [-0.05, 0], [0.05, 0], [-0.025, -0.015], [0.025, 0.015]].map(([dx, dy]) => this.heightAt(n.xy[0] + dx, n.xy[1] + dy));
+      const deep = this.state.level === 2 && across.reduce((a, v) => a + v, 0) / across.length < DEEP_WATER;
+      el.className = "map-label" + ((n.size[m] ?? 0) >= big ? " big" : "") + (n.provenance === "estimated" ? " est" : "") + (deep ? " on-deep" : "");
       el.textContent = mapLines((n.provenance === "estimated" ? "≈ " : "") + n.label).join("\n");
       // (names let the pointer through: hover, click, drag and zoom all go to the map, which knows whose ground is under it)
       this.labelsEl.appendChild(el);

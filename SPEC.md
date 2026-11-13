@@ -127,10 +127,11 @@ for every label at some zoom, and a long tradition of showing height clearly.
 - 2D like Industries, with a sea-chart look: deep blue water, depth tints,
   isobaths (depth contours) in pale blue, a light chart grid, and labels in an
   italic chart style.
-- Size is drawn as depth: the largest categories are the deepest water. This
-  inverts the land picture on purpose ("deep zones"); the owner confirms it in
-  Phase 3. Industries outside a deep zone appear as shallower water with their
-  Level 1 names, as today they appear as Level 1 hills.
+- Size is drawn as shallows: the larger a category, the shallower its water, and
+  the largest rise into sand and green islands (owner, 2026-11-13; drawing the
+  largest as the deepest water was built and compared). Names over deep water are
+  lettered light, over the shallows and islands dark. Industries outside a deep
+  zone appear in the same sea with their Level 1 names.
 - Axes and labels as 4.3, in the ocean palette.
 
 ### 5.2 Career: schools of fish
@@ -165,8 +166,7 @@ touched until the owner says to release.
 2. **Size setting moves the map** (3.3): keep, or fix y to Jobs in both
    settings.
 3. **Rainbow coverage** (4.4): whole hill (decided 2026-11-13).
-4. **Size as depth** (5.1): confirm the inverted ocean, or draw large
-   categories as shallows and islands instead.
+4. **Size in the ocean** (5.1): shallows and islands (decided 2026-11-13).
 
 ## 10. Out of scope for v3
 As v2 §11, plus: a 2D view for Sectors; changing the footprint format; more

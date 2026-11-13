@@ -231,8 +231,9 @@ h1 .title-art { display: block; height: 30px; width: auto; filter: drop-shadow(0
 .map2d-axis.y span.title { left: 6px; font-weight: 700; }
 #fp-panel.rainbow .fp-bar i { background: linear-gradient(90deg, #8f5bd6, #3f7fe0, #3fb36b, #e8c93b, #f08a2c, #e0432f); }
 .map2d.ocean .map-label { font-style: italic; color: var(--sea-ink); letter-spacing: .03em;
-  text-shadow: 0 0 2px var(--sea-halo), 0 0 2px var(--sea-halo), 0 0 3px var(--sea-halo), 0 0 4px var(--sea-halo); }
-.map2d.ocean .map-label.career { color: var(--sea-ink); text-decoration: underline wavy color-mix(in srgb, #ffb53b 80%, transparent); text-underline-offset: 3px; }
+  text-shadow: 0 0 1.5px var(--sea-halo), 0 0 2px color-mix(in srgb, var(--sea-halo) 70%, transparent); }
+.map2d.ocean .map-label.on-deep { color: #eef7fa; text-shadow: 0 0 1.5px #07223b, 0 1px 2px rgb(7 34 59 / .6); }
+.map2d.ocean .map-label.career { font-weight: 800; text-decoration: underline wavy color-mix(in srgb, #ffb53b 80%, transparent); text-underline-offset: 3px; }
 .map2d.ocean .map-label.active { color: var(--topo-accent); }
 .map2d.ocean .map2d-axis { color: var(--sea-ink); background: color-mix(in srgb, var(--sea-halo) 88%, transparent); border-color: color-mix(in srgb, var(--sea-ink) 30%, transparent); }
 #fp-panel.ocean .fp-bar i { background: linear-gradient(90deg, #ffe08a, #ffb53b, #e8851f); }

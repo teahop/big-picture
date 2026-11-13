@@ -16,6 +16,10 @@ function fishTexture(): THREE.CanvasTexture {
   // a small golden fish facing right: body, tail, a darker back and a white eye
   const body = g.createLinearGradient(0, 4, 0, 28);
   body.addColorStop(0, "#d9811f"); body.addColorStop(0.45, "#ffc24a"); body.addColorStop(1, "#ffe9a8");
+  // a thin dark outline first, so the fish read on pale sand as well as on dark water
+  g.strokeStyle = "#5a2a06"; g.lineWidth = 3.2; g.lineJoin = "round";
+  g.beginPath(); g.ellipse(36, 16, 20, 9, 0, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.moveTo(18, 16); g.lineTo(4, 5); g.lineTo(8, 16); g.lineTo(4, 27); g.closePath(); g.stroke();
   g.fillStyle = body;
   g.beginPath(); g.ellipse(36, 16, 20, 9, 0, 0, Math.PI * 2); g.fill();
   g.beginPath(); g.moveTo(18, 16); g.lineTo(4, 5); g.lineTo(8, 16); g.lineTo(4, 27); g.closePath(); g.fill();
