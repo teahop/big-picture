@@ -17,6 +17,18 @@ export function wrapLabel(text: string, max = 22): string[] {
   return lines;
 }
 
+/** A name on one line, or, when it is long and has a space, on two lines split as evenly as possible (so it can be
+ *  lettered larger on a hill). */
+export function balancedLines(text: string, oneLineMax = 12): string[] {
+  if (text.length <= oneLineMax || !text.includes(" ")) return [text];
+  let best = [text], worst = Infinity;
+  for (let i = text.indexOf(" "); i >= 0; i = text.indexOf(" ", i + 1)) {
+    const a = text.slice(0, i).trim(), c = text.slice(i + 1).trim(), w = Math.max(a.length, c.length);
+    if (a && c && w < worst) { worst = w; best = [a, c]; }
+  }
+  return best;
+}
+
 /** Seeded random numbers, so a name always gets the same irregularities. */
 function seeded(text: string): () => number {
   let h = 2166136261;

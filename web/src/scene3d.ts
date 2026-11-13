@@ -1,16 +1,15 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { type Bundle, type LevelGrids, type NodeRec, axisScale, levelMaxSize, sampleAt } from "./data";
+import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
 import { effectiveTheme, readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
-import { letteringTexture, makeWrapLabel, wrapLabel } from "./grassLabel";
+import { balancedLines, letteringTexture, makeWrapLabel } from "./grassLabel";
 import { makeSign } from "./signs";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
 const SPAN = 16;      // world units across the layout (hills keep their size; more ground between them)
-const MAX_LABELS = 60; // labels drawn at once (largest first); the rest stay hidden until hover or select
 const PICK_PX = 30;   // screen-space radius for hover and click
 const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
 const AUTO_L2 = 7.0;  // ... and to Level 2
@@ -24,8 +23,8 @@ const WRAP_RADII = [0.8, 0.65, 1.0, 0.5, 0.38, 0.26];
 const WRAP_SHIFTS = [0, -0.3, 0.3, -0.6, 0.6, -0.9, 0.9];   // turns around the hill from the side facing the camera (radians)   // where a name curves around its hill, in kernel widths from the summit (tried in order)
 /** Axis lettering on the ground (layout units; the hills fill -1..1): the front row's y, the side column's x, how far
  *  the end words sit in from the corners, word and tick widths, and how far below the words the ticks sit. */
-/** Axis signs (layout units; the hills fill -1..1): where each stands, and sign heights in world units at Level 0. */
-const SIGNS = { growing: [1.02, 0.55], larger: [0.92, -0.62], corner: [-0.78, 1.14], tickRow: 1.28, big: 1.9, tick: 1.0 };
+/** Axis signs (layout units; the hills fill -1..1): where each stands, and the sign height in world units. */
+const SIGNS = { growing: [1.02, 0.55], largerBy: "ind:520000", largerOffset: [-0.3, 0.02], big: 1.9 };   // LARGER stands to the left of the Finance hill
 /** Where the camera starts (and returns to): 19 units from the centre, about 32 degrees above the ground. */
 const HOME = new THREE.Vector3(0, 10.1, 15.9);   // how long the hills take to slide when the size setting changes    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
 
@@ -56,7 +55,6 @@ export class Scene3D {
   private baseCol = new Float32Array(0);              // terrain colours before any hill is lit
   private glowKey = "";
   private lettered = new Map<string, THREE.Mesh>();   // hills whose name is lettered into the grass
-  private unlettered = new Set<string>();             // hills that wanted lettering but had no clear spot: they keep a floating label
   private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
   private sun = new THREE.DirectionalLight(0xfff3dc, 2.2);            // low side sun models the slopes
   private running = false;
@@ -344,7 +342,7 @@ export class Scene3D {
       this.group.remove(o);
       o.traverse((c) => { if (!(c as THREE.Sprite).isSprite) (c as THREE.Mesh).geometry?.dispose(); const m = (c as THREE.Mesh).material as THREE.MeshBasicMaterial | undefined; m?.map?.dispose(); m?.dispose(); });
     }
-    this.fpObjects = []; this.lettered.clear(); this.unlettered.clear();
+    this.fpObjects = []; this.lettered.clear();
     const touched = this.state.touchedNow();
     for (const [id, m] of this.markers) {                  // career labels are marked; shares stay in the panel
       if (m.label.textContent !== m.text) { m.label.textContent = m.text; m.w = 0; }
@@ -363,7 +361,7 @@ export class Scene3D {
     this.letterAxes();
     for (const [id, share] of queue) {
       const node = this.b.byId.get(id);
-      if (!node || node.label.length > 24) continue;      // long names keep a floating label (they would not fit the ground)
+      if (!node || node.label.length > 34) continue;      // very long names show on hover only (they would not fit the ground)
       const career = share > 0;
       // on screen, size follows the share (career) or stays small (other sectors), not how near the hill happens to be
       const here = this.local(node.xy[0], node.xy[1], this.heightAt(node.xy[0], node.xy[1]));
@@ -372,7 +370,9 @@ export class Scene3D {
       const width = base * (career ? 0.45 + 0.55 * Math.sqrt(share / topShare) : 0.66) * far;
       const ground = (x: number, y: number) => this.local(x, y, this.heightAt(x, y));
       // the name curves around the front of its hill, partway up the flank (top of the letters toward the summit)
-      const lettering = letteringTexture(wrapLabel(node.label, 30), !career);
+      // long names go on two lines, lettered larger: the strip is as long as the longer line, letters 35% taller
+      const lines = balancedLines(node.label), lettering = letteringTexture(lines, !career);
+      const arcWidth = lines.length > 1 ? width * 1.35 * Math.max(...lines.map((x) => x.length)) / node.label.length : width;
       const t = this.b.meta.terrain, [stretch, ang] = node.hill ?? [1, 0];
       const sigma = t.bandwidth_level0 * Math.pow(t.bandwidth_per_level, node.level);
       const ra = sigma * Math.sqrt(stretch), rb = sigma / Math.sqrt(stretch);
@@ -406,14 +406,13 @@ export class Scene3D {
       // first spot fully in sight and clear of other names wins; otherwise the clearest one, if it is nearly all visible
       let mesh: THREE.Mesh | null = null, keep: THREE.Mesh | null = null, keepSeen = 0;
       search: for (const f of [1, 0.85, 0.72, 0.6]) for (const k of WRAP_RADII) for (const shift of WRAP_SHIFTS) {
-        mesh = makeWrapLabel(lettering, [node.xy[0], node.xy[1]], ra * k, rb * k, ang, toward, width * f, ground, shift);
+        mesh = makeWrapLabel(lettering, [node.xy[0], node.xy[1]], ra * k, rb * k, ang, toward, arcWidth * f, ground, shift);
         const sv = crowded(mesh) ? -1 : seen(mesh);
         if (sv > keepSeen) { if (keep) drop(keep); keep = mesh; keepSeen = sv; } else drop(mesh);
         if (sv === 1) break search;
       }
       mesh = keep;
-      if (!mesh || keepSeen < (career ? 0.75 : 0.85)) {                      // no clear spot: a floating label (career) or the name on hover
-        if (career || lvl > 0) this.unlettered.add(id);
+      if (!mesh || keepSeen < (career ? 0.75 : 0.85)) {    // no clear spot: the name shows on hover (move the map to see it)
         if (mesh) drop(mesh);
         lettering.tex.dispose();
         continue;
@@ -442,26 +441,20 @@ export class Scene3D {
     });
   }
 
-  /** The axes as hand-lettered signs on sticks (Sectors only; the finer levels get their own views): GROWING at the right,
-   *  LARGER at the back, SMALLER and SHRINKING at the front-left corner; small signs along the front carry the growth
-   *  ticks (percentage points, no % sign). */
+  /** The axes as two hand-lettered signs on sticks (Sectors only; the finer levels get their own views): GROWING at the
+   *  right, and LARGER beside the Finance hill toward the back. */
   private letterAxes(): void {
-    const sc = axisScale(this.b, this.state.size, this.state.level);
-    if (!sc || this.state.level !== 0) return;
-    const k = 1, night = effectiveTheme() === "dark";
-    const put = (lines: string[], x: number, y: number, h: number, small = false) => {
-      const sign = makeSign(lines, h * k, small);
+    if (!this.b.meta.axes || this.state.level !== 0) return;
+    const night = effectiveTheme() === "dark";
+    const put = (lines: string[], x: number, y: number, h: number) => {
+      const sign = makeSign(lines, h);
       sign.position.copy(this.local(x, y, this.heightAt(x, y) - 0.02));
-      if (night) (sign.material as THREE.SpriteMaterial).color.set(0x8e96b0);   // moonlit wood
+      if (night) (sign.material as THREE.SpriteMaterial).color.set(0x8e96b0);   // moonlit card
       this.group.add(sign); this.fpObjects.push(sign);
     };
     put(["Growing →"], SIGNS.growing[0], SIGNS.growing[1], SIGNS.big);
-    put(["Larger ↑"], SIGNS.larger[0], SIGNS.larger[1], SIGNS.big);
-    put(["← Shrinking", "↓ Smaller"], SIGNS.corner[0], SIGNS.corner[1], SIGNS.big * 1.05);
-    for (const t of niceTicks(sc.g_lo, sc.g_hi, 3)) {
-      const x = -1 + 2 * (t - sc.g_lo) / (sc.g_hi - sc.g_lo);
-      if (x > -0.75 && x < 0.95) put([(t > 0 ? "+" : "") + t], x, SIGNS.tickRow, SIGNS.tick, true);
-    }
+    const by = this.b.byId.get(SIGNS.largerBy);
+    if (by) put(["Larger ↑"], by.xy[0] + SIGNS.largerOffset[0], by.xy[1] + SIGNS.largerOffset[1], SIGNS.big);
   }
 
   /** Where the camera is, or will be once a step-down flight ends. */
@@ -646,9 +639,9 @@ export class Scene3D {
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { setVis(m, false); continue; }
       if (this.lettered.has(n.id) && !active) { setVis(m, false); continue; }   // the lettering stands in for this label
-      const priority = active || m.label.classList.contains("touched");
-      if (this.state.fp && !priority && !this.unlettered.has(n.id)) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
-      if (placed.length >= MAX_LABELS && !priority) { setVis(m, false); continue; }
+      // names live on the hills; a floating label appears only for the hovered or selected hill (move the map to see more)
+      const priority = active;
+      if (!active) { setVis(m, false); continue; }
       v.copy(m.anchor).project(this.camera);
       if (v.z >= 1) { setVis(m, false); continue; }
       const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * h;
@@ -713,14 +706,5 @@ function blur(src: Float32Array, n: number, sigma: number): Float32Array<ArrayBu
     let v = 0; for (let t = -r; t <= r; t++) v += tmp[Math.min(n - 1, Math.max(0, j + t)) * n + i] * w[t + r];
     out[j * n + i] = v / sum;
   }
-  return out;
-}
-
-/** About `count` round tick values inside lo..hi (steps of 1, 2, 2.5 or 5 times a power of ten). */
-export function niceTicks(lo: number, hi: number, count: number): number[] {
-  const raw = (hi - lo) / Math.max(1, count), p = Math.pow(10, Math.floor(Math.log10(raw)));
-  const step = [10, 5, 2.5, 2, 1].map((m) => m * p).find((v) => v <= raw) ?? raw;   // the largest round step that fits
-  const out: number[] = [];
-  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) out.push(Math.round(t * 100) / 100);
   return out;
 }
