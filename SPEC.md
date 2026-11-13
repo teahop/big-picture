@@ -19,7 +19,7 @@ A visitor can do two things:
 1. **Look at the map.** See which industries sit near each other, and how large
    they are.
 2. **See a career on it.** Add a CV, confirm a few guesses, see which parts of
-   the map that career touches, and download the picture.
+   the map that career touches.
 
 v1 also asked "where could I go next?". v2 does not. It is a picture of where a
 career has been.
@@ -33,7 +33,7 @@ career has been.
 | 3 | **One** industry terrain; research fields are no longer drawn | 5 |
 | 4 | New: a visitor adds a CV in the browser and sees a career footprint; nothing is stored or sent | 7 |
 | 5 | The footprint is redrawn so it is clear: touched Level 0 areas are highlighted and the user can step down into Levels 1 and 2 | 6 |
-| 6 | New: download one JPG of the map with the footprint | 8 |
+| 6 | Download one JPG (built, then removed by the owner; visitors take a screenshot) | 8 |
 
 Unchanged: the public data pipeline, the node graph,
 the three levels of detail, the deep zones, the privacy rules, static hosting.
@@ -206,7 +206,7 @@ A visitor's CV is read by a language model, and nothing is kept:
    visitor can fix the years, change a guess, delete a row or add one. A typical
    CV should need under a minute.
 4. **See.** The footprint is drawn as in section 6.
-5. **Download.** Section 8.
+5. **Download.** Removed (section 8).
 
 ### 7.3 Matching
 The model returns each role and degree with up to three guesses from the map's
@@ -233,17 +233,8 @@ setting so it can be changed without code changes.
 
 ## 8. Download
 
-One button renders a single JPG, built in the page and saved by the browser:
-
-- The map from the current camera with the footprint on, at a fixed size
-  (target 2400 × 1600).
-- The name and subtitle, the list of touched Level 0 areas with shares, the
-  type legend and the site address.
-- An optional caption the visitor types (for example their name). It is not
-  required and is not stored.
-
-The image is drawn on a canvas (the WebGL frame plus labels and text) and
-exported with `canvas.toBlob("image/jpeg")`. No upload, no share link.
+Removed by the owner on 2026-11-12: visitors take a screenshot if they want an
+image. The page has no download button.
 
 ## 9. Privacy and publishing
 

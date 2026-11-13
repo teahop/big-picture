@@ -26,8 +26,6 @@ This is version 2.
   stored. The career is drawn as California wildflowers on the hills it touched,
   each hill blooming over its share; step down into sectors, industries and deep
   zones. Clear CV removes it.
-- **Download image:** one JPG of the view, footprint, sector shares, legend and
-  an optional caption, made in the browser.
 - **Look:** rolling hills to every edge under a blue sky, or a moonlit night.
 
 Without WebGL the page shows a one-line message and the node lists.

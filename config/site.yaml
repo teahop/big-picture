@@ -1,6 +1,5 @@
 # Single source of the project's display name and subtitle.
 # The viewer header, page title and description, README title, the CLI help
-# and (from v2 Phase 4) the exported image read from here.
+# read from here.
 display_name: "The Big Picture"
 subtitle: "Visualizing a career"
-address: "teahop.github.io/industry-map"   # printed on the downloaded image (no scheme); update on a rename

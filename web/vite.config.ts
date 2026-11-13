@@ -6,7 +6,6 @@ import { parse } from "yaml";
 const site = parse(readFileSync(new URL("../config/site.yaml", import.meta.url), "utf8")) as {
   display_name: string;
   subtitle: string;
-  address: string;
 };
 
 // Settings tuned by eye (peak height, footprint weights) live in ../config/viewer.yaml.
@@ -94,6 +93,6 @@ export default defineConfig(({ command }) => ({
   publicDir: "../data/public",
   server: { fs: { allow: [".."] } },
   // The built page calls the Worker; the dev server calls its own route.
-  define: { __SITE__: JSON.stringify({ name: site.display_name, subtitle: site.subtitle, address: site.address }), __VIEWER__: JSON.stringify(command === "build" ? { ...viewer, cv: { endpoint: cvCfg.proxy_url ?? "" } } : viewer) },
+  define: { __VIEWER__: JSON.stringify(command === "build" ? { ...viewer, cv: { endpoint: cvCfg.proxy_url ?? "" } } : viewer) },
   plugins: [siteName(), privateFootprint(), restartOnConfig(), cvRoute(), csp()],
 }));

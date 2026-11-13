@@ -3,7 +3,6 @@ import { Scene3D, webglAvailable } from "./scene3d";
 import { State, type FootprintMode, type LodSetting } from "./state";
 import { compute, hierarchy, loadFootprint, type FootprintData } from "./footprint";
 import { buildCvDialog } from "./cvui";
-import { buildDownload } from "./download";
 import { buildFootprintPanel, touchedChildren } from "./fpui";
 import { effectiveTheme, onThemeChange, restoreTheme, setTheme, type ThemeChoice } from "./theme";
 import { buildPanel } from "./ui";
@@ -106,7 +105,6 @@ async function start(): Promise<void> {
   clear.addEventListener("click", () => void useFootprint(null));
   if (initial) await useFootprint(initial.data, initial.sample);
   (window as unknown as { __fp: object }).__fp = { stepInto, stepTo, set: setMode, use: useFootprint, data: () => fpData };
-  buildDownload(bundle, state, (w, h) => scene3d?.snapshot(w, h) ?? null, __SITE__);
   buildPanel(bundle, state, pick, (n) => panelExtra.fn?.(n) ?? "");
   const theme = new Toggle<ThemeChoice>("theme");          // Day / Night
   const syncTheme = () => { theme.value = effectiveTheme(); };
