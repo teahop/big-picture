@@ -59,7 +59,7 @@ async function start(): Promise<void> {
   const panelExtra: { fn?: (n: NodeRec) => string } = {};
   const setMode = (m: FootprintMode) => {
     const c = m === "off" || !fpData ? null : compute(fpData, h(), __VIEWER__.footprint);
-    if (c?.unknown.length) $("notice").textContent = "Some footprint entries name industries that are not on the map: " + c.unknown.slice(0, 3).join(", ");
+    if (c?.unknown.length) $("notice").textContent = "Some career entries name industries that are not on the map: " + c.unknown.slice(0, 3).join(", ");
     state.setFocus([]); state.setFootprint(m, c);
   };
   let hier: ReturnType<typeof hierarchy> | null = null;
@@ -90,7 +90,7 @@ async function start(): Promise<void> {
     fpReady ??= (async () => {
       await ensureLevel(bundle, 2);                       // weights roll up across every level
       hier = null;
-      panelExtra.fn = buildFootprintPanel(bundle, state, h(), { stepInto: (n) => void stepInto(n), stepTo: (d) => void stepTo(d), select: pick });
+      panelExtra.fn = buildFootprintPanel(bundle, state, h(), { stepInto: (n) => void stepInto(n), stepTo: (d) => void stepTo(d), select: pick, adjust: () => cvDialog.adjust() });
     })();
     await fpReady;
     if (ticket !== fpTicket) return;
@@ -102,7 +102,7 @@ async function start(): Promise<void> {
   add.addEventListener("click", () => { void ensureLevel(bundle, 2).then(() => cvDialog.open()); });
   const initial = await loadFootprint();
   // Add your CV draws a footprint; Clear removes it (and drops it from memory). There is no separate on/off switch.
-  clear.addEventListener("click", () => void useFootprint(null));
+  clear.addEventListener("click", () => { cvDialog.forget(); void useFootprint(null); });
   if (initial) await useFootprint(initial.data, initial.sample);
   (window as unknown as { __fp: object }).__fp = { stepInto, stepTo, set: setMode, use: useFootprint, data: () => fpData };
   buildPanel(bundle, state, pick, (n) => panelExtra.fn?.(n) ?? "");
@@ -111,10 +111,6 @@ async function start(): Promise<void> {
   onThemeChange(() => { scene3d?.applyTheme(); syncTheme(); });
   theme.onChange((v) => setTheme(v));
   syncTheme();
-  const aside = document.querySelector("aside")!, showBtn = $<HTMLButtonElement>("panel-show");
-  const showPanel = (on: boolean) => { aside.hidden = !on; showBtn.hidden = on; (on ? $("panel-hide") : showBtn).focus(); };
-  $("panel-hide").addEventListener("click", () => showPanel(false));
-  showBtn.addEventListener("click", () => showPanel(true));
   (window as unknown as { __viewer: object }).__viewer = {
     state, bundle, applyLevel, stats: () => scene3d?.stats(), bench: (n?: number) => scene3d?.benchmark(n),
     setSize: (v: SizeSetting) => { size.value = v; state.setSize(v); },

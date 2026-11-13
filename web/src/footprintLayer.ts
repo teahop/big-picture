@@ -2,7 +2,8 @@
  *  hill bloom, and where each flower goes. Pure functions; scene3d turns the results into three.js objects. */
 import type { LevelGrids, Measure, Meta, NodeRec } from "./data";
 
-export interface Owners { owner: Int32Array; ids: string[] }
+/** owner: index into ids per grid point (-1 = flat ground); strength: the owner's own peak value there (how far up its hill). */
+export interface Owners { owner: Int32Array; ids: string[]; strength?: Float32Array }
 
 /** For every grid point, the visible industry whose peak is tallest there (the same rule the terrain is built with:
  *  amplitude (size / largest) ** height_exponent, kernel width shrinking with level), or -1 on flat ground (beyond
@@ -29,11 +30,11 @@ export function owners(g: LevelGrids, nodes: NodeRec[], measure: Measure, t: Met
     }
   });
   for (let k = 0; k < owner.length; k++) if (owner[k] >= 0 && best[k] < floor[owner[k]]) owner[k] = -1;
-  return { owner, ids: nodes.map((x) => x.id) };
+  return { owner, ids: nodes.map((x) => x.id), strength: best };
 }
 
-/** Mask of grid points owned by a touched industry. With owners computed over the touched industries only, this is
- *  the ground within about two kernel widths of each touched peak, even where a taller untouched neighbour rises. */
+/** Mask of grid points owned by a touched industry. Owners are computed over every visible industry, so a touched
+ *  hill's ground stops where an untouched neighbour's hill takes over. */
 export function touchedMask(o: Owners, touched: Map<string, number>): Uint8Array {
   const m = new Uint8Array(o.owner.length);
   for (let k = 0; k < m.length; k++) m[k] = o.owner[k] >= 0 && touched.has(o.ids[o.owner[k]]) ? 1 : 0;
@@ -63,7 +64,8 @@ export const SPECIES = [
 
 /** Grid points that bloom: on each touched industry's ground, the share of its area equal to its share of the
  *  career (27% of the career -> 27% of that hill), chosen as drifts from a smooth noise field that lean up the hill. */
-export function bloomCells(o: Owners, touched: Map<string, number>, n: number, height?: number[]): Map<number, number> {
+export function bloomCells(o: Owners, touched: Map<string, number>, n: number, height?: ArrayLike<number>): Map<number, number> {
+  height = height ?? o.strength;                          // lean up the hill's own peak, not up a neighbour's slope
   const byNode = new Map<number, number[]>();
   for (let k = 0; k < o.owner.length; k++) if (o.owner[k] >= 0) (byNode.get(o.owner[k]) ?? byNode.set(o.owner[k], []).get(o.owner[k])!).push(k);
   const out = new Map<number, number>();                  // cell -> owner index
@@ -72,8 +74,8 @@ export function bloomCells(o: Owners, touched: Map<string, number>, n: number, h
     if (!share) continue;
     const keep = Math.round(cells.length * Math.min(1, share));
     // drifts from noise, leaning up the hill (a narrow peak's flat area is mostly its foot, which would bloom as a ring)
-    const top = height ? Math.max(...cells.map((k) => height[k]), 1e-9) : 1;
-    const score = (k: number) => noise(k % n, Math.floor(k / n), 6, 11) * 0.55 + (height ? (height[k] / top) * 0.45 : 0);
+    const h = height, top = h ? cells.reduce((m, k) => Math.max(m, h[k]), 1e-9) : 1;
+    const score = (k: number) => noise(k % n, Math.floor(k / n), 6, 11) * 0.55 + (h ? (h[k] / top) * 0.45 : 0);
     const ranked = cells.map((k) => [k, score(k)] as [number, number]).sort((a, b) => b[1] - a[1]);
     for (const [k] of ranked.slice(0, keep)) out.set(k, idx);
   }

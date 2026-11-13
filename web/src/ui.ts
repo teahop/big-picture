@@ -63,7 +63,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const key = [n?.id ?? "", state.fpVersion, state.fpSample, state.level, state.size].join("|");
     if (key === lastShown) return;                         // nothing in the box would change: leave the DOM alone
     lastShown = key;
-    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or step into your footprint.</p>"; return; }
+    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Height is size (jobs, or value added); similar industries sit near each other. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or see your place by uploading your CV.</p>"; return; }
     panel.innerHTML = extra(n) + details(b, n);
   };
   state.subscribe(render); render();

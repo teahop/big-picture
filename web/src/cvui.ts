@@ -1,7 +1,7 @@
 /** "Add your CV" dialog (SPEC 7.2, 7.4): choose a PDF or text file, paste text, or fill in rows by hand; the model reads
- *  the CV through the proxy; the visitor confirms each row's industry and years; the result is shown as a footprint.
- *  Everything lives in page memory: nothing goes to browser storage, cookies or the URL, and the text goes only to
- *  the configured endpoint. Closing or clearing drops it. */
+ *  the CV through the proxy and the result goes straight onto the map. "Make adjustments" reopens the rows so the
+ *  visitor can change each one's industry and years. Everything lives in page memory: nothing goes to browser storage,
+ *  cookies or the URL, and the text goes only to the configured endpoint. Clear CV drops the rows. */
 import type { Bundle } from "./data";
 import type { FootprintData } from "./footprint";
 import { blankRow, checkedRows, loadLookups, pdfText, readWithModel, rulesRow, toFootprint, type Row } from "./cv";
@@ -16,11 +16,14 @@ export function finestIds(b: Bundle): Map<string, string> {
   return new Map(b.nodes.filter((n) => (n.level === 1 && !gone.has(n.id)) || n.level === 2).map((n) => [n.id, n.label]));
 }
 
-export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => void): { open(): void } {
+export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => void): { open(): void; adjust(): void; forget(): void } {
   const dlg = document.getElementById("cv") as HTMLDialogElement;
   const body = dlg.querySelector<HTMLElement>(".cv-body")!;
   const year = new Date().getFullYear();
   let rows: Row[] = [];
+  let kept: Row[] = [];               // the rows behind the career on the map (page memory only), for Make adjustments
+  const title = dlg.querySelector<HTMLElement>("#cv-title")!;
+  const draw = (fp: FootprintData) => { kept = structuredClone(rows); show(fp); dlg.close(); };
   let names = new Map<string, string>(), byName = new Map<string, string>();
   const known = () => { if (!names.size) { names = finestIds(b); byName = new Map([...names].map(([id, l]) => [l.toLowerCase(), id])); } return names; };
 
@@ -31,16 +34,16 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
 
   // ---- step 1: the CV
   const start = () => {
-    rows = [];
+    rows = []; title.textContent = "Add your CV";
     body.innerHTML = `
       <p class="hint">Your CV is sent to this site's reader, which asks a language model (OpenAI) to list your roles and degrees
-      and suggest an industry for each. Nothing is stored, by the site or in your browser; you check every row before it is drawn.</p>
+      and suggest an industry for each. Nothing is stored, by the site or in your browser. Your career is drawn straight away; use Make adjustments in the panel to change any row.</p>
       <label class="cv-file">Choose a PDF or text file <input type="file" accept=".pdf,.txt,application/pdf,text/plain" /></label>
       <label class="cv-paste">or paste the text<textarea rows="8" maxlength="${MAX_CHARS}" placeholder="Paste your CV here"></textarea></label>
       <div class="cv-actions"><button type="button" class="primary" data-act="read">Read my CV</button>
       <button type="button" class="link" data-act="manual">Fill in by hand instead</button></div>
       <p class="cv-status" role="status"></p>
-      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you corrected, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you can correct, not an assessment.</p>`;
   };
 
   const readText = async () => {
@@ -62,7 +65,9 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
       text = "";
       rows = checkedRows(entries, L, known(), year);
       if (!rows.length) return status("No roles or degrees found. Fill them in by hand instead.");
-      confirm();
+      const fp = toFootprint(rows, year);
+      if (fp.entries.length) return draw(fp);              // straight to the map; Make adjustments reopens the rows
+      confirm("No industry could be suggested for these rows. Pick one for each.");
     } catch (e) {
       text = "";
       rows = [blankRow("role"), blankRow("degree")];
@@ -95,7 +100,7 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
       <div class="cv-actions"><button type="button" class="link" data-act="add-role">+ role</button><button type="button" class="link" data-act="add-degree">+ degree</button></div>
       <div class="cv-actions"><button type="button" class="primary" data-act="show">Show on map</button><button type="button" class="link" data-act="restart">Start again</button></div>
       <p class="cv-status" role="status">${esc(msg)}</p>
-      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you corrected, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you can correct, not an assessment.</p>`;
   };
   const redrawRow = (i: number) => {
     const el = body.querySelector(`.cv-row[data-i="${i}"]`);
@@ -115,7 +120,7 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
     else if (act === "show") {
       const fp = toFootprint(rows, year);
       if (!fp.entries.length) return status("Pick an industry for at least one row.");
-      show(fp); dlg.close();
+      draw(fp);
     }
   });
   const num = (v: string) => (/^\d{4}$/.test(v.trim()) ? Number(v) : null);
@@ -146,5 +151,14 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
 
   const manualOnly = () => { void loadLookups(); known(); rows = [blankRow("role"), blankRow("degree")];
     confirm("Fill in your roles and degrees; suggestions come from job-title and degree lists. Nothing leaves this page."); };
-  return { open: () => { if (__VIEWER__.cv.endpoint) start(); else manualOnly(); dlg.showModal(); } };
+  const open = () => { if (__VIEWER__.cv.endpoint) start(); else manualOnly(); dlg.showModal(); };
+  return {
+    open,
+    adjust: () => {
+      if (!kept.length) return open();
+      void loadLookups(); known(); rows = structuredClone(kept); title.textContent = "Make adjustments";
+      confirm(); dlg.showModal();
+    },
+    forget: () => { kept = []; },
+  };
 }

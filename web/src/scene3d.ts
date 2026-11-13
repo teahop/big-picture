@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type LevelGrids, type NodeRec, levelMaxSize, sampleAt } from "./data";
-import { readTheme, terrainColour } from "./theme";
+import { effectiveTheme, readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
 import { makeGrassLabel } from "./grassLabel";
@@ -15,10 +15,10 @@ const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
 const AUTO_L2 = 7.0;  // ... and to Level 2
 const CFG = __VIEWER__;
 
-// Shared, low-poly marker geometry (one instance for every node)
-const RING = new THREE.RingGeometry(0.82, 1, 24);
+const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
+const GLOW = 0.55;    // how much brighter a hovered or selected hill gets (its whole ground lights up, no ring)
 
-interface Marker { ring: THREE.Object3D; label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
+interface Marker { label: HTMLButtonElement; text: string; anchor: THREE.Vector3; rel: number; r: number; w: number; h: number; vis: boolean }
 /** Label slots tried in order, in label widths (x) and label heights (y, negative = up). */
 const LABEL_SLOTS: [number, number][] = [[0, 0], [0, -1], [0, -2], [0.55, -1], [-0.55, -1], [0, -3], [0.55, -2], [-0.55, -2], [0, -4], [1.1, -1], [-1.1, -1], [0, 1], [0.55, 0], [-0.55, 0]];
 const MESH_N = 256;   // mesh points per side
@@ -42,6 +42,8 @@ export class Scene3D {
   private flyDir: THREE.Vector3 | null = null; // camera direction from the target to reach while flying
   private owners: Owners | null = null; private ownersKey = "";
   private fpObjects: THREE.Object3D[] = [];
+  private baseCol = new Float32Array(0);              // terrain colours before any hill is lit
+  private glowKey = "";
   private lettered = new Map<string, THREE.Mesh>();   // hills whose name is lettered into the grass
   private unlettered = new Set<string>();             // hills that wanted lettering but had no clear spot: they keep a floating label
   private hemi = new THREE.HemisphereLight(0xdcecff, 0x4a5a2a, 1.1);   // sky light from above, grass bounce below
@@ -185,6 +187,44 @@ export class Scene3D {
       c.setRGB(r / 255, gg / 255, b / 255, THREE.SRGBColorSpace);   // the palette is sRGB; the renderer works in linear
       col.setXYZ(k, c.r, c.g, c.b);
     }
+    this.baseCol = Float32Array.from(col.array as Float32Array);
+    this.glowKey = "";
+    this.applyGlow();
+  }
+
+  /** Light up the hovered and selected hills: every mesh point on their ground (where their hill is the tallest) is
+   *  brightened, most near the top, with the edge softened so the light fades out at the saddles. */
+  private applyGlow(): void {
+    const ids = [this.state.active?.id, this.state.selected?.id].filter((x): x is string => !!x && this.state.visibleIds.has(x));
+    const key = [ids.join(","), this.state.size, this.state.level].join("|");
+    if (key === this.glowKey || !this.baseCol.length) return;
+    this.glowKey = key;
+    const col = this.mesh.geometry.getAttribute("color") as THREE.BufferAttribute, arr = col.array as Float32Array, n = MESH_N;
+    arr.set(this.baseCol);
+    if (ids.length) {
+      const o = this.ownerGrid(), g = this.grid(), gn = g.n, st = o.strength!;
+      const want = new Set(ids.map((id) => o.ids.indexOf(id)).filter((i) => i >= 0));
+      const top = new Map<number, number>();
+      for (let k = 0; k < o.owner.length; k++) if (want.has(o.owner[k])) top.set(o.owner[k], Math.max(top.get(o.owner[k]) ?? 0, st[k]));
+      const glow = new Float32Array(n * n);
+      for (let k = 0; k < n * n; k++) {
+        const x = this.meshXY[2 * k], y = this.meshXY[2 * k + 1];
+        if (x < g.x[0] || x > g.x[1] || y < g.y[0] || y > g.y[1]) continue;
+        const i = Math.round(((x - g.x[0]) / (g.x[1] - g.x[0])) * (gn - 1)), j = Math.round(((y - g.y[0]) / (g.y[1] - g.y[0])) * (gn - 1));
+        const c = j * gn + i, w = o.owner[c];
+        if (want.has(w)) glow[k] = 0.35 + 0.65 * Math.sqrt(st[c] / (top.get(w) || 1));
+      }
+      const soft = blur(glow, n, 1.5);
+      // a pale warm light added to the grass (colours are linear, and night grass is very dark, so night needs more)
+      const L = effectiveTheme() === "dark" ? 0.17 : 0.09;
+      for (let k = 0; k < n * n; k++) {
+        const f = soft[k];
+        if (f < 0.01) continue;
+        arr[3 * k] = arr[3 * k] * (1 + GLOW * f) + L * f;
+        arr[3 * k + 1] = arr[3 * k + 1] * (1 + GLOW * f) + L * 0.92 * f;
+        arr[3 * k + 2] = arr[3 * k + 2] * (1 + GLOW * 0.5 * f) + L * 0.45 * f;
+      }
+    }
     col.needsUpdate = true;
   }
 
@@ -192,16 +232,6 @@ export class Scene3D {
   private marker(node: NodeRec): Marker {
     let m = this.markers.get(node.id);
     if (m) return m;
-    let ring: THREE.Object3D;
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
-    if (node.provenance === "estimated") {            // dashed outline marks estimated nodes
-      const pts = Array.from({ length: 49 }, (_, i) => new THREE.Vector3(Math.cos((i / 48) * Math.PI * 2), 0, Math.sin((i / 48) * Math.PI * 2)));
-      const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.18, gapSize: 0.12 }));
-      line.computeLineDistances(); ring = line;
-    } else {
-      ring = new THREE.Mesh(RING, mat); ring.rotation.x = -Math.PI / 2;
-    }
-    this.group.add(ring);
     const btn = document.createElement("button");
     btn.className = "node-label" + (node.provenance === "estimated" ? " est" : "") + " lvl" + node.level;
     btn.type = "button"; btn.tabIndex = -1; btn.style.visibility = "hidden";
@@ -211,7 +241,7 @@ export class Scene3D {
     btn.addEventListener("pointerleave", () => this.state.setHover(null));
     btn.addEventListener("click", () => this.state.setSelected(node));
     this.labelLayer.appendChild(btn);
-    m = { ring, label: btn, text, anchor: new THREE.Vector3(), rel: 0, r: 1, w: 0, h: 0, vis: false };
+    m = { label: btn, text, anchor: new THREE.Vector3(), rel: 0, r: 1, w: 0, h: 0, vis: false };
     this.markers.set(node.id, m);
     return m;
   }
@@ -219,15 +249,14 @@ export class Scene3D {
   private drawOrder: { id: string; node: NodeRec; m: Marker }[] = [];   // visible nodes, largest first
 
   private placeMarkers(): void {
-    for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); m.ring.visible = on && this.ringed(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
+    for (const [id, m] of this.markers) { const on = this.state.visibleIds.has(id); if (!on) { m.label.style.visibility = "hidden"; m.vis = false; } }
     const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
     for (const node of visible) {
       const m = this.marker(node), [x, y] = node.xy;
       const h = this.heightAt(x, y);
       m.rel = this.rel(node);
       const r = (0.07 + 0.34 * Math.sqrt(m.rel)) * (node.level === 0 ? 1 : node.level === 1 ? 0.8 : 0.6);
-      m.ring.position.copy(this.local(x, y, h + 0.04));
-      m.r = r; m.ring.scale.setScalar(r);
+      m.r = r;
       m.anchor.copy(this.local(x, y, h + 0.35 + r));
     }
     this.sortLabels();
@@ -242,18 +271,27 @@ export class Scene3D {
   }
 
   // ---- footprint on the terrain
-  /** Which touched industry each grid point belongs to (owners over the touched industries only, sized against the
-   *  level's largest industry, so a small touched peak keeps its ground beside a taller neighbour). */
+  /** Which visible industry each grid point belongs to: the one whose hill is tallest there, so a career hill's
+   *  flowers and glow stop where a neighbour's hill takes over. */
   private ownerGrid(): Owners {
-    const touched = this.state.touchedNow();
-    const k = [this.state.size, this.state.level, this.state.fpVersion].join("|");
+    const k = [this.state.size, this.state.level].join("|");
     if (!this.owners || this.ownersKey !== k) {
-      const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id)), m = this.state.measure;
-      const max = visible.reduce((a, x) => Math.max(a, x.size[m] ?? 0), 0);
-      this.owners = owners(this.grid(), visible.filter((n) => touched?.has(n.id)), m, this.b.meta.terrain, max);
+      const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
+      this.owners = owners(this.grid(), visible, this.state.measure, this.b.meta.terrain);
       this.ownersKey = k;
     }
     return this.owners;
+  }
+
+  /** Ground that blooms for each touched industry: where its own hill is the tallest of the touched ones and at least
+   *  SHARE_GROUND of the tallest of all, so a small career hill keeps its slopes but never paints a neighbour's hill. */
+  private bloomOwners(): Owners {
+    const touched = this.state.touchedNow(), all = this.ownerGrid(), m = this.state.measure;
+    const visible = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
+    const max = visible.reduce((a, x) => Math.max(a, x.size[m] ?? 0), 0);
+    const mine = owners(this.grid(), visible.filter((n) => touched?.has(n.id)), m, this.b.meta.terrain, max);
+    for (let k = 0; k < mine.owner.length; k++) if (mine.owner[k] >= 0 && mine.strength![k] < SHARE_GROUND * all.strength![k]) mine.owner[k] = -1;
+    return mine;
   }
 
   private gridPoint(fi: number, fj: number, lift: number): THREE.Vector3 {
@@ -334,8 +372,8 @@ export class Scene3D {
       rects.push(r); screen.push(sr); this.group.add(mesh); this.fpObjects.push(mesh); this.lettered.set(id, mesh);
     }
     if (!touched || !touched.size) return;
-    const o = this.ownerGrid(), n = this.grid().n;
-    const fl = flowers(bloomCells(o, touched, n, this.values()), n);
+    const o = this.bloomOwners(), n = this.grid().n;
+    const fl = flowers(bloomCells(o, touched, n), n);
     const size = [0.24, 0.18, 0.14][this.state.level] ?? 0.14;
     SPECIES.forEach((sp, c) => {
       const mine = fl.filter((f) => f[2] === c);
@@ -425,19 +463,11 @@ export class Scene3D {
     this.refreshColours(); this.refreshFootprint(); this.refreshHighlight();
   }
 
-  /** Rings only mark the selected and hovered nodes; the terrain itself shows where the peaks are. */
-  private ringed(id: string): boolean { return this.state.active?.id === id || this.state.selected?.id === id; }
-
+  /** The hovered and selected hills light up and their labels are marked. */
   private refreshHighlight(): void {
-    const t = readTheme(), act = this.state.active, sel = this.state.selected;
-    for (const [id, m] of this.markers) {
-      const on = act?.id === id || sel?.id === id;
-      const mat = (m.ring as THREE.Mesh | THREE.LineLoop).material as THREE.MeshBasicMaterial | THREE.LineDashedMaterial;
-      mat.color.set(on ? t.accent : t.fg);
-      m.ring.scale.setScalar(m.r * (on ? 1.5 : 1));
-      m.ring.visible = this.state.visibleIds.has(id) && on;
-      m.label.classList.toggle("active", on);
-    }
+    const act = this.state.active, sel = this.state.selected;
+    for (const [id, m] of this.markers) m.label.classList.toggle("active", act?.id === id || sel?.id === id);
+    this.applyGlow();
   }
 
   // ---- interaction (screen-space picking)
@@ -532,8 +562,7 @@ export class Scene3D {
       r.x0 >= 2 && r.x1 <= w - 2 && r.y0 >= 2 && r.y1 <= h - 2 && !placed.some((p) => r.x0 < p.x1 + 3 && r.x1 > p.x0 - 3 && r.y0 < p.y1 + 2 && r.y1 > p.y0 - 2);
     for (const { node: n, m } of this.drawOrder) {          // career labels first, then the largest nodes
       const active = m.label.classList.contains("active");
-      if (!this.state.isVisible(n)) { m.ring.visible = false; setVis(m, false); continue; }
-      m.ring.visible = this.ringed(n.id);
+      if (!this.state.isVisible(n)) { setVis(m, false); continue; }
       if (this.lettered.has(n.id) && !active) { setVis(m, false); continue; }   // the lettering stands in for this label
       const priority = active || m.label.classList.contains("touched");
       if (this.state.fp && !priority && !this.unlettered.has(n.id)) { setVis(m, false); continue; }   // with a career shown, other labels appear on hover
