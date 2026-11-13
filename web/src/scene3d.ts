@@ -5,7 +5,7 @@ import { effectiveTheme, readTheme, terrainColour } from "./theme";
 import { SPECIES, bloomCells, flowers, noise, owners, type Owners } from "./footprintLayer";
 import { flowerTexture } from "./flowerSprites";
 import { letteringTexture, makeWrapLabel, wrapLabel } from "./grassLabel";
-import { makeSign, type Board } from "./signs";
+import { makeSign } from "./signs";
 import type { State } from "./state";
 
 const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrain is only moved, not redrawn
@@ -19,7 +19,9 @@ const CFG = __VIEWER__;
 const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
 const GLOW = 0.55;
 const MORPH_MS = 900;
-const WRAP_RADII = [0.8, 0.65, 1.0, 0.5];   // where a name curves around its hill, in kernel widths from the summit (tried in order)
+const OWN_SHARE = 0.7;   // at least this share of a name must lie on its own hill's ground
+const WRAP_RADII = [0.8, 0.65, 1.0, 0.5, 0.38, 0.26];
+const WRAP_SHIFTS = [0, -0.3, 0.3, -0.6, 0.6, -0.9, 0.9];   // turns around the hill from the side facing the camera (radians)   // where a name curves around its hill, in kernel widths from the summit (tried in order)
 /** Axis lettering on the ground (layout units; the hills fill -1..1): the front row's y, the side column's x, how far
  *  the end words sit in from the corners, word and tick widths, and how far below the words the ticks sit. */
 /** Axis signs (layout units; the hills fill -1..1): where each stands, and sign heights in world units at Level 0. */
@@ -383,24 +385,37 @@ export class Scene3D {
         return rects.some((q) => r[0] < q[1] + pad && r[1] > q[0] - pad && r[2] < q[3] + pad && r[3] > q[2] - pad)
           || screen.some((q) => sr[0] < q[1] + spad && sr[1] > q[0] - spad && sr[2] < q[3] + spad && sr[3] > q[2] - spad);
       };
-      // at finer levels the whole name must also be in sight (not behind a taller hill, not on a grazing slope)
-      const seen = (mm: THREE.Mesh) => {
-        if (lvl === 0) return true;
-        const pa = (mm.geometry.getAttribute("position") as THREE.BufferAttribute), cols = 64, rows = 10;
-        return [0, 31, 63].every((i) => [0, rows - 1].every((j) => {
-          const k = j * cols + i, lx = pa.getX(k) / (this.scale * STRETCH_X) + this.cx, ly = pa.getZ(k) / (this.scale * STRETCH_Z) + this.cy;
-          return this.inView(eye, lx, ly);
-        }));
+      // the whole name must be in sight from the camera: not behind a ridge or a taller hill, not on a slope turned
+      // away (15 points along and across the strip)
+      // and it must lie on this hill's own ground (where its hill is the tallest), not on a neighbour's slope
+      const og = this.ownerGrid(), gg = this.grid(), me = og.ids.indexOf(id);
+      const mine = (x: number, y: number) => {
+        const i = Math.round(((x - gg.x[0]) / (gg.x[1] - gg.x[0])) * (gg.n - 1)), j = Math.round(((y - gg.y[0]) / (gg.y[1] - gg.y[0])) * (gg.n - 1));
+        return i >= 0 && j >= 0 && i < gg.n && j < gg.n && og.owner[j * gg.n + i] === me;
       };
-      let mesh: THREE.Mesh | null = null, ok = false;
-      search: for (const f of [1, 0.85, 0.72, 0.6]) for (const k of WRAP_RADII) for (const shift of [0, -0.3, 0.3, -0.6, 0.6]) {
-        if (mesh) drop(mesh);
+      const seen = (mm: THREE.Mesh) => {
+        const pa = (mm.geometry.getAttribute("position") as THREE.BufferAttribute), cols = 64;
+        let n = 0, own = 0;
+        for (const i of [0, 16, 32, 47, 63]) for (const j of [0, 5, 9]) {
+          const k = j * cols + i, lx = pa.getX(k) / (this.scale * STRETCH_X) + this.cx, ly = pa.getZ(k) / (this.scale * STRETCH_Z) + this.cy;
+          if (mine(lx, ly)) own++;
+          if (this.inView(eye, lx, ly)) n++;
+        }
+        return own / 15 >= OWN_SHARE ? n / 15 : 0;
+      };
+      // first spot fully in sight and clear of other names wins; otherwise the clearest one, if it is nearly all visible
+      let mesh: THREE.Mesh | null = null, keep: THREE.Mesh | null = null, keepSeen = 0;
+      search: for (const f of [1, 0.85, 0.72, 0.6]) for (const k of WRAP_RADII) for (const shift of WRAP_SHIFTS) {
         mesh = makeWrapLabel(lettering, [node.xy[0], node.xy[1]], ra * k, rb * k, ang, toward, width * f, ground, shift);
-        if (!crowded(mesh) && seen(mesh)) { ok = true; break search; }
+        const sv = crowded(mesh) ? -1 : seen(mesh);
+        if (sv > keepSeen) { if (keep) drop(keep); keep = mesh; keepSeen = sv; } else drop(mesh);
+        if (sv === 1) break search;
       }
-      if (!ok && (lvl > 0 || !career)) {                   // no clear spot: the name shows on hover (or as a floating label)
-        if (lvl > 0) this.unlettered.add(id);
-        drop(mesh!); lettering.tex.dispose();
+      mesh = keep;
+      if (!mesh || keepSeen < (career ? 0.75 : 0.85)) {                      // no clear spot: a floating label (career) or the name on hover
+        if (career || lvl > 0) this.unlettered.add(id);
+        if (mesh) drop(mesh);
+        lettering.tex.dispose();
         continue;
       }
       rects.push(mesh!.userData.rect as number[]); screen.push(this.screenBox(mesh!, viewCam));
@@ -427,24 +442,25 @@ export class Scene3D {
     });
   }
 
-  /** The axes as little wooden signs on posts: GROWING at the right, LARGER at the back, and a post at the front-left
-   *  corner with SHRINKING and SMALLER; small stakes along the front carry the growth ticks for this level. */
+  /** The axes as hand-lettered signs on sticks (Sectors only; the finer levels get their own views): GROWING at the right,
+   *  LARGER at the back, SMALLER and SHRINKING at the front-left corner; small signs along the front carry the growth
+   *  ticks (percentage points, no % sign). */
   private letterAxes(): void {
     const sc = axisScale(this.b, this.state.size, this.state.level);
-    if (!sc) return;
-    const k = [1, 0.55, 0.4][this.state.level] ?? 0.4, night = effectiveTheme() === "dark";
-    const put = (boards: Board[], x: number, y: number, h: number, small = false) => {
-      const sign = makeSign(boards, h * k, small);
+    if (!sc || this.state.level !== 0) return;
+    const k = 1, night = effectiveTheme() === "dark";
+    const put = (lines: string[], x: number, y: number, h: number, small = false) => {
+      const sign = makeSign(lines, h * k, small);
       sign.position.copy(this.local(x, y, this.heightAt(x, y) - 0.02));
       if (night) (sign.material as THREE.SpriteMaterial).color.set(0x8e96b0);   // moonlit wood
       this.group.add(sign); this.fpObjects.push(sign);
     };
-    put([{ text: "Growing", arrow: "right" }], SIGNS.growing[0], SIGNS.growing[1], SIGNS.big);
-    put([{ text: "Larger", arrow: "up" }], SIGNS.larger[0], SIGNS.larger[1], SIGNS.big);
-    put([{ text: "Shrinking", arrow: "left" }, { text: "Smaller", arrow: "down" }], SIGNS.corner[0], SIGNS.corner[1], SIGNS.big * 1.35);
+    put(["Growing →"], SIGNS.growing[0], SIGNS.growing[1], SIGNS.big);
+    put(["Larger ↑"], SIGNS.larger[0], SIGNS.larger[1], SIGNS.big);
+    put(["← Shrinking", "↓ Smaller"], SIGNS.corner[0], SIGNS.corner[1], SIGNS.big * 1.05);
     for (const t of niceTicks(sc.g_lo, sc.g_hi, 3)) {
       const x = -1 + 2 * (t - sc.g_lo) / (sc.g_hi - sc.g_lo);
-      if (x > -0.75 && x < 0.95) put([{ text: (t > 0 ? "+" : "") + t + "%", arrow: "none" }], x, SIGNS.tickRow, SIGNS.tick, true);
+      if (x > -0.75 && x < 0.95) put([(t > 0 ? "+" : "") + t], x, SIGNS.tickRow, SIGNS.tick, true);
     }
   }
 

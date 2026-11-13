@@ -7,7 +7,7 @@ terrain:
   bandwidth_level0: 0.23   # Gaussian sigma for Level 0 nodes (layout units); sectors sit about 0.6 apart on the grid, so hills cover most of the land
   bandwidth_per_level: 0.55 # sigma multiplier for each deeper level (level 1 = x0.55)
   combine: pmean           # pmean: power mean of the kernels (peaks keep their own size, rounded saddles between); max: tallest only; sum: kernels add up
-  hill_stretch_max: 2.6    # hills are ridges up to this many times as long as wide (same area), each with its own direction
+  hill_stretch_max: 1.6    # hills are ridges up to this many times as long as wide (same area), each with its own direction; kept modest (v3) so a long ridge does not hide its neighbour or blur where a hill sits on the axes
   pmean_power: 4           # higher = closer to max (sharper creases), lower = softer saddles
   height_exponent: 0.35    # peak height = (size / largest at that level) ** this; 1 = proportional, 0.5 = square root; lower lifts small sectors into real hills
 
