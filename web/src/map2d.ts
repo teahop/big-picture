@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type NodeRec, axisScale, fmtMeasure } from "./data";
 import type { Owners } from "./footprintLayer";
+import { FishSchools, type School } from "./fish";
 import { logTicks, mapLines, niceTicks, placeLabels, type LabelItem } from "./labels2d";
 import type { State } from "./state";
 
@@ -16,7 +17,9 @@ const HEIGHT_EASE = 0.8;     // same easing as the 3D heights
 const CONTOUR = 0.05;        // contour interval (share of the tallest peak, after easing); every fifth is an index contour
 const BORDER = 1.1;          // the neat border, in layout units (the hills fill -1..1)
 const MIN_ZOOM = 0.8;
-const HILL_FLOOR = 0.2;      // rainbow bands cover a career hill down to this share of its own top (not the flats around it)
+const HILL_FLOOR = 0.2;
+const SCHOOL_MIN_PX = 60;    // the least spread of a school at zoom 1 (pixels)
+const FISH_PX = 9;           // a fish's half length on screen at zoom 1 (pixels); fish grow a little as you zoom in      // rainbow bands cover a career hill down to this share of its own top (not the flats around it)
 const MARGIN = { top: 70, bottom: 30, left: 60, right: 10 };   // screen space kept clear around the whole map (pixels)        // zooming out past this returns to the 3D Sectors view
 
 const VERT = /* glsl */ `
@@ -26,8 +29,8 @@ void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(
 const FRAG = /* glsl */ `
 uniform sampler2D hTex, mTex;
 uniform vec2 texel, gx, gy;
-uniform float interval, border;
-uniform vec3 paper, low, mid, high, line, accent;
+uniform float interval, border, ocean, shallows;
+uniform vec3 paper, low, mid, high, line, accent, seaShallow, seaDeep, sand, land;
 varying vec2 vUv;
 vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1.0), k, s); }
 void main() {
@@ -57,21 +60,36 @@ void main() {
   float ink = (1.0 - smoothstep(wdt - 0.5, wdt + 0.5, f)) * step(0.004, h) * (idx ? 0.8 : 0.45);
   col = mix(col, col * 1.06 + accent * 0.1, hov * 0.55);         // the hovered hill is lit a little...
   col = mix(col, mix(line, accent, hov), clamp(ink + hov * 0.45 * step(0.01, ink), 0.0, 1.0));   // ...and its contours turn red
-  // the neat border
   vec2 L = vec2(gx.x + vUv.x * (gx.y - gx.x), gy.x + t.y * (gy.y - gy.x));
+  // the sea chart (Deep zones): size as depth, the largest categories the deepest water (or, as the alternative, the
+  // largest as shallows rising into islands); pale isobaths with heavier index lines and a light chart grid
+  if (ocean > 0.001) {
+    float dpt = shallows > 0.5 ? 1.0 - smoothstep(0.0, 0.8, h) : smoothstep(0.0, 0.9, h);
+    vec3 sea = mix(seaShallow, seaDeep, dpt);
+    if (shallows > 0.5) sea = mix(sea, mix(sand, land, smoothstep(0.8, 0.95, h)), smoothstep(0.715, 0.73, h));
+    sea *= 0.93 + 0.1 * shade;
+    float iso = (1.0 - smoothstep(wdt - 0.5, wdt + 0.5, f)) * step(0.004, h) * (idx ? 0.6 : 0.32);
+    sea = mix(sea, sea * 1.06 + accent * 0.08, hov * 0.5);
+    sea = mix(sea, mix(vec3(1.0), accent, hov), clamp(iso + hov * 0.45 * step(0.01, iso), 0.0, 1.0));
+    vec2 gq = abs(fract(L / 0.25 - 0.5) - 0.5) / fwidth(L / 0.25);
+    sea = mix(sea, vec3(1.0), (1.0 - smoothstep(0.4, 1.2, min(gq.x, gq.y))) * 0.12);
+    col = mix(col, sea, ocean);
+  }
+  // the neat border
   vec2 bd = abs(abs(L) - border) / fwidth(L);
   float frame = (1.0 - smoothstep(0.6, 1.6, min(bd.x, bd.y))) * step(abs(L.x), border + 0.002) * step(abs(L.y), border + 0.002);
-  col = mix(col, line, frame * 0.85);
+  col = mix(col, mix(line, vec3(1.0), ocean * 0.6), frame * 0.85);
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }`;
 
-interface Palette { paper: string; low: string; mid: string; high: string; line: string; accent: string }
+interface Palette { paper: string; low: string; mid: string; high: string; line: string; accent: string; seaShallow: string; seaDeep: string; sand: string; land: string }
 
 function palette(): Palette {
   const cs = getComputedStyle(document.documentElement), g = (n: string, d: string) => cs.getPropertyValue(n).trim() || d;
   return { paper: g("--topo-paper", "#f3eedd"), low: g("--topo-low", "#c4d6a0"), mid: g("--topo-mid", "#e6dbab"), high: g("--topo-high", "#bf9b72"),
-           line: g("--topo-line", "#7a5c3c"), accent: g("--topo-accent", "#d0302a") };
+           line: g("--topo-line", "#7a5c3c"), accent: g("--topo-accent", "#d0302a"),
+           seaShallow: g("--sea-shallow", "#cfe8ee"), seaDeep: g("--sea-deep", "#0f3d68"), sand: g("--sea-sand", "#eadbb0"), land: g("--sea-land", "#9cbf7a") };
 }
 
 export class Map2D {
@@ -88,6 +106,12 @@ export class Map2D {
   private w = 1; private h = 1;
   onLeave: () => void = () => {};
   labelsShown = 0;
+  /** Deep zones are an ocean: 0 = land, 1 = water, eased between when the level changes. */
+  private oceanMix = 0; private oceanTarget = 0; private last = 0;
+  // size as depth by default; `?depth=shallows` draws the largest categories as shallows and islands instead (to compare)
+  readonly shallows = new URLSearchParams(location.search).get("depth") === "shallows";
+  private fish = new FishSchools();
+  private bg = { paper: new THREE.Color(), sea: new THREE.Color() };
 
   constructor(private canvas: HTMLElement, labelLayer: HTMLElement, private b: Bundle, private state: State,
               private ownerGrid: () => Owners, private scale: number, private cx: number, private cy: number,
@@ -101,9 +125,11 @@ export class Map2D {
     this.mat = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms: {
       hTex: { value: null }, mTex: { value: null }, texel: { value: new THREE.Vector2() }, gx: { value: new THREE.Vector2() }, gy: { value: new THREE.Vector2() },
       interval: { value: CONTOUR }, border: { value: BORDER }, paper: { value: new THREE.Color() }, low: { value: new THREE.Color() }, mid: { value: new THREE.Color() },
-      high: { value: new THREE.Color() }, line: { value: new THREE.Color() }, accent: { value: new THREE.Color() } } });
+      high: { value: new THREE.Color() }, line: { value: new THREE.Color() }, accent: { value: new THREE.Color() },
+      ocean: { value: 0 }, shallows: { value: this.shallows ? 1 : 0 }, seaShallow: { value: new THREE.Color() }, seaDeep: { value: new THREE.Color() },
+      sand: { value: new THREE.Color() }, land: { value: new THREE.Color() } } });
     this.plane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), this.mat);
-    this.scene.add(this.plane);
+    this.scene.add(this.plane, this.fish.mesh);
     this.overlay = document.createElement("div"); this.overlay.className = "map2d"; this.overlay.hidden = true;
     this.labelsEl = document.createElement("div"); this.labelsEl.className = "map2d-labels";
     this.axisX = document.createElement("div"); this.axisX.className = "map2d-axis x";
@@ -143,6 +169,9 @@ export class Map2D {
       this.plane.position.set((a.x + c.x) / 2, (a.y + c.y) / 2, 0);
       this.buildLabels(); this.maskKey = ""; this.viewKey = "";
     }
+    this.oceanTarget = lvl === 2 ? 1 : 0;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) this.oceanMix = this.oceanTarget;
+    this.overlay.classList.toggle("ocean", lvl === 2);
     this.refreshMask();
   }
 
@@ -156,7 +185,7 @@ export class Map2D {
     const lvl = this.state.level, g = this.b.grids[lvl]!, n = g.n, o = this.ownerGrid();
     const vals = g.settings[this.state.size].height, max = this.b.maxHeight[lvl]![this.state.size];
     const h = (k: number) => Math.pow(Math.max(0, vals[k] / max), HEIGHT_EASE);
-    const data = new Uint8Array(n * n * 4);
+    const data = new Uint8Array(n * n * 4), schools: School[] = [];
     if (touched?.size) {
       const cells = new Map<number, number[]>();
       for (let k = 0; k < o.owner.length; k++) { const w = o.owner[k]; if (w >= 0 && touched.has(o.ids[w])) (cells.get(w) ?? cells.set(w, []).get(w)!).push(k); }
@@ -167,9 +196,12 @@ export class Map2D {
         if (cut > 0) ks.length = cut;
         // the whole career hill is coloured (owner, 2026-11-13; colouring only the career's share was nearly invisible)
         const top = h(ks[0]), foot = Math.floor(h(ks[ks.length - 1]) / CONTOUR) * CONTOUR;   // violet starts at the contour below the lowest coloured ground
-        for (const k of ks) { data[4 * k] = 255; data[4 * k + 1] = Math.round(top * 255); data[4 * k + 3] = Math.round(foot * 255); }
+        if (lvl === 1) for (const k of ks) { data[4 * k] = 255; data[4 * k + 1] = Math.round(top * 255); data[4 * k + 3] = Math.round(foot * 255); }
+        // on the ocean, a school of fish keeps to this area's water instead; more fish for a larger share of the career
+        if (lvl === 2) schools.push(this.school(ks, n, g, touched.get(o.ids[w]) ?? 0, w));
       }
     }
+    this.fish.set(schools);
     // copy each coloured cell's top and foot one cell outward, so the edge blends into the band colour, not toward red
     const src = data.slice();
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
@@ -191,10 +223,24 @@ export class Map2D {
     this.viewKey = "";
   }
 
+  /** A school over these grid cells: their middle and spread (world units), and a count from the share. */
+  private school(ks: number[], n: number, g: { x: [number, number]; y: [number, number] }, share: number, seed: number): School {
+    let sx = 0, sy = 0, sxx = 0, syy = 0;
+    for (const k of ks) {
+      const p = this.world(g.x[0] + ((g.x[1] - g.x[0]) * (k % n)) / (n - 1), g.y[0] + ((g.y[1] - g.y[0]) * Math.floor(k / n)) / (n - 1));
+      sx += p.x; sy += p.y; sxx += p.x * p.x; syy += p.y * p.y;
+    }
+    const c = ks.length || 1, mx = sx / c, my = sy / c;
+    const least = SCHOOL_MIN_PX / this.ppu;              // a school spreads at least this far, so its fish read as fish, not a blot
+    return { x: mx, y: my, rx: Math.max(least, 1.6 * Math.sqrt(Math.max(0, sxx / c - mx * mx))), ry: Math.max(least, 1.6 * Math.sqrt(Math.max(0, syy / c - my * my))),
+             count: Math.round(8 + 120 * share), seed: 7919 * (seed + 1) };
+  }
+
   applyTheme(): void {
     const p = palette(), u = this.mat.uniforms;
-    for (const k of ["paper", "low", "mid", "high", "line", "accent"] as const) u[k].value.set(p[k]);
-    this.scene.background = new THREE.Color(p.paper);
+    for (const k of ["paper", "low", "mid", "high", "line", "accent", "seaShallow", "seaDeep", "sand", "land"] as const) u[k].value.set(p[k]);
+    this.bg.paper.set(p.paper); this.bg.sea.set(p.seaShallow);
+    this.scene.background = this.bg.paper.clone().lerp(this.bg.sea, this.oceanMix);
     this.viewKey = ""; for (const l of this.labels.values()) l.w = 0;
   }
 
@@ -306,6 +352,16 @@ export class Map2D {
   }
 
   render(renderer: THREE.WebGLRenderer): void {
+    const now = performance.now(), dt = this.last ? Math.min(0.1, (now - this.last) / 1000) : 0;
+    this.last = now;
+    if (this.oceanMix !== this.oceanTarget) {             // land fades into water (or back) over about 0.7 s
+      const step = dt / 0.7;
+      this.oceanMix = this.oceanTarget > this.oceanMix ? Math.min(this.oceanTarget, this.oceanMix + step) : Math.max(this.oceanTarget, this.oceanMix - step);
+      this.mat.uniforms.ocean.value = this.oceanMix * this.oceanMix * (3 - 2 * this.oceanMix);
+      (this.scene.background as THREE.Color).copy(this.bg.paper).lerp(this.bg.sea, this.oceanMix);
+    }
+    this.fish.mesh.visible = this.oceanMix > 0.5;
+    if (this.fish.mesh.visible) this.fish.step(dt, FISH_PX / (this.ppu * Math.pow(this.camera.zoom, 0.6)), matchMedia("(prefers-reduced-motion: reduce)").matches);
     this.controls.update();
     this.layout();
     renderer.render(this.scene, this.camera);
