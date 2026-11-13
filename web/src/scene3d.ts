@@ -565,6 +565,27 @@ export class Scene3D {
     return { frameMs: Math.round(this.frameMs * 100) / 100, drawCalls: i.calls, triangles: i.triangles, markers: this.markers.size, labelsShown: this.labelsShown };
   }
 
+  /** The current view rendered at w x h pixels (for the downloaded image), with the labels shown on screen projected
+   *  into that frame. The on-screen canvas returns to its own size afterwards. */
+  snapshot(w: number, h: number): { image: HTMLCanvasElement; labels: { text: string; x: number; y: number; touched: boolean }[] } {
+    const ratio = this.renderer.getPixelRatio(), aspect = this.camera.aspect, fov = this.camera.fov;
+    this.renderer.setPixelRatio(1); this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h; this.camera.fov = 45; this.camera.updateProjectionMatrix();
+    this.renderer.render(this.scene, this.camera);
+    const image = document.createElement("canvas"); image.width = w; image.height = h;
+    image.getContext("2d")!.drawImage(this.renderer.domElement, 0, 0);      // same task as the render: the buffer is intact
+    const labels: { text: string; x: number; y: number; touched: boolean }[] = [], v = new THREE.Vector3();
+    for (const { node: n, m } of this.drawOrder) {
+      if (!m.vis || !this.state.isVisible(n)) continue;
+      v.copy(m.anchor).project(this.camera);
+      if (v.z >= 1) continue;
+      labels.push({ text: m.text, x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h, touched: m.label.classList.contains("touched") });
+    }
+    this.renderer.setPixelRatio(ratio); this.camera.aspect = aspect; this.camera.fov = fov; this.resize();
+    if (!this.host.clientWidth) { this.camera.updateProjectionMatrix(); }
+    return { image, labels };
+  }
+
   show(on: boolean): void {
     this.host.hidden = !on; this.labelLayer.hidden = !on;
     if (on && !this.running) { this.running = true; this.resize(); requestAnimationFrame(this.frame); }

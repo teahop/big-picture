@@ -6,38 +6,33 @@ A 3D terrain of American industries, built only from public data, that a
 person can place a career on. Research and academia show up as the industries
 that do them (colleges and universities, scientific R&D services).
 
-This is version 2, in progress on the `v2` branch. The live site still runs v1
-until the v2 release step.
+This is version 2.
 
-## What exists now
+## What it does
 
 - **One industry terrain:** every industry raises the ground; height is its own
   size (compressed so small sectors still form hills), and each peak shows only
   its own industry.
-- **Two size settings:** Activity (jobs, BLS Employment Matrix 2025) and Dollars
-  (value added, BEA 2025).
+- **Two size settings:** Jobs (BLS Employment Matrix 2025) and Value added
+  (BEA 2025).
 - **Layout by similarity:** industries sit near others with a similar,
   distinctive occupation mix and description; a detailed industry can sit
   outside its sector's area.
 - **Three levels of detail:** 20 sectors, 304 detailed industries, then a few
   hand-built deep zones.
-- **Career footprint:** a career is drawn as California wildflowers on the
-  hills it touched, each hill blooming over its share of the career; step down
-  into sectors, industries and deep zones. The owner's own footprint is local
-  only and never published.
+- **Add your CV:** a visitor adds a CV (PDF, pasted text, or rows filled in by
+  hand); a language model reads it through the site's proxy and suggests an
+  industry for each role and degree; the visitor confirms every row. Nothing is
+  stored. The career is drawn as California wildflowers on the hills it touched,
+  each hill blooming over its share; step down into sectors, industries and deep
+  zones. Clear CV removes it.
+- **Download image:** one JPG of the view, footprint, sector shares, legend and
+  an optional caption, made in the browser.
 - **Look:** rolling hills to every edge under a blue sky, or a moonlit night.
 
-Without WebGL the page shows a one-line message and the searchable node lists.
+Without WebGL the page shows a one-line message and the node lists.
 
-## Planned for v2
-
-1. Add your CV: a visitor gets a footprint from a CV in the browser. Nothing is
-   stored or sent.
-2. Download one JPG of the map and footprint.
-
-Removed from v1: the "where next" score, the pay, mission and geography toggles,
-the 2D contour map, the footprint centroid marker, the four layer modes and the
-research fields (OpenAlex, HERD).
+v1 (the earlier "Industry Map") is documented only in `docs/v1/`.
 
 Personal data never enters this repository. See `SPEC.md` and `CLAUDE.md`.
 

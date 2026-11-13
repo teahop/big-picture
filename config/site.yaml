@@ -3,3 +3,4 @@
 # and (from v2 Phase 4) the exported image read from here.
 display_name: "The Big Picture"
 subtitle: "Visualizing a career"
+address: "teahop.github.io/industry-map"   # printed on the downloaded image (no scheme); update on a rename
