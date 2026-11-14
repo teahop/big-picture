@@ -1,0 +1,14 @@
+node_id,label,naics_parts
+ind:3250A1,"Basic, resin and agricultural chemicals",3251 Basic Chemical; 3252 Resin and Synthetic Rubber and Fibers; 3253 Pesticide and Fertilizer; 3259 Other Chemical Product
+ind:3250A2,"Paint, adhesive, soap and cleaner manufacturing",3255 Paint Coating and Adhesive; 3256 Soap Cleaning Compound and Toilet Preparation
+ind:3320A1,"Forging, hardware, spring and other metal products",3321 Forging and Stamping; 3322 Cutlery and Handtool; 3325 Hardware; 3326 Spring and Wire Product; 3329 Other Fabricated Metal Product
+ind:3320A2,"Structural metals, boilers and tanks",3323 Architectural and Structural Metals; 3324 Boiler Tank and Shipping Container
+ind:3330A1,"Farm, industrial and HVAC machinery",3331 Agriculture Construction and Mining Machinery; 3332 Industrial Machinery; 3334 Ventilation Heating Air-Conditioning and Commercial Refrigeration; 3339 Other General Purpose Machinery
+ind:3370A1,"Household, office and kitchen furniture",3371 Household and Institutional Furniture and Kitchen Cabinet; 3372 Office Furniture
+ind:4230A1,"Building, home and electrical goods wholesalers",4232 Furniture and Home Furnishing; 4233 Lumber and Construction Materials; 4235 Metal and Mineral; 4236 Household Appliances and Electrical and Electronic Goods; 4237 Hardware Plumbing and Heating; 4239 Miscellaneous Durable Goods
+ind:4240A1,"Grocery and alcoholic beverage wholesalers",4244 Grocery and Related Product; 4248 Beer Wine and Distilled Alcoholic Beverage
+ind:4240A2,"Drug and chemical wholesalers",4242 Drugs and Druggists' Sundries; 4246 Chemical and Allied Products
+ind:4240A3,"Paper, petroleum and other nondurable wholesalers",4241 Paper and Paper Product; 4247 Petroleum and Petroleum Products; 4249 Miscellaneous Nondurable Goods
+ind:5220A1,"Banking and credit services",5221 Depository Credit Intermediation; 5223 Activities Related to Credit Intermediation
+ind:5320A1,"Consumer, general and equipment rental",5322 Consumer Goods Rental; 5323 General Rental Centers; 5324 Commercial and Industrial Machinery and Equipment Rental and Leasing
+ind:4590A1,"Office supply, gift and used goods stores",4594 Office Supplies Stationery and Gift Retailers; 4595 Used Merchandise Retailers

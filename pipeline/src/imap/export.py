@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import json
+import re
 
 import numpy as np
 import pandas as pd
 
-from .common import interim_dir, load_config, public_dir, sha256
+from .common import interim_dir, load_config, public_dir, repo_root, sha256
 from .bls import MATRIX_PATH
 from .sectors import SECTOR_CODES, SHORT_LABEL
 from .terrain import SETTINGS, hill_shape
@@ -52,18 +53,35 @@ def _ok(x: float) -> float | None:
     return None if x != x else round(float(x), 2)
 
 
+LABELS_PATH = "data/mappings/industry_labels.csv"
+CODE_LIST = re.compile(r"\s*\(\s*\d[\d.,\s]*(?:and\s+\d+\s*)?(?:only)?\)\s*$")   # a trailing list of NAICS codes, e.g. " (3251,2,3,9)", " (4594 and 4595 only)"
+
+
+def display_label(node_id: str, label: str, remainder: bool, sector: str, named: dict[str, str]) -> str:
+    """The name shown on the map: a reviewed name for a matrix line item that bundles several NAICS industries (built from
+    their NAICS 2022 titles, data/mappings/industry_labels.csv), the sector's own name for the rest of a sector that the
+    matrix does not list separately (owner, 2026-11-13: no "Other:" prefix), otherwise the matrix title without any
+    trailing NAICS code list. The official title stays in `title` for the details panel."""
+    if node_id in named:
+        return named[node_id]
+    if remainder:
+        return SHORT_LABEL[sector]
+    return CODE_LIST.sub("", label)
+
+
 def level1_nodes(ch: dict) -> list[dict]:
     lv = interim_dir() / "levels"
     ind = pd.read_csv(lv / "industry_l1.csv", dtype={"ind_code": str})
     occ = pd.read_csv(lv / "industry_l1_occupations.csv", dtype={"ind_code": str, "occ_code": str})
     onet = pd.read_csv(interim_dir() / "onet" / "occupations.csv", dtype={"soc": str}).set_index("soc")["title"]
     occ = occ.astype({"emp_2025": float})
+    named = dict(pd.read_csv(repo_root() / LABELS_PATH)[["node_id", "label"]].itertuples(index=False, name=None))
     nodes = []
     for r in ind.itertuples():
         sub = occ[occ.ind_code == r.ind_code]
         tot = sub["emp_2025"].sum() or 1.0
         top = sub.sort_values(["emp_2025", "occ_code"], ascending=[False, True]).head(5)
-        nodes.append({"id": r.node_id, "label": r.label, "title": r.title, "type": "ind", "level": 1, "parent": r.parent_id,
+        nodes.append({"id": r.node_id, "label": display_label(r.node_id, r.label, bool(r.remainder), str(r.sector_code), named), "title": r.title, "type": "ind", "level": 1, "parent": r.parent_id,
                       "naics_code": r.ind_code, "provenance": "official", "remainder": bool(r.remainder),
                       "size": {"employment": round(float(r.emp_2025), 1), "employment_2035": round(float(r.emp_2035), 1)},
                       "growth": round(float(r.growth), 2), "xy": ch[r.node_id],

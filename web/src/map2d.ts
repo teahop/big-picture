@@ -327,7 +327,9 @@ export class Map2D {
       const n = this.b.byId.get(id)!;
       if (!l.w) { l.w = l.el.offsetWidth || 80; l.h = l.el.offsetHeight || 14; }
       const [x, y] = this.screen(n.xy[0], n.xy[1]);
-      items.push({ id, x, y, w: l.w, h: l.h, priority: (touched?.has(id) ? 1e12 * (1 + (touched.get(id) ?? 0)) : 0) + (n.size[m] ?? 0) });
+      // the hovered or selected hill's name always comes first (so a lit hill always shows its name), then the career's
+      const lit = id === this.state.active?.id || id === this.state.selected?.id;
+      items.push({ id, x, y, w: l.w, h: l.h, priority: (lit ? 1e15 : 0) + (touched?.has(id) ? 1e12 * (1 + (touched.get(id) ?? 0)) : 0) + (n.size[m] ?? 0) });
     }
     const placed = new Map(placeLabels(items, { w: this.w - 4, h: this.h - 40 }, 4).map((p) => [p.id, p]));
     for (const [id, l] of this.labels) {

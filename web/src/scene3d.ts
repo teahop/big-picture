@@ -19,6 +19,7 @@ const CFG = __VIEWER__;
 const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
 const GLOW = 0.55;
 const MORPH_MS = 900;
+const LIT_NAME = 0xffc94a;   // a lettered hill name while its hill is hovered or selected
 const OWN_SHARE = 0.7;
 const LETTER_SEEN = 0.93;    // at least this share of a name must be in clear sight
 const LETTER_SEEN_CAREER = 0.85;   // ...a little less for a career hill, so its name shows when a sliver is hidden
@@ -560,6 +561,8 @@ export class Scene3D {
   }
   private finish2D(): void {
     this.mode = "2d"; this.controls.enabled = false;
+    for (const m of this.markers.values()) { m.vis = false; m.label.style.visibility = "hidden"; }   // no 3D floating labels on the map
+    this.stemPath.setAttribute("d", "");
     this.map2d.resize(this.host.clientWidth, this.host.clientHeight);
     this.map2d.refresh(); this.map2d.setActive(true);
     if (this.pendingFrame) this.map2d.frame(this.pendingFrame); else this.map2d.fit();
@@ -587,6 +590,8 @@ export class Scene3D {
     if (this.mode === "2d") this.map2d.refreshMask();
     const act = this.state.active, sel = this.state.selected;
     for (const [id, m] of this.markers) m.label.classList.toggle("active", act?.id === id || sel?.id === id);
+    // a hill's name lettered on the ground turns gold while its hill is lit
+    for (const [id, mesh] of this.lettered) (mesh.material as THREE.MeshBasicMaterial).color.set(act?.id === id || sel?.id === id ? LIT_NAME : 0xffffff);
     this.applyGlow();
   }
 
@@ -693,9 +698,10 @@ export class Scene3D {
     const free = (r: { x0: number; x1: number; y0: number; y1: number }) =>
       r.x0 >= 2 && r.x1 <= w - 2 && r.y0 >= 2 && r.y1 <= h - 2 && !placed.some((p) => r.x0 < p.x1 + 3 && r.x1 > p.x0 - 3 && r.y0 < p.y1 + 2 && r.y1 > p.y0 - 2);
     for (const { node: n, m } of this.drawOrder) {          // career labels first, then the largest nodes
+      if (this.mode !== "3d") { setVis(m, false); continue; }   // while tilting into the 2D map, its own names take over
       const active = m.label.classList.contains("active");
       if (!this.state.isVisible(n)) { setVis(m, false); continue; }
-      if (this.lettered.has(n.id) && !active) { setVis(m, false); continue; }   // the lettering stands in for this label
+      if (this.lettered.has(n.id)) { setVis(m, false); continue; }   // the lettering stands in for this label (and lights up on hover)
       // names live on the hills; a floating label appears only for the hovered or selected hill (move the map to see more)
       const priority = active;
       if (!active) { setVis(m, false); continue; }

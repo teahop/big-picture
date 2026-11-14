@@ -88,3 +88,9 @@ Where-next scoring, pay and geography were removed in v2. These rows are kept so
 | Source | What is used | Release / terms | Notes |
 |---|---|---|---|
 | OpenAI API, Responses endpoint with Structured Outputs (strict JSON Schema) | Reads a visitor's CV text and returns roles and degrees with up to three guesses each from the map's industry ids (an enum in the schema) | Models listed for the owner's key on 2026-11-11 via `GET /v1/models`; positioning and prices from https://developers.openai.com/api/docs/models and /pricing (retrieved 2026-11-11): gpt-6.1-sol $2 / $10 per 1M tokens (default), gpt-6-luna $0.10 / $0.50 | Called only through the site's proxy (key never in the browser). Strict-mode limits per the structured-outputs guide (up to 1,000 enum values; more than 250 string values capped at 15,000 characters) are met by the ~350 industry ids |
+
+### Display names for bundled industries (v3, 2026-11-13)
+
+| Source | What | File and retrieval | Notes |
+|---|---|---|---|
+| U.S. Census Bureau, NAICS 2022 code list | 4-digit NAICS 2022 titles for the matrix line items that bundle several industries (codes such as 3250A1) | `https://www.census.gov/naics/2022NAICS/2-6%20digit_2022_Codes.xlsx`, retrieved 2026-11-13 | Used by hand to write the short names in `data/mappings/industry_labels.csv` (each row lists the NAICS parts it covers). The official matrix title stays in each node's `title` |
