@@ -15,7 +15,7 @@ def test_display_label_rules():
 
 
 def test_exported_names_are_clean_and_unique():
-    for name in ("nodes_l1.json", "nodes_l2.json"):
+    for name in ("nodes_l1.json",):
         labels = [n["label"] for n in json.loads((public_dir() / name).read_text())]
         assert not [l for l in labels if l.startswith("Other:") or re.search(r"\(\s*\d", l)]
         assert not [l for l, c in collections.Counter(labels).items() if c > 1]

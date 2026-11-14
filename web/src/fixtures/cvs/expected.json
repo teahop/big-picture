@@ -8,16 +8,16 @@
   {"kind": "degree", "match": "Bachelor of Science in Nursing", "ok": ["ind:62210P", "ind:62210S", "ind:62210L", "ind:623100", "ind:621600", "ind:621100"]}
  ],
  "engineer": [
-  {"kind": "role", "match": "Engineering Manager", "ok": ["deep:enterprise-software", "deep:developer-and-data-infra", "deep:consumer-and-games"]},
-  {"kind": "role", "match": "Senior Software Engineer", "ok": ["ind:518000", "deep:developer-and-data-infra"]},
+  {"kind": "role", "match": "Engineering Manager", "ok": ["ind:513200"]},
+  {"kind": "role", "match": "Senior Software Engineer", "ok": ["ind:518000", "ind:513200"]},
   {"kind": "role", "match": "Software Engineer", "ok": ["ind:5220A1"]},
-  {"kind": "degree", "match": "Computer Science", "ok": ["ind:541500", "ind:518000", "deep:enterprise-software", "deep:frontier-model-labs", "deep:consumer-and-games", "deep:developer-and-data-infra"]}
+  {"kind": "degree", "match": "Computer Science", "ok": ["ind:541500", "ind:518000", "ind:513200"]}
  ],
  "teacher": [
   {"kind": "role", "match": "Senior Policy Analyst", "ok": ["ind:999300"]},
-  {"kind": "role", "match": "Program Manager", "ok": ["deep:private-foundations", "deep:community-and-daf", "ind:813200"]},
+  {"kind": "role", "match": "Program Manager", "ok": ["ind:813200"]},
   {"kind": "role", "match": "History Teacher", "ok": ["ind:61110L"]},
-  {"kind": "degree", "match": "Master of Public Policy", "ok": ["ind:999300", "ind:999200", "ind:999100", "deep:advocacy-and-policy"]},
-  {"kind": "degree", "match": "History", "ok": ["ind:61110L", "ind:61110P", "deep:research-universities", "deep:liberal-arts-and-specialized", "ind:999300", "ind:712000"]}
+  {"kind": "degree", "match": "Master of Public Policy", "ok": ["ind:999300", "ind:999200", "ind:999100", "ind:813300"]},
+  {"kind": "degree", "match": "History", "ok": ["ind:61110L", "ind:61110P", "ind:61130S", "ind:61130P", "ind:999300", "ind:712000"]}
  ]
 }

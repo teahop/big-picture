@@ -6,12 +6,11 @@ import argparse
 import sys
 from collections.abc import Sequence
 
-IMPLEMENTED = {"ingest", "levels", "deep", "value", "personal", "graph", "layout", "terrain", "export", "lookup"}
+IMPLEMENTED = {"ingest", "levels", "value", "personal", "graph", "layout", "terrain", "export", "lookup"}
 
 STAGES: dict[str, str] = {
     "ingest": "Load public data into tidy tables (subcommand: bls-matrix)",
     "levels": "Build Level 1 and Level 2 node tables",
-    "deep": "Build Level 2 deep: industry nodes from the reviewed categories",
     "value": "Industry value added in dollars (BEA), allocated to the map nodes",
     "graph": "Industry similarity graphs and edges (Level 0, then Level 1 when node tables exist)",
     "layout": "Industry layout at every level: growth across, size front to back (--method joint: the v2 similarity layout)",
@@ -63,9 +62,6 @@ def run_stage(args: argparse.Namespace) -> int:
     if name == "value":
         from . import bea
         return bea.run()
-    if name == "deep":
-        from . import deep_industry
-        return deep_industry.run()
     if name == "graph":
         from . import graph
         graph.run()

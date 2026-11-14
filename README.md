@@ -18,14 +18,13 @@ This is version 2, live at https://teahop.github.io/big-picture/.
 - **Layout by similarity:** industries sit near others with a similar,
   distinctive occupation mix and description; a detailed industry can sit
   outside its sector's area.
-- **Three levels of detail:** 20 sectors, 304 detailed industries, then a few
-  hand-built deep zones.
+- **Two levels of detail:** 20 sectors as 3D hills, then 304 detailed industries
+  as a 2D topographic map.
 - **Add your CV:** a visitor adds a CV (PDF, pasted text, or rows filled in by
   hand); a language model reads it through the site's proxy and suggests an
   industry for each role and degree; the visitor confirms every row. Nothing is
   stored. The career is drawn as California wildflowers on the hills it touched,
-  each hill blooming over its share; step down into sectors, industries and deep
-  zones. Clear CV removes it.
+  each hill blooming over its share; step down from sectors into industries. Clear CV removes it.
 - **Look:** rolling hills to every edge under a blue sky, or a moonlit night.
 
 Without WebGL the page shows a one-line message and the node lists.

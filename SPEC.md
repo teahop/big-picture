@@ -5,7 +5,7 @@
 Version 3.0 draft, 2026-11-13. Owner: github.com/teahop.
 The v2 specification, plan and handoffs are archived in `docs/v2/` (v1 in
 `docs/v1/`). Anything this document does not change (data sources, node IDs,
-levels of detail, deep zones, the footprint format and weights, Add your CV,
+levels of detail, the footprint format and weights, Add your CV,
 privacy) still works as v2 describes; this document refers to it as "v2 §n".
 
 ## 1. Purpose
@@ -20,7 +20,7 @@ of detail the view that reads best for it.
 |---|---|---|
 | 1 | **Meaningful axes.** Left to right is projected growth (faster growth to the right). Front to back is size (small near the viewer, large at the back). Industries are nudged toward their sector | 3 |
 | 2 | **Industries in 2D.** The Industries level is a top-down topographic map (contours, elevation tints, hill shading) with cartographic labels. A career is drawn as rainbow contour bands | 4 |
-| 3 | **Deep zones as an ocean.** The Deep zones level stays 2D with a sea-chart look. A career is drawn as schools of fish | 5 |
+| 3 | **Deep zones removed** (owner, 2026-11-13). Two levels remain: 20 sectors and 304 industries | 5 |
 | 4 | Axis labels on every view, and text that no longer says "similar industries sit near each other" | 3.4 |
 
 Unchanged: Sectors stay the 3D California hills with wildflowers; the data
@@ -43,8 +43,7 @@ adjustments); privacy and publishing (v2 §9).
   "+153%, beyond the scale").
 - **Nudged by sector.** Every level is placed on the axes, but each Level 1
   industry is pulled part of the way toward its sector's position, and each
-  deep: node toward its Level 1 parent:
-  `position = (1 - pull) * own + pull * parent` with `pull` in config
+    `position = (1 - pull) * own + pull * parent` with `pull` in config
   (start at 0.3). This keeps some neighbourhood without hiding the axes.
 - Height still shows size (v2 §5.2), so tall hills sit at the back and do not
   hide the small ones in front.
@@ -77,8 +76,7 @@ A new layout stage (`imap layout`, replacing `layout_joint` as the default; the
 old one stays callable for comparison until release) writes positions per level
 and size setting. Terrain and export follow. `meta.json` records the axis
 scales, clip values and `pull`, so the viewer draws ticks from the data, not
-from constants. Deep: node growth comes from the source its size comes from; if
-it is estimated, it is marked ≈ like other estimates.
+from constants.
 
 ## 4. Industries: a 2D topographic map
 
@@ -121,37 +119,26 @@ for every label at some zoom, and a long tradition of showing height clearly.
 - The panel keeps the career list and bars; at this level the bars use the same
   rainbow so the panel reads as a legend.
 
-## 5. Deep zones: an ocean
+## 5. Deep zones: removed (owner, 2026-11-13)
 
-### 5.1 View
-- 2D like Industries, with a sea-chart look: deep blue water, depth tints,
-  isobaths (depth contours) in pale blue, a light chart grid, and labels in an
-  italic chart style.
-- Size is drawn as shallows: the larger a category, the shallower its water, and
-  the largest rise into sand and green islands (owner, 2026-11-13; drawing the
-  largest as the deepest water was built and compared). Names over deep water are
-  lettered light, over the shallows and islands dark. Industries outside a deep
-  zone appear in the same sea with their Level 1 names.
-- Axes and labels as 4.3, in the ocean palette.
-
-### 5.2 Career: schools of fish
-- Over each touched area, small fish drawn as sprites swim in loose schools
-  that stay over that area's water. The number of fish follows the area's share
-  of the career (as flower coverage did).
-- Motion is gentle and cheap (a simple flocking rule bounded to the area), and
-  stops when the visitor prefers reduced motion; the fish then rest in place.
+The third level (43 hand-built categories splitting 25 industries in 7 zones) was
+built as a sea chart with schools of fish, reviewed, and then removed with all its
+pipeline stages, data and config. The map has two levels: Sectors (3D hills) and
+Industries (the 2D topographic map). A footprint entry that named a former deep
+category folds into the industries it was split from
+(`data/mappings/deep_folded.csv`), so private footprints keep their weight.
 
 ## 6. Moving between views
 - Sectors (3D) → Industries (2D): the camera tilts down to straight overhead and
-  the hills flatten into the map as the topographic style fades in; Deep zones
-  cross-fades land into water. The reverse on the way back.
-- The header's Sectors / Industries / Deep zones control and zoom both drive
+  the hills flatten into the map as the topographic style fades in. The reverse
+  on the way back.
+- The header's Sectors / Industries control and zoom both drive
   it, as now. The career step-down (choosing a touched sector) lands in the 2D
   Industries map framed on that sector's industries.
 - Without WebGL: unchanged (v2 §4, the lists still work).
 
 ## 7. Performance
-- Frame time at each level is no worse than the v2 Level 2 figure.
+- Frame time at each level is no worse than the v1 Level 2 figure (1.6 ms).
 - Contours and tints are computed in a shader from the height grid (no
   per-frame CPU work); labels are placed on zoom and pan end, not every frame.
 
@@ -166,8 +153,8 @@ touched until the owner says to release.
 2. **Size setting moves the map** (3.3): keep, or fix y to Jobs in both
    settings.
 3. **Rainbow coverage** (4.4): whole hill (decided 2026-11-13).
-4. **Size in the ocean** (5.1): shallows and islands (decided 2026-11-13).
+4. **Deep zones** (5): removed (2026-11-13).
 
 ## 10. Out of scope for v3
-As v2 §11, plus: a 2D view for Sectors; changing the footprint format; more
-deep zones.
+As v2 §11, plus: a 2D view for Sectors; changing the footprint format; any
+level finer than Industries.

@@ -17,7 +17,7 @@ export function touchedChildren(state: State, h: Hierarchy, id: string, level: n
 
 export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: StepActions): (n: NodeRec) => string {
   const panel = document.getElementById("fp-panel")!;
-  const canStep = (n: NodeRec) => n.level < 2 && n.level === state.level && touchedChildren(state, h, n.id, n.level).length > 0;
+  const canStep = (n: NodeRec) => n.level === 0 && state.level === 0 && touchedChildren(state, h, n.id, n.level).length > 0;
   let last = "";
   const render = () => {
     const key = [state.fpSample, state.fpVersion, state.level, state.focus.join(">"), state.size].join("|");
@@ -25,7 +25,6 @@ export function buildFootprintPanel(b: Bundle, state: State, h: Hierarchy, act: 
     last = key;
     panel.hidden = !state.fp;
     panel.classList.toggle("rainbow", state.level === 1);  // Industries: the career is rainbow bands, and the bars match
-    panel.classList.toggle("ocean", state.level === 2);    // Deep zones: golden fish, and golden bars
     if (!state.fp) { panel.innerHTML = ""; return; }
     const touched = state.touchedNow() ?? new Map<string, number>();
     const within = state.focus.length && state.focus.length === state.level ? state.focus[state.focus.length - 1] : null;

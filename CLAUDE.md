@@ -62,8 +62,8 @@ private/             derived personal outputs and profile.local.yaml (ignored)
 - Every random process takes a fixed seed from `config/`.
 - Each stage writes a short validation report (row counts, coverage, unmatched
   items) to `data/interim/reports/`.
-- Node IDs are stable strings: `ind:<code>`, `fld:<openalex id>`, `occ:<soc>`,
-  `deep:<slug>` for custom deep-zone nodes.
+- Node IDs are stable strings: `ind:<code>`, `fld:<openalex id>`, `occ:<soc>`.
+  (`deep:<slug>` ids belonged to the deep zones, removed 2026-11-13.)
 - Tests: `uv run pytest`. Viewer: `npm run dev` and `npm run build` in `web/`.
 - Commit at the end of each phase with a message naming the phase.
 

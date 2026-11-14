@@ -7,7 +7,7 @@ BEA publishes value added for about 70 summary industries, not for the Employmen
   * government-owned industries (ownership suffix S or L, and the government sector) share BEA's state and local, and federal,
     general-government value added (what government adds is mostly compensation of its employees)
 Every sector is reconciled: its nodes add up to the sector's BEA total (private sectors) or to the government value added
-that belongs to it. Deep nodes take the employment-weighted share of the industries they split. All of it is marked estimated.
+that belongs to it. All of it is marked estimated.
 """
 from __future__ import annotations
 
@@ -162,16 +162,6 @@ def run() -> int:
     d = allocate()
     out = interim_dir() / "levels"
     d.to_csv(out / "industry_value.csv", index=False)
-    contrib_path = out / "deep_industry_contrib.csv"
-    if contrib_path.exists():                       # deep: nodes take the employment-weighted share of the industries they split
-        c = pd.read_csv(contrib_path, dtype={"parent_code": str})
-        pv = d.set_index("ind_code")
-        c["value_added_usd_b"] = [r.share * float(pv.loc[r.parent_code, "value_added_usd_b"]) for r in c.itertuples()]
-        c.to_csv(out / "deep_industry_value_contrib.csv", index=False)
-        dv = c.groupby("node_id", as_index=False)["value_added_usd_b"].sum()
-        emp = pd.read_csv(out / "deep_industry.csv").set_index("node_id")["emp_2025"]
-        dv["va_per_job_usd"] = dv["value_added_usd_b"] * 1e9 / (dv["node_id"].map(emp) * 1e3)
-        dv.to_csv(out / "deep_industry_value.csv", index=False)
     va = value_added()
     lines = ["# value added report", "", f"- BEA {BEA_YEAR} value added; map industries total {d['value_added_usd_b'].sum():,.0f} billion dollars against {float(va['GDP'] - 3028.0):,.0f} (GDP minus housing)",
              f"- nodes using the sector-average payroll fallback: {int((d['payroll_basis'] != 'QCEW wages').sum())} of {len(d)}",

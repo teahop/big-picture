@@ -105,29 +105,12 @@ def build_layers(cfg: dict) -> tuple[dict[str, dict[str, Layer]], np.ndarray]:
         ids1, one = list(ind1["node_id"]), np.ones(len(ind1), int)
         emp1 = ind1["emp_2025"].to_numpy(float)
         sizes["1"] = {"employment": (ids1, one, emp1)}
-        # Level 2: deep: categories replace the Level 1 industries they split
-        deep_path, contrib_path = lv / "deep_industry.csv", lv / "deep_industry_contrib.csv"
-        if deep_path.exists() and contrib_path.exists():
-            deep = pd.read_csv(deep_path)
-            gone = ind1["ind_code"].isin(set(pd.read_csv(contrib_path, dtype={"parent_code": str})["parent_code"])).to_numpy()
-            ids2 = [i for i, g in zip(ids1, gone) if not g] + list(deep["node_id"])
-            lv2 = np.array([1] * int((~gone).sum()) + [2] * len(deep))
-            sizes["2"] = {"employment": (ids2, lv2, np.concatenate([emp1[~gone], deep["emp_2025"].to_numpy(float)]))}
-        else:
-            deep, gone, ids2, lv2 = None, np.zeros(len(ids1), bool), ids1, one
-            sizes["2"] = {"employment": (ids1, one, emp1)}
         val_path = lv / "industry_value.csv"
         if val_path.exists():
             va1 = ind1["node_id"].map(pd.read_csv(val_path, dtype={"ind_code": str}).set_index("node_id")["value_added_usd_b"]).to_numpy(float)
             va0 = pd.Series(va1).groupby(ind1["sector_code"].to_numpy()).sum().reindex(totals["ind_code"]).to_numpy(float)
             sizes["0"]["value_added"] = (ind_ids, zeros(len(ind_ids)), va0)
             sizes["1"]["value_added"] = (ids1, one, va1)
-            dv_path = lv / "deep_industry_value.csv"
-            if deep is not None and dv_path.exists():
-                dv = pd.read_csv(dv_path).set_index("node_id")["value_added_usd_b"]
-                sizes["2"]["value_added"] = (ids2, lv2, np.concatenate([va1[~gone], deep["node_id"].map(dv).to_numpy(float)]))
-            else:
-                sizes["2"]["value_added"] = (ids1, one, va1)
     layers: dict[str, dict[str, Layer]] = {}
     for level, by_measure in sizes.items():
         layers[level] = {s: Layer(by_measure[m][0], np.array([by_setting[s][i] for i in by_measure[m][0]]), by_measure[m][1], size_amplitude(by_measure[m][2], p),

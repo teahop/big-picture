@@ -5,22 +5,16 @@
  *  schema (strict Structured Outputs) allows only those ids. The page then checks the result against deterministic rules. */
 import OpenAI from "openai";
 import nodesL1 from "../../data/public/nodes_l1.json";
-import nodesL2 from "../../data/public/nodes_l2.json";
 import sectors from "../../data/public/nodes.json";
 
 export const MAX_CV_CHARS = 24000;          // a long CV is ~10k characters; longer input is refused, not truncated
 
 interface NodeLite { id: string; label: string; level: number; parent: string | null; replaces?: string[] }
 
-/** Industries drawn at the finest level: Level 1 industries not replaced by a deep: node, and the deep: nodes. */
+/** Industries drawn at the finest level: the Level 1 industries (the deep zones were removed by the owner, 2026-11-13). */
 export function finestIndustries(): { id: string; label: string; sector: string }[] {
-  const l1 = nodesL1 as NodeLite[], l2 = nodesL2 as NodeLite[];
   const sectorOf = new Map((sectors as NodeLite[]).map((n) => [n.id, n.label]));
-  const parentOf = new Map(l1.map((n) => [n.id, n.parent ?? ""]));
-  const gone = new Set(l2.flatMap((n) => [n.parent ?? "", ...(n.replaces ?? [])]));
-  return [...l1.filter((n) => !gone.has(n.id)), ...l2].map((n) => ({
-    id: n.id, label: n.label, sector: sectorOf.get(n.level === 1 ? n.parent ?? "" : parentOf.get(n.parent ?? "") ?? "") ?? "",
-  }));
+  return (nodesL1 as NodeLite[]).map((n) => ({ id: n.id, label: n.label, sector: sectorOf.get(n.parent ?? "") ?? "" }));
 }
 
 export interface CvEntry {

@@ -3,7 +3,6 @@
 Industry Level 1 = the Employment Matrix "Line item" industries inside each sector, plus an
 explicit "other, not separately listed" remainder node per sector where the line items do not
 add up to the sector total, so Level 1 always reconciles with Level 0.
-Level 2 is the deep: industry categories (deep_industry.py).
 """
 from __future__ import annotations
 

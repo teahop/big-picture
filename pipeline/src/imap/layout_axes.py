@@ -5,13 +5,11 @@
                      clipped at a low percentile so a few tiny industries do not stretch the scale
 
 Both axes fill -1..1 at each level. Each Level 1 industry is then pulled part of the way toward its sector's position
-(`pull`), and each deep: category toward its Level 1 parent, so some neighbourhood survives. A deterministic
+(`pull`), so some neighbourhood survives. A deterministic
 separation pass pushes overlapping hills apart, moving each as little as possible; its moves are reported in axis units.
 
 Positions are computed per size setting (Jobs: employment; Value added: value added), because y follows the active
-size measure. Growth is employment growth in both settings. Level 2 is the Level 1 layout with the deep: categories
-placed on the Level 1 scale (the Level 1 industries they do not replace keep their Level 1 spots). No randomness:
-reruns are byte-identical.
+size measure. Growth is employment growth in both settings. No randomness: reruns are byte-identical.
 """
 from __future__ import annotations
 
@@ -86,7 +84,7 @@ def separate(target: np.ndarray, min_sep: float, fixed: np.ndarray | None = None
 
 # ------------------------------------------------------------------ data
 def load_levels() -> dict:
-    """Ids, parents, growth and both sizes for Level 0, Level 1 and the deep: categories."""
+    """Ids, parents, growth and both sizes for Level 0 and Level 1."""
     it, lv = interim_dir(), interim_dir() / "levels"
     totals = pd.read_csv(it / "bls" / "sector_totals.csv", dtype={"ind_code": str})
     ind1 = pd.read_csv(lv / "industry_l1.csv", dtype={"ind_code": str, "sector_code": str})
@@ -96,22 +94,14 @@ def load_levels() -> dict:
                        "employment": totals["emp_2025"].astype(float), "value_added": totals["ind_code"].map(va0).astype(float)})
     l1 = pd.DataFrame({"id": ind1["node_id"], "parent": ind1["parent_id"], "growth": ind1["growth"].astype(float),
                        "employment": ind1["emp_2025"].astype(float), "value_added": va1.astype(float)})
-    deep = pd.DataFrame(columns=["id", "parent", "growth", "employment", "value_added"])
-    gone: set[str] = set()
-    if (lv / "deep_industry.csv").exists():
-        d = pd.read_csv(lv / "deep_industry.csv")
-        dv = pd.read_csv(lv / "deep_industry_value.csv").set_index("node_id")["value_added_usd_b"]
-        deep = pd.DataFrame({"id": d["node_id"], "parent": d["parent_id"], "growth": d["growth"].astype(float),
-                             "employment": d["emp_2025"].astype(float), "value_added": d["node_id"].map(dv).astype(float)})
-        gone = set("ind:" + pd.read_csv(lv / "deep_industry_contrib.csv", dtype={"parent_code": str})["parent_code"])
-    return {"l0": l0, "l1": l1, "deep": deep, "gone": gone}
+    return {"l0": l0, "l1": l1}
 
 
 # ------------------------------------------------------------------ run
 def place(data: dict, measure: str, cfg: dict) -> tuple[dict, dict, dict]:
     """Positions {id: [x, y]} for Level 0 and Levels 1-2, scales per level, and the moves for the report."""
     gp = tuple(cfg["growth_clip_pct"]); sp = float(cfg["size_clip_low_pct"]); pull = float(cfg["pull"])
-    l0, l1, deep = data["l0"], data["l1"], data["deep"]
+    l0, l1 = data["l0"], data["l1"]
     sc0 = fit_scale(l0["growth"], l0[measure], gp, sp)
     t0 = axis_positions(l0["growth"], l0[measure], sc0)
     x0 = separate(t0, float(cfg["min_sep"]["0"]))
@@ -125,18 +115,7 @@ def place(data: dict, measure: str, cfg: dict) -> tuple[dict, dict, dict]:
 
     moves = {"0": (list(l0["id"]), t0, x0, sc0), "1": (list(l1["id"]), t1, x1, sc1)}
     pos12 = dict(pos1)
-    if len(deep):
-        # deep: categories on the Level 1 scale, pulled toward their Level 1 parent; the Level 1 industries they do not
-        # replace stay where they are at Level 1
-        keep = [i for i in l1["id"] if i not in data["gone"]]
-        own2 = axis_positions(deep["growth"], deep[measure], sc1)
-        t2 = nudge(own2, np.array([pos1[p] for p in deep["parent"]]), pull)
-        both = np.vstack([np.array([pos1[i] for i in keep]), t2])
-        fixed = np.array([True] * len(keep) + [False] * len(deep))
-        x2 = separate(both, float(cfg["min_sep"]["2"]), fixed=fixed)[len(keep):]
-        pos12.update(dict(zip(deep["id"], x2)))
-        moves["2"] = (list(deep["id"]), t2, x2, sc1)
-    scales = {"0": sc0.as_dict(), "1": sc1.as_dict(), "2": sc1.as_dict()}
+    scales = {"0": sc0.as_dict(), "1": sc1.as_dict()}
     return pos0, pos12, {"scales": scales, "moves": moves}
 
 
@@ -161,14 +140,14 @@ def run() -> int:
     lay1 = {"stage": "axes-level1-2", "nodes": by12["activity"], "by_setting": by12, **common}
     (public_dir() / "layout_children.json").write_text(json.dumps(lay1, indent=1, sort_keys=True) + "\n")
     report(data, reports)
-    print(f"layout (axes): Level 0 {len(by0['activity'])} sectors, Levels 1-2 {len(by12['activity'])} nodes, "
+    print(f"layout (axes): Level 0 {len(by0['activity'])} sectors, Level 1 {len(by12['activity'])} industries, "
           f"settings {', '.join(SETTINGS)}")
     return 0
 
 
 # ------------------------------------------------------------------ report
 def report(data: dict, reports: dict) -> None:
-    frames = {"0": data["l0"], "1": data["l1"], "2": data["deep"]}
+    frames = {"0": data["l0"], "1": data["l1"]}
     lines = ["# axes layout report", "",
              "Moves are from each node's place on the axes (after the pull toward its parent) to where the separation "
              "pass left it. Growth moves are in percentage points; size moves are a factor (1.0 = none).", ""]

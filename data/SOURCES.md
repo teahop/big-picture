@@ -47,6 +47,8 @@ No download in this phase was blocked (BLS remains hand-downloaded, see the Phas
 
 ### Phase 3 deep: industry build (retrieved 2026-11-09)
 
+**Retired in v3** (owner, 2026-11-13): the deep zones were removed; these sources are no longer used. Kept so the history of the public data is explained.
+
 | Source | What was fetched | Release / file | Notes |
 |---|---|---|---|
 | BLS QCEW | Annual employment, area US000, NAICS 517111, 517112, 517410, 517810, 541410, 541420, 541430, 541490 (all ownerships summed) | `https://data.bls.gov/cew/data/api/2025/a/industry/<code>.csv`, year 2025 | Used for the official-share proxies. NAICS 541610 returned 404; consulting size uses the industry code 5416 row of the size slice |

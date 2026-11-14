@@ -10,7 +10,7 @@ function simpleList(items: Link[]): string {
   return items.map((l) => "<li>" + esc(l.node.label) + " <small>similarity " + l.weight.toFixed(2) + "</small></li>").join("");
 }
 
-const LEVEL_NAMES = ["Level 0 (sector)", "Level 1 (detailed industry)", "Level 2 (deep zone)"];
+const LEVEL_NAMES = ["Level 0 (sector)", "Level 1 (detailed industry)"];
 function lineage(b: Bundle, n: NodeRec): string {
   const parent = n.parent ? b.byId.get(n.parent) : undefined;
   const kids = b.childCount.get(n.id) ?? 0;
@@ -74,7 +74,7 @@ export function buildPanel(b: Bundle, state: State, onPick: (n: NodeRec) => void
     const key = [n?.id ?? "", state.fpVersion, state.fpSample, state.level, state.size].join("|");
     if (key === lastShown) return;                         // nothing in the box would change: leave the DOM alone
     lastShown = key;
-    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Left to right is projected growth to 2035 (faster growth to the right); front to back is size, with the largest at the back, and height is size too. Industries lean a little toward their sector. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors, Industries and Deep zones for finer levels, or see your place by uploading your CV.</p>"; return; }
+    if (!n) { panel.innerHTML = "<p class='hint'>Hover or select an industry. Left to right is projected growth to 2035 (faster growth to the right); front to back is size, with the largest at the back, and height is size too. Industries lean a little toward their sector. Research and academia show up as industries such as colleges and universities and scientific R&amp;D services. Use Sectors and Industries to change the level, or see your place by uploading your CV.</p>"; return; }
     panel.innerHTML = extra(n) + details(b, n, state.size, state.measure);
   };
   state.subscribe(render); render();

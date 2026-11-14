@@ -17,7 +17,7 @@ live site, so `main` stays at the v2 release until Phase 4.
 | Prep | v3 spec, plan and handoffs | drafted 2026-11-13, awaiting owner review | v2 documents moved to `docs/v2/`. Owner chose: faster growth to the right; axes at every level, nudged by sector; real values, compressed; rainbow contour bands |
 | 1 | Meaningful axes | done 2026-11-13, accepted by owner 2026-11-13 | `imap layout` now places by growth (5th-95th percentile clip) and log size (5th percentile low clip), pull 0.3, per size setting; `--method joint` keeps the v2 layout. Separation moves at most 0.65 pp growth and size x1.3 (Level 0). Similarity score falls to 0.38 (Level 0, chance 0.32) and 0.14 (Level 1, chance 0.05); v2 was above 0.6. The seven largest sectors share the back quarter under Jobs; untouched sector names that would overlap now show on hover only. Animated Jobs/Value added slide. Owner review rounds: axes became two hand-lettered card signs (GROWING right; LARGER front middle), hill names curve around each hill (two lines when long, bold with a drop shadow) and show only where fully in sight on their own ground, floating labels only on hover, rounder hills (stretch 1.6), camera at about 40 degrees |
 | 2 | Industries as a topographic map | done 2026-11-13, accepted by owner 2026-11-13 | Industries (and, until Phase 3, Deep zones) are a top-down topographic map: hypsometric tints, contours with index lines, hill shading, neat border, axes in the margins (growth %, jobs or dollars on a log scale), Day and Night. Camera tilts down from 3D, then pan and zoom; zooming out returns to Sectors. Label placer: no overlaps and career names always placed (tested on the real bundle at 3 zooms; 64 of 304 names at zoom 1). Hover lights a hill and turns its contours red. Rainbow bands violet (foot) to red (top) on career hills; owner chose whole hill 2026-11-13 (by share was nearly invisible at full view; removed). Career step-down lands framed in 2D. Frame time with labels re-placed every frame (panning): 1.2 ms Level 1, 1.7 ms Level 2 incl. GPU wait (v1 Level 2: 1.6 ms CPU); under 0.1 ms when still |
-| 3 | Deep zones as an ocean | done 2026-11-13, awaiting owner review | Deep zones fade from land into a sea chart (0.7 s): depth tints (owner chose shallows and islands 2026-11-13: larger = shallower, largest as sand and green islands; size-as-depth removed), pale isobaths with index lines, a light chart grid, italic chart lettering, axes in the margins; Day and Night. Career = schools of golden fish (instanced sprites, 8 + 120 x share per area, cap 420) that drift round each area's water and rest with reduced motion; panel bars turn gold. Names over deep water lettered light, dark on the shallows; fish outlined for contrast on sand. Frame time with 420 fish: 0.34 ms CPU, 2 draw calls (v1 Level 2: 1.6 ms); about 2 ms including GPU wait |
+| 3 | Deep zones as an ocean | removed by owner 2026-11-13 | Built (sea chart, shallows and islands, schools of fish) and reviewed, then the owner removed the deep zones entirely: the deep stage, its config and mappings, Level 2 layout, terrain and export, the Deep zones control, ocean and fish. Former `deep:` footprint entries fold into their industries (`data/mappings/deep_folded.csv`); the private footprint was rebuilt. The CV Worker must be redeployed at release (it still lists deep ids) |
 | 4 | Release | not started | |
 
 ## Owner decisions (from SPEC section 9)
@@ -27,7 +27,7 @@ live site, so `main` stays at the v2 release until Phase 4.
 | Axes accepted (clip, pull, separation) | Phase 1 | Do not proceed to Phase 2 |
 | Size setting moves the map | Phase 1 | Keep (y follows the active setting) |
 | Rainbow coverage: whole hill or by share | Phase 2 | Whole hill (owner, 2026-11-13) |
-| Size as depth in the ocean | Phase 3 | Shallows and islands (owner, 2026-11-13) |
+| Deep zones | Phase 3 | Removed (owner, 2026-11-13) |
 
 ## Phases
 
@@ -79,7 +79,9 @@ Checks:
 ### Phase 4 — Release
 Goal: v3 replaces v2 in public.
 Checks:
-- Phone layout works at all three levels (pan and zoom by touch).
+- Phone layout works at both levels (pan and zoom by touch).
+- The CV Worker is redeployed from v3 (only with the owner's yes), so the model
+  no longer offers the removed deep ids.
 - Blocklist scan of `web/dist`, tracked files and history: no hits; the Pages
   workflow's expected-file list matches the v3 bundle.
 - The site works from a clean clone with no private files.

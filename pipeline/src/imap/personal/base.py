@@ -48,10 +48,10 @@ class NodeTable:
     def __init__(self) -> None:
         d = public_dir()
         rows = []
-        for f in ("nodes.json", "nodes_l1.json", "nodes_l2.json"):
+        for f in ("nodes.json", "nodes_l1.json"):
             rows += json.loads((d / f).read_text())
         self.df = pd.DataFrame(rows).set_index("id", drop=False)
-        self.df["replaces"] = self.df["replaces"].apply(lambda v: v if isinstance(v, list) else [])
+        self.df["replaces"] = (self.df["replaces"] if "replaces" in self.df else pd.Series([None] * len(self.df), index=self.df.index)).apply(lambda v: v if isinstance(v, list) else [])
         self.xy = {r.id: tuple(r.xy) for r in self.df.itertuples()}
 
     def finest(self, type_: str) -> pd.DataFrame:

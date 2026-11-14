@@ -1,10 +1,6 @@
 # Public example of the private profile. Real values live in
 # private/profile.local.yaml (git-ignored). All people here are synthetic.
 
-deep_zones:
-  industry:        # names resolved to detailed industries, then custom children
-    - "Software publishers"
-
 presence:
   tenure_half_life_years: 8      # recency decay
   skill_weight: 0.3

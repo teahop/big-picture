@@ -46,7 +46,7 @@ def test_heights_follow_size_not_sibling_count():
 def test_public_grids_hold_one_height_grid_per_setting():
     meta = json.loads((public_dir() / "meta.json").read_text())
     assert set(meta["size_settings"]) == {"activity", "dollars"}
-    for name in ("grids.json", "grids_l1.json", "grids_l2.json"):
+    for name in ("grids.json", "grids_l1.json"):
         g = json.loads((public_dir() / name).read_text())
         assert set(g) == {"n", "x", "y", "settings"} and set(g["settings"]) == {"activity", "dollars"}
         for grids in g["settings"].values():
@@ -58,11 +58,12 @@ def test_public_grids_hold_one_height_grid_per_setting():
 
 @built
 def test_no_research_nodes_or_edges_in_the_bundle():
-    for name in ("nodes.json", "nodes_l1.json", "nodes_l2.json"):
+    for name in ("nodes.json", "nodes_l1.json"):
         assert all(n["type"] == "ind" for n in json.loads((public_dir() / name).read_text())), name
     for name in ("edges.json", "edges_l1.json"):
         assert all(e["type"] == "ind-ind" for e in json.loads((public_dir() / name).read_text())), name
     assert not (public_dir() / "edges_l2.json").exists()
+    assert not (public_dir() / "nodes_l2.json").exists()          # the deep zones were removed (owner, 2026-11-13)
 
 
 def _v1(path: str):
@@ -80,7 +81,7 @@ def test_industry_edges_are_unchanged_from_v1(name):
     assert json.loads((public_dir() / name).read_text()) == [e for e in old if e["type"] == "ind-ind"]
 
 
-@pytest.mark.parametrize("name", ["nodes.json", "nodes_l1.json", "nodes_l2.json"])
+@pytest.mark.parametrize("name", ["nodes.json", "nodes_l1.json"])
 def test_industry_nodes_are_unchanged_from_v1_apart_from_position_labels_and_deep_shares(name):
     old = _v1(f"data/public/{name}")
     if old is None:

@@ -15,8 +15,8 @@ terrain:
 layout_axes:               # v3 layout (pipeline/src/imap/layout_axes.py): growth left to right, size front (small) to back (large)
   growth_clip_pct: [5, 95] # growth scale runs between these percentiles of each level; values beyond sit at the edge
   size_clip_low_pct: 5     # size (log) scale starts at this percentile, so a few tiny industries do not stretch it
-  pull: 0.3                # Level 1 moves this share of the way toward its sector, deep: toward its Level 1 parent
-  min_sep: {"0": 0.26, "1": 0.06, "2": 0.045}   # separation pass: no two hills closer than this (layout units; map spans -1..1)
+  pull: 0.3                # Level 1 moves this share of the way toward its sector
+  min_sep: {"0": 0.26, "1": 0.06}   # separation pass: no two hills closer than this (layout units; map spans -1..1)
 
 layout:                    # v2 similarity layout, kept for comparison (`imap layout --method joint`; pipeline/src/imap/layout_joint.py)
   weight_occupational: 0.6 # shared-occupation similarity (TF-IDF weighted)

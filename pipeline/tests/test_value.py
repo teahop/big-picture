@@ -26,7 +26,3 @@ def test_value_added_reconciles_with_bea():
     va = pd.read_csv(interim_dir() / "bea" / "value_added_2025.csv").set_index("code")["usd_billion"]
     assert d["value_added_usd_b"].sum() == pytest.approx(va["GDP"] - va["HS"], rel=1e-4)      # all of GDP except housing (BEA rounds each row to 0.1)
     assert (d["value_added_usd_b"] > 0).all() and (d["va_per_job_usd"] > 0).all()
-    deep = pd.read_csv(interim_dir() / "levels" / "deep_industry_value_contrib.csv", dtype={"parent_code": str})
-    per_parent = deep.groupby("parent_code")["value_added_usd_b"].sum()
-    parent = d.set_index("ind_code").loc[per_parent.index, "value_added_usd_b"]
-    assert np.allclose(per_parent, parent, rtol=1e-6)                                         # deep nodes keep their parents' dollars

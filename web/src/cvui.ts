@@ -10,10 +10,9 @@ const MAX_FILE = 5_000_000;          // bytes; a CV PDF is rarely over 1 MB
 const MAX_CHARS = 24_000;            // matches the proxy's limit (server/cvRead.ts)
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
-/** Industries a row can point at: the finest drawn level (Level 1 not replaced by a deep zone, and the deep zones). */
+/** Industries a row can point at: the Level 1 industries (the finest level drawn). */
 export function finestIds(b: Bundle): Map<string, string> {
-  const gone = new Set(b.nodes.filter((n) => n.level === 2).flatMap((n) => [n.parent ?? "", ...(n.replaces ?? [])]));
-  return new Map(b.nodes.filter((n) => (n.level === 1 && !gone.has(n.id)) || n.level === 2).map((n) => [n.id, n.label]));
+  return new Map(b.nodes.filter((n) => n.level === 1).map((n) => [n.id, n.label]));
 }
 
 export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => void): { open(): void; adjust(): void; forget(): void } {

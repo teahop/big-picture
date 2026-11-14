@@ -13,14 +13,8 @@ TOP_N = 8
 
 
 def finest_industries() -> set[str]:
-    """Industry ids drawn at the finest level (Level 1 industries not replaced by a deep: node, plus deep: nodes)."""
-    nodes = []
-    for f in ("nodes_l1.json", "nodes_l2.json"):
-        p = public_dir() / f
-        if p.exists():
-            nodes += json.loads(p.read_text())
-    gone = {n["parent"] for n in nodes if n["level"] == 2} | {r for n in nodes if n["level"] == 2 for r in n.get("replaces", [])}
-    return {n["id"] for n in nodes if n["id"] not in gone}
+    """Industry ids drawn at the finest level (the Level 1 industries)."""
+    return {n["id"] for n in json.loads((public_dir() / "nodes_l1.json").read_text())}
 
 
 def occupation_to_industry(fin: set[str] | None = None) -> pd.DataFrame:
@@ -29,8 +23,6 @@ def occupation_to_industry(fin: set[str] | None = None) -> pd.DataFrame:
     lv = interim_dir() / "levels"
     o1 = pd.read_csv(lv / "industry_l1_occupations.csv", dtype={"ind_code": str, "occ_code": str}).assign(node_id=lambda d: "ind:" + d["ind_code"])
     frames = [o1[["node_id", "occ_code", "emp_2025"]]]
-    if (lv / "deep_industry_occupations.csv").exists():
-        frames.append(pd.read_csv(lv / "deep_industry_occupations.csv", dtype={"occ_code": str})[["node_id", "occ_code", "emp_2025"]])
     occ = pd.concat(frames)
     occ = occ[occ["node_id"].isin(fin)]
     job = occ.pivot_table(index="occ_code", columns="node_id", values="emp_2025", aggfunc="sum", fill_value=0.0)

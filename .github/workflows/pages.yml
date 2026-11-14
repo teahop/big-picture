@@ -43,7 +43,7 @@ jobs:
             echo "Private path in web/dist"; exit 1
           fi
           # Only these data files are expected beside the page
-          expected="edges.json edges_l1.json grids.json grids_l1.json grids_l2.json layout.json layout_children.json lookup_degrees.json lookup_titles.json meta.json nodes.json nodes_l1.json nodes_l2.json"
+          expected="edges.json edges_l1.json grids.json grids_l1.json layout.json layout_children.json lookup_degrees.json lookup_titles.json meta.json nodes.json nodes_l1.json"
           for f in $(find web/dist -maxdepth 1 -type f -name '*.json' -printf '%f\n'); do
             case " $expected " in *" $f "*) ;; *) echo "Unexpected data file in build: $f"; exit 1;; esac
           done

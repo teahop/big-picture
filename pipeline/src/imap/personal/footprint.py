@@ -17,6 +17,22 @@ NODE_SPLIT = ";"
 from .roles import parse_nodes
 
 
+def fold_deep(entries: list[dict]) -> list[dict]:
+    """The deep zones were removed (owner, 2026-11-13): a share on a former `deep:` category moves to the Level 1
+    industries it was split from, in the proportions it had (data/mappings/deep_folded.csv). Shares still sum to 1."""
+    from ..common import repo_root
+    fold: dict[str, dict[str, float]] = {}
+    for r in pd.read_csv(repo_root() / "data" / "mappings" / "deep_folded.csv").itertuples():
+        fold.setdefault(r.deep_id, {})[r.ind_id] = float(r.share)
+    for e in entries:
+        out: dict[str, float] = {}
+        for n, s in e["nodes"].items():
+            for target, part in (fold.get(n) or {n: 1.0}).items():
+                out[target] = out.get(target, 0.0) + s * part
+        e["nodes"] = {n: round(s, 4) for n, s in out.items()}
+    return entries
+
+
 def year_of(ym: str | float | None) -> float | None:
     """'YYYY-MM' (end of that month) -> fractional year."""
     if not isinstance(ym, str) or not ym:
@@ -63,6 +79,7 @@ def run() -> int:
     ed = priv / "education_mapping.csv"
     if ed.exists():
         entries += degree_entries(pd.read_csv(ed))
+    entries = fold_deep(entries)
     finest = set(nodes.finest("ind").index)
     bad = sorted({n for e in entries for n in e["nodes"] if n not in finest})
     if bad:

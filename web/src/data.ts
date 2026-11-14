@@ -61,27 +61,24 @@ export async function loadBundle(): Promise<Bundle> {
   return b;
 }
 
-/** Load Level n on first use (Level 2 needs Level 1 first). Resolves when its nodes, edges and terrain are ready. */
+/** Load Level 1 on first use. Resolves when its nodes, edges and terrain are ready. */
 const loading = new Map<number, Promise<void>>();
 export function ensureLevel(b: Bundle, level: number): Promise<void> {
   if (level === 0 || b.grids[level]) return Promise.resolve();
   if (!loading.has(level)) {
     loading.set(level, (async () => {
-      if (level === 2) await ensureLevel(b, 1);
       const sfx = "_l" + level;
       const [nodes, raw] = await Promise.all([getJson<NodeRec[]>("nodes" + sfx + ".json"), getJson<LevelGrids>("grids" + sfx + ".json")]);
       addNodes(b, nodes);
-      if (level === 1) b.edges.push(...(await getJson<Edge[]>("edges_l1.json")));   // Level 2 deep nodes have no edges
+      if (level === 1) b.edges.push(...(await getJson<Edge[]>("edges_l1.json")));
       addGrids(b, level, raw);
     })());
   }
   return loading.get(level)!;
 }
 
-/** Nodes drawn at a level of detail: a node is shown at level L if its level <= L and none of
- *  its children is (children replace their parent). Level 2 therefore shows the deep: categories
- *  inside the deep zones and Level 1 industries everywhere else. A deep: industry node can replace several
- *  Level 1 industries (`replaces`), because its size is drawn from all of them. */
+/** Nodes drawn at a level of detail: a node is shown at level L if its level <= L and none of its children is (children
+ *  replace their parent): Level 0 is the 20 sectors, Level 1 the 304 industries. */
 export function visibleAt(b: Bundle, level: number): NodeRec[] {
   const parents = new Set<string>();
   for (const n of b.nodes) if (n.level <= level) for (const p of [n.parent, ...(n.replaces ?? [])]) if (p) parents.add(p);

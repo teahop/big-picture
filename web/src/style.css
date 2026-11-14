@@ -11,8 +11,6 @@
   /* the 2D topographic map: paper, elevation tints (low to high), contour ink, and the hover accent */
   --topo-paper: #f4efdf; --topo-low: #c2d5a0; --topo-mid: #e7dcae; --topo-high: #c29d73; --topo-line: #7a5b3a; --topo-accent: #c8352b;
   --topo-ink: #3b2f22; --topo-halo: #f4efdf;
-  /* the Deep zones sea chart: shallow to deep water, sand and land (islands variant), chart lettering and its halo */
-  --sea-shallow: #cfe8ee; --sea-deep: #0f3d68; --sea-sand: #eadbb0; --sea-land: #9cbf7a; --sea-ink: #0b2b47; --sea-halo: #e6f3f6;
   /* California hills in spring: shaded valley green up to sunlit tops; untouched hills recede to dry sage when a
      career is shown. Flowers are drawn in web/src/flowerSprites.ts. */
   --sky-top: #1f7fe0; --sky-mid: #5fb0f2; --horizon: #cfe5f4; --terrain-ground: #3d7f12; --terrain-peak: #b4dd3b; --haze: #a9c3dc; --terrain-muted: #a3ad7c;
@@ -24,7 +22,6 @@
   --accent: var(--soft-teal); --footprint: var(--soft-teal);
   --topo-paper: #161d29; --topo-low: #2a3b30; --topo-mid: #4a4834; --topo-high: #6e5a42; --topo-line: #c9c2ae; --topo-accent: #ff8a65;
   --topo-ink: #ece5d2; --topo-halo: #161d29;
-  --sea-shallow: #1c4459; --sea-deep: #04101f; --sea-sand: #6b6247; --sea-land: #3e5a35; --sea-ink: #e3f1f6; --sea-halo: #0a1d2e;
   --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
   color-scheme: dark;
 }
@@ -34,7 +31,6 @@
     --accent: var(--soft-teal); --footprint: var(--soft-teal);
     --topo-paper: #161d29; --topo-low: #2a3b30; --topo-mid: #4a4834; --topo-high: #6e5a42; --topo-line: #c9c2ae; --topo-accent: #ff8a65;
     --topo-ink: #ece5d2; --topo-halo: #161d29;
-  --sea-shallow: #1c4459; --sea-deep: #04101f; --sea-sand: #6b6247; --sea-land: #3e5a35; --sea-ink: #e3f1f6; --sea-halo: #0a1d2e;
     --sky-top: #02060f; --sky-mid: #0a1630; --horizon: #1a2a44; --haze: #16233a; --terrain-ground: #142016; --terrain-peak: #36502a; --terrain-muted: #161915;
     color-scheme: dark;
   }
@@ -230,10 +226,3 @@ h1 .title-art { display: block; height: 30px; width: auto; filter: drop-shadow(0
 .map2d-axis.y span.t { left: 6px; margin-top: -7px; font-size: 10.5px; }
 .map2d-axis.y span.title { left: 6px; font-weight: 700; }
 #fp-panel.rainbow .fp-bar i { background: linear-gradient(90deg, #8f5bd6, #3f7fe0, #3fb36b, #e8c93b, #f08a2c, #e0432f); }
-.map2d.ocean .map-label { font-style: italic; color: var(--sea-ink); letter-spacing: .03em;
-  text-shadow: 0 0 1.5px var(--sea-halo), 0 0 2px color-mix(in srgb, var(--sea-halo) 70%, transparent); }
-.map2d.ocean .map-label.on-deep { color: #eef7fa; text-shadow: 0 0 1.5px #07223b, 0 1px 2px rgb(7 34 59 / .6); }
-.map2d.ocean .map-label.career { font-weight: 800; text-decoration: underline wavy color-mix(in srgb, #ffb53b 80%, transparent); text-underline-offset: 3px; }
-.map2d.ocean .map-label.active { color: var(--topo-accent); }
-.map2d.ocean .map2d-axis { color: var(--sea-ink); background: color-mix(in srgb, var(--sea-halo) 88%, transparent); border-color: color-mix(in srgb, var(--sea-ink) 30%, transparent); }
-#fp-panel.ocean .fp-bar i { background: linear-gradient(90deg, #ffe08a, #ffb53b, #e8851f); }

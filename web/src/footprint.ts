@@ -3,7 +3,7 @@
  *
  *  weight(node) = sum over entries of share * years * recency (roles; recency halves every half-life since the role
  *  ended) or share * degree_years (degrees). Weights roll up: a Level 1 industry passes its weight to its sector, a
- *  deep: node to the industries it replaces (replaces_share). Every level holds the same total. A node is touched when
+ *  node with `replaces_share` to the industries it replaces. Every level holds the same total. A node is touched when
  *  it holds at least `touched_threshold` of the total. The Python twin is pipeline/src/imap/footprint.py. */
 
 export interface Entry { kind: "role" | "degree"; label: string; years?: number; end_year?: number | null; nodes: Record<string, number> }

@@ -1,5 +1,5 @@
 """BLS QCEW 2025 annual averages by area. The national file (US000) gives the payroll that splits BEA value added
-across the map's industries (`imap value`). The deep-zone build reads its own QCEW slices (see data/SOURCES.md).
+across the map's industries (`imap value`).
 """
 from __future__ import annotations
 

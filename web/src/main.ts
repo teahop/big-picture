@@ -89,7 +89,7 @@ async function start(): Promise<void> {
     fpData = data;
     if (!data) { state.fpSample = false; setMode("off"); showCvButton(false); return; }
     fpReady ??= (async () => {
-      await ensureLevel(bundle, 2);                       // weights roll up across every level
+      await ensureLevel(bundle, 1);                       // weights roll up across both levels
       hier = null;
       panelExtra.fn = buildFootprintPanel(bundle, state, h(), { stepInto: (n) => void stepInto(n), stepTo: (d) => void stepTo(d), select: pick, adjust: () => cvDialog.adjust() });
     })();
@@ -100,7 +100,7 @@ async function start(): Promise<void> {
     if (state.level) void stepTo(0);
   };
   const cvDialog = buildCvDialog(bundle, (fp) => void useFootprint(fp));
-  add.addEventListener("click", () => { void ensureLevel(bundle, 2).then(() => cvDialog.open()); });
+  add.addEventListener("click", () => { void ensureLevel(bundle, 1).then(() => cvDialog.open()); });
   const initial = await loadFootprint();
   // Add your CV draws a footprint; Clear removes it (and drops it from memory). There is no separate on/off switch.
   clear.addEventListener("click", () => { cvDialog.forget(); void useFootprint(null); });

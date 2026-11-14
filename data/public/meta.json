@@ -18,10 +18,6 @@
   "1": {
    "activity": "ind:61110L",
    "dollars": "ind:999100"
-  },
-  "2": {
-   "activity": "ind:61110L",
-   "dollars": "ind:999100"
   }
  },
  "measure_labels": {
@@ -31,8 +27,7 @@
  },
  "levels": [
   0,
-  1,
-  2
+  1
  ],
  "sources": [
   {
@@ -59,21 +54,6 @@
   {
    "name": "O*NET 31.0 (CC BY 4.0), occupation descriptions for the layout",
    "url": "https://www.onetcenter.org/dl_files/database/db_31_0_excel.zip",
-   "retrieved": "2026-11-09"
-  },
-  {
-   "name": "BLS QCEW 2025 annual, NAICS 5171xx and 5414xx; Q1 2025 establishment-size slice for NAICS 5416",
-   "url": "https://data.bls.gov/cew/data/api/",
-   "retrieved": "2026-11-09"
-  },
-  {
-   "name": "NCES IPEDS 2023: Institutional Characteristics (HD2023) and Employees by Assigned Position (EAP2023)",
-   "url": "https://nces.ed.gov/ipeds/datacenter/",
-   "retrieved": "2026-11-09"
-  },
-  {
-   "name": "Published organisation headcounts (see data/mappings/deep_headcounts.csv for each source)",
-   "url": "",
    "retrieved": "2026-11-09"
   }
  ],
@@ -105,12 +85,6 @@
      "g_lo": -10.956,
      "s_hi": 7661.9,
      "s_lo": 11.22
-    },
-    "2": {
-     "g_hi": 14.0073,
-     "g_lo": -10.956,
-     "s_hi": 7661.9,
-     "s_lo": 11.22
     }
    },
    "dollars": {
@@ -125,12 +99,6 @@
      "g_lo": -10.956,
      "s_hi": 1012.0,
      "s_lo": 2.1294
-    },
-    "2": {
-     "g_hi": 14.0073,
-     "g_lo": -10.956,
-     "s_hi": 1012.0,
-     "s_lo": 2.1294
     }
    }
   },
@@ -141,8 +109,7 @@
    ],
    "min_sep": {
     "0": 0.26,
-    "1": 0.06,
-    "2": 0.045
+    "1": 0.06
    },
    "pull": 0.3,
    "size_clip_low_pct": 5
@@ -156,8 +123,6 @@
  },
  "display_name_source": "config/site.yaml",
  "level_notes": {
-  "1": "BLS Line items plus remainder nodes",
-  "2": "owner-reviewed deep: categories (estimated) replace the Level 1 industries they split",
-  "deep_size": "deep: node employment splits the official BLS total of its parent industries by a size proxy (QCEW, IPEDS or published headcounts); see each node"
+  "1": "BLS Line items plus remainder nodes"
  }
 }

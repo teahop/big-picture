@@ -13,7 +13,6 @@ const STRETCH_X = 1.45, STRETCH_Z = 1.25;   // spread the layout out; the terrai
 const SPAN = 16;      // world units across the layout (hills keep their size; more ground between them)
 const PICK_PX = 30;   // screen-space radius for hover and click
 const AUTO_L1 = 11.5; // camera distance below which Auto switches to Level 1
-const AUTO_L2 = 7.0;  // ... and to Level 2
 const CFG = __VIEWER__;
 
 const SHARE_GROUND = 0.6;   // a career hill blooms where its own hill is at least this share of the tallest there
@@ -75,7 +74,7 @@ export class Scene3D {
   onAutoLevel: (level: number) => void = () => {};
   /** Zooming out past the whole 2D map asks to go back to the 3D Sectors view. */
   onLeave2D: () => void = () => {};
-  /** Industries and Deep zones are drawn as a flat 2D map; Sectors as 3D hills. "tilting" = the camera is turning to
+  /** Industries are drawn as a flat 2D map; Sectors as 3D hills. "tilting" = the camera is turning to
    *  look straight down before the 2D map takes over. */
   private mode: "3d" | "tilting" | "2d" = "3d";
   map2d!: Map2D;
@@ -520,7 +519,7 @@ export class Scene3D {
     c.y = Math.max(0.5, c.y - 1);
     this.flyTo = c;
     const lvl = this.state.level;
-    this.flyDist = Math.min(lvl >= 2 ? AUTO_L2 * 0.95 : lvl === 1 ? AUTO_L1 * 0.95 : 18, Math.max(lvl >= 2 ? 5.5 : 7.5, spread * 3.2));
+    this.flyDist = Math.min(lvl === 1 ? AUTO_L1 * 0.95 : 18, Math.max(7.5, spread * 3.2));
     // look down from higher up so taller untouched peaks do not hide the touched ones
     const off = this.camera.position.clone().sub(this.controls.target), az = Math.atan2(off.x, off.z), elev = 0.55;
     this.flyDir = new THREE.Vector3(Math.sin(az) * Math.cos(elev), Math.sin(elev), Math.cos(az) * Math.cos(elev));
@@ -677,7 +676,7 @@ export class Scene3D {
     if (this.morph) this.stepMorph();
     // Auto level of detail from the camera's distance to its target (with a little hysteresis)
     const dist = this.camera.position.distanceTo(this.controls.target);
-    const want = dist < AUTO_L2 * (this.autoLevel === 2 ? 1.08 : 1) ? 2 : dist < AUTO_L1 * (this.autoLevel >= 1 ? 1.08 : 1) ? 1 : 0;
+    const want = dist < AUTO_L1 * (this.autoLevel >= 1 ? 1.08 : 1) ? 1 : 0;
     if (this.state.lod === "auto" && want !== this.autoLevel) { this.autoLevel = want; this.onAutoLevel(want); }
     this.renderer.render(this.scene, this.camera);
     const w = this.host.clientWidth, h = this.host.clientHeight, v = new THREE.Vector3();

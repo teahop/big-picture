@@ -1,3 +1,5 @@
+> **Not used:** the deep zones were removed by the owner on 2026-11-13 (see PLAN.md). Kept for the record.
+
 # v3 Phase 3 kickoff — Deep zones as an ocean
 
 Read `CLAUDE.md`, `SPEC.md` section 5 and `PLAN.md`. Work on branch `v3`.

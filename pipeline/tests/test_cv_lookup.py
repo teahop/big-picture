@@ -30,7 +30,7 @@ def files():
 
 def test_lookups_fit_budget_and_point_at_map_nodes(files):
     assert sum(len(gzip.compress(t.encode())) for t in files.values()) <= BUDGET_GZ
-    ids = {n["id"] for f in ("nodes_l1.json", "nodes_l2.json") for n in json.loads((public_dir() / f).read_text())}
+    ids = {n["id"] for f in ("nodes_l1.json",) for n in json.loads((public_dir() / f).read_text())}
     t, d = json.loads(files["lookup_titles.json"]), json.loads(files["lookup_degrees.json"])
     assert len(t["industries"]) == len(t["socs"]) and t["titles"]
     assert all(i in ids for row in t["industries"] for i, _ in row)
