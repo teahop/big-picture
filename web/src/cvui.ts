@@ -42,7 +42,7 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
       <div class="cv-actions"><button type="button" class="primary" data-act="read">Read my CV</button>
       <button type="button" class="link" data-act="manual">Fill in by hand instead</button></div>
       <p class="cv-status" role="status"></p>
-      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you can correct, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries. The result is a guess you can correct, not an assessment.</p>`;
   };
 
   const readText = async () => {
@@ -99,7 +99,7 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
       <div class="cv-actions"><button type="button" class="link" data-act="add-role">+ role</button><button type="button" class="link" data-act="add-degree">+ degree</button></div>
       <div class="cv-actions"><button type="button" class="primary" data-act="show">Show on map</button><button type="button" class="link" data-act="restart">Start again</button></div>
       <p class="cv-status" role="status">${esc(msg)}</p>
-      <p class="hint cv-limits">The map is of the United States, and only a few industries have a finer third level. The result is a guess you can correct, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries. The result is a guess you can correct, not an assessment.</p>`;
   };
   const redrawRow = (i: number) => {
     const el = body.querySelector(`.cv-row[data-i="${i}"]`);

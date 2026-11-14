@@ -95,7 +95,7 @@ export function placeFor(b: Bundle, s: SizeSetting): void {
   for (const n of b.nodes) if (n.xy_by) n.xy = n.xy_by[s];
 }
 
-/** The axis scale of a level under a size setting (Level 2 shares Level 1's), if the bundle has axes. */
+/** The axis scale of a level under a size setting, if the bundle has axes. */
 export function axisScale(b: Bundle, s: SizeSetting, level: number): AxisScale | undefined {
   return b.meta.axes?.scales[s]?.[String(level)];
 }

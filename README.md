@@ -2,39 +2,39 @@
 
 *Visualizing a career*
 
-A 3D terrain of American industries, built only from public data, that a
+A landscape of American industries, built only from public data, that a
 person can place a career on. Research and academia show up as the industries
 that do them (colleges and universities, scientific R&D services).
 
-This is version 2, live at https://teahop.github.io/big-picture/.
+This is version 3. The site is at https://teahop.github.io/big-picture/.
 
 ## What it does
 
-- **One industry terrain:** every industry raises the ground; height is its own
-  size (compressed so small sectors still form hills), and each peak shows only
-  its own industry.
+- **Meaningful axes:** left to right is projected employment growth to 2035
+  (faster growth to the right); front to back is size, with the largest
+  industries at the back. Height is size too. Each industry leans a little
+  toward its sector, and the details panel still lists its most similar
+  industries.
 - **Two size settings:** Jobs (BLS Employment Matrix 2025) and Value added
-  (BEA 2025).
-- **Layout by similarity:** industries sit near others with a similar,
-  distinctive occupation mix and description; a detailed industry can sit
-  outside its sector's area.
-- **Two levels of detail:** 20 sectors as 3D hills, then 304 detailed industries
-  as a 2D topographic map.
+  (BEA 2025); switching slides the hills to their new places.
+- **Two levels of detail:** 20 sectors as 3D California hills with their names
+  laid into the grass, then 304 detailed industries as a 2D topographic map
+  (contours, elevation tints, axes in the margins, names that never overlap).
 - **Add your CV:** a visitor adds a CV (PDF, pasted text, or rows filled in by
-  hand); a language model reads it through the site's proxy and suggests an
-  industry for each role and degree; the visitor confirms every row. Nothing is
-  stored. The career is drawn as California wildflowers on the hills it touched,
-  each hill blooming over its share; step down from sectors into industries. Clear CV removes it.
-- **Look:** rolling hills to every edge under a blue sky, or a moonlit night.
+  hand); a language model reads it through the site's proxy and the career is
+  drawn straight away, with Make adjustments to change any row. Nothing is
+  stored. The career shows as wildflowers on the sector hills and as rainbow
+  contour bands on the industry map; choosing a sector steps down into its
+  industries. Clear CV removes it.
+- **Look:** rolling hills under a blue sky with hand-lettered axis signs, or a
+  moonlit night; the industry map has day and night palettes too.
 
 Without WebGL the page shows a one-line message and the node lists.
 
-v1 (the earlier "Industry Map") is documented only in `docs/v1/`.
-
 Personal data never enters this repository. See `SPEC.md` and `CLAUDE.md`.
 
-Status and build order: `PLAN.md`. Design: `SPEC.md` (v3, in progress on the `v3`
-branch). The v2 documents are in `docs/v2/` and v1 in `docs/v1/`.
+Status and build order: `PLAN.md`. Design: `SPEC.md` (v3). The v2 documents are
+in `docs/v2/` and v1 (the earlier "Industry Map") in `docs/v1/`.
 
 ## Setup
 

@@ -281,7 +281,10 @@ export class Map2D {
       const lit = id === this.state.active?.id || id === this.state.selected?.id;
       items.push({ id, x, y, w: l.w, h: l.h, priority: (lit ? 1e15 : 0) + (touched?.has(id) ? 1e12 * (1 + (touched.get(id) ?? 0)) : 0) + (n.size[m] ?? 0) });
     }
-    const placed = new Map(placeLabels(items, { w: this.w - 4, h: this.h - 40 }, 4).map((p) => [p.id, p]));
+    // names stay clear of the axis strips (left and bottom) and the header
+    const left = MARGIN.left + 2, top = 4;
+    const shifted = items.map((it) => ({ ...it, x: it.x - left, y: it.y - top }));
+    const placed = new Map(placeLabels(shifted, { w: this.w - left - 4, h: this.h - top - 34 }, 4).map((p) => [p.id, { ...p, x: p.x + left, y: p.y + top }]));
     for (const [id, l] of this.labels) {
       const p = placed.get(id);
       l.el.style.visibility = p ? "visible" : "hidden";
@@ -299,12 +302,14 @@ export class Map2D {
       s.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`; return s;
     };
     const xs: HTMLElement[] = [], ys: HTMLElement[] = [], m = this.state.measure;
+    // a shorter axis title on narrow screens, so the ticks have room
+    const narrow = this.w < 640, titleText = narrow ? "Growth →" : "Projected growth to 2035 →", titleW = narrow ? 80 : 190;
     let last = -Infinity;
     for (const t of niceTicks(sc.g_lo, sc.g_hi, 5)) {
       const [px] = this.screen(-1 + (2 * (t - sc.g_lo)) / (sc.g_hi - sc.g_lo), 0);
-      if (px > 70 && px < this.w - 190 && px - last >= 48) { xs.push(tick("t", (t > 0 ? "+" : "") + t + "%", px, 0)); last = px; }   // clear of the title and each other
+      if (px > 70 && px < this.w - titleW && px - last >= 48) { xs.push(tick("t", (t > 0 ? "+" : "") + t + "%", px, 0)); last = px; }   // clear of the title and each other
     }
-    xs.push(tick("title", "Projected growth to 2035 →", this.w - 12, 0));
+    xs.push(tick("title", titleText, this.w - 12, 0));
     for (const v of logTicks(sc.s_lo, sc.s_hi)) {
       const [, py] = this.screen(0, 1 - (2 * (Math.log(v) - Math.log(sc.s_lo))) / (Math.log(sc.s_hi) - Math.log(sc.s_lo)));
       if (py > 20 && py < this.h - 40) ys.push(tick("t", fmtMeasure(m, v), 0, py));
