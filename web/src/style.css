@@ -41,8 +41,12 @@ html, body { margin: 0; height: 100%; color: var(--fg); font: 14px/1.45 var(--fo
 html { background: var(--sky-top); }
 body { background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 45%, var(--horizon) 100%) fixed; }
 body { display: flex; flex-direction: column; }
-header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-h1 { margin: 0; font-size: 16px; margin-right: auto; }
+header { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+h1 { margin: 0; font-size: 16px; }
+/* the instructions under the title, with the toggles set into the sentences */
+.intro { max-width: 980px; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .3); font-size: 14px; line-height: 2.1; }
+.intro fieldset.seg { display: inline-flex; vertical-align: middle; line-height: 1.45; color: var(--fg); text-shadow: none; margin: 0 2px; }
+.intro .header-link { padding: 0; font-size: inherit; line-height: inherit; }
 h1 .subtitle { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 input, button { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
 input:not([type=checkbox]):not([type=radio]) { width: 200px; }
@@ -82,7 +86,8 @@ dt { color: var(--muted); } dd { margin: 0; }
 @media (max-width: 720px) {
   main { flex-direction: column; }
   html, body { height: auto; min-height: 100%; }
-  header { padding: 8px 12px; gap: 8px; }
+  header { padding: 8px 12px; gap: 4px; }
+  .intro { font-size: 13px; line-height: 2; }
   .map { flex: none; height: 62vh; }                       /* the map gets most of the first screen; the page scrolls to the panel */
   aside { width: auto; border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
 }
@@ -152,14 +157,25 @@ aside button { color: inherit; }
 .header-link { border: 0; background: none; padding: 4px 2px; color: #fff; text-decoration: underline; text-underline-offset: 3px; text-shadow: 0 1px 2px rgb(0 0 0 / .25); cursor: pointer; }
 
 /* CV dialog */
-#cv { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 20px 24px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--fg); }
+/* the meadow of the side panel: hill green, cream text, goldfields accents, light fields to write in */
+#cv { --panel: #3b6420; --fg: #f7f4e6; --muted: #d4e3b6; --line: rgb(255 255 255 / .28); --accent: #ffd166; --field: #fbf8ec; --field-ink: #1f2a16;
+  width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; padding: 20px 24px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); color: var(--fg); box-shadow: 0 12px 40px rgb(0 0 0 / .35); }
+:root[data-theme="dark"] #cv { --panel: #12210f; --fg: #e9efe0; --muted: #a8bb90; --line: rgb(255 255 255 / .18); --field: #1d3019; --field-ink: #e9efe0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #cv { --panel: #12210f; --fg: #e9efe0; --muted: #a8bb90; --line: rgb(255 255 255 / .18); --field: #1d3019; --field-ink: #e9efe0; } }
+#cv .close { background: transparent; color: var(--fg); border-color: var(--line); }
+#cv button:focus-visible, #cv input:focus-visible, #cv textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #cv::backdrop { background: rgb(0 0 0 / .5); }
 #cv h2 { margin: 0 0 8px; }
 #cv form { float: right; margin: 0; }
 #cv label { display: block; margin: 10px 0; font-size: 13px; }
-#cv textarea, #cv input:not([type=checkbox]):not([type=file]) { display: block; width: 100%; box-sizing: border-box; margin-top: 3px; padding: 5px 7px; font: inherit; border: 1px solid var(--line); border-radius: 5px; background: var(--bg, #fff); color: inherit; }
+#cv textarea, #cv input:not([type=checkbox]):not([type=file]) { display: block; width: 100%; box-sizing: border-box; margin-top: 3px; padding: 5px 7px; font: inherit; border: 1px solid var(--line); border-radius: 5px; background: var(--field); color: var(--field-ink); }
+#cv textarea { margin-top: 10px; padding: 8px 10px; resize: vertical; }
+#cv textarea::placeholder, #cv input::placeholder { color: color-mix(in srgb, var(--field-ink) 55%, transparent); }
+#cv input[type=file] { color: var(--fg); background: none; border: 0; padding: 4px 0; }
+#cv input[type=file]::file-selector-button { font: inherit; margin-right: 10px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: color-mix(in srgb, #fff 14%, transparent); color: var(--fg); cursor: pointer; }
 .cv-actions { display: flex; gap: 12px; align-items: center; margin: 12px 0 4px; flex-wrap: wrap; }
-#cv .primary { padding: 7px 14px; border-radius: 6px; border: 0; background: #2f6b2a; color: #fff; font: inherit; cursor: pointer; }
+#cv .primary { padding: 7px 14px; border-radius: 6px; border: 0; background: var(--accent); color: #2a2410; font: inherit; font-weight: 700; cursor: pointer; }
 #cv .link { border: 0; background: none; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; font-size: 13px; }
 .cv-status { min-height: 1.3em; font-size: 13px; }
 .cv-status.busy::before { content: "⏳ "; }
@@ -171,8 +187,8 @@ aside button { color: inherit; }
 .cv-guess { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
 .cv-guess .cv-search { flex: 1 1 180px; width: auto !important; margin: 0 !important; }
 .chip { border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
-.chip.on { background: #2f6b2a; border-color: #2f6b2a; color: #fff; }
-.cv-check { margin: 6px 0 0; font-size: 12px; color: #a35a00; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #2a2410; }
+.cv-check { margin: 6px 0 0; font-size: 12px; color: #ffb35c; }
 .cv-del { position: absolute; top: -10px; right: 12px; padding: 0 4px !important; background: var(--panel) !important; }   /* sits on the row's border, clear of the fields */
 @media (max-width: 600px) { .cv-grid { grid-template-columns: 1fr 1fr; } }
 

@@ -90,6 +90,15 @@ export function letteringTexture(lines: string[], soft: boolean): { tex: THREE.C
 
 export interface Lettering { tex: THREE.CanvasTexture; aspect: number }
 
+const WRAP_COLS = 64, WRAP_ROWS = 10;
+const WRAP_INDEX = (() => {                                          // the strip's triangles, the same for every label
+  const idx: number[] = [];
+  for (let j = 0; j < WRAP_ROWS - 1; j++) for (let i = 0; i < WRAP_COLS - 1; i++) {
+    const k = j * WRAP_COLS + i;
+    idx.push(k, k + 1, k + WRAP_COLS, k + 1, k + WRAP_COLS + 1, k + WRAP_COLS);
+  }
+  return new Uint16Array(idx);
+})();
 /** A hill's name curved around the front of the hill, partway up its flank, like a sign laid along a contour: the text's
  *  baseline follows an ellipse around `centre` (radii `ra` along the ridge, `rb` across it, ridge angle `ang`), centred on
  *  the side facing `toward` (a unit vector in layout units, from the hill toward the viewer), with the top of the letters
@@ -124,22 +133,23 @@ export function makeWrapLabel(l: Lettering, centre: [number, number], ra: number
   const [ax, ay] = at(phi0 - 0.01), [bx, by] = at(phi0 + 0.01);
   const dir = (bx - ax) * right[0] + (by - ay) * right[1] >= 0 ? 1 : -1;
   const height = arc / l.aspect, rMean = Math.sqrt(ra * rb);
-  const cols = 64, rows = 10;
-  const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2), idx: number[] = [];
+  const cols = WRAP_COLS, rows = WRAP_ROWS;
+  const pos = new Float32Array(cols * rows * 3), uv = new Float32Array(cols * rows * 2);
+  // the curve is the same for every row: find each column's point once (many candidate spots are tried per name)
+  const curve = Array.from({ length: cols }, (_, i) => at(phiAt(dir * (i / (cols - 1) - 0.5) * arc)));
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
     const u = i / (cols - 1), v = j / (rows - 1), k = j * cols + i;
-    const [ox, oy] = at(phiAt(dir * (u - 0.5) * arc));
+    const [ox, oy] = curve[i];
     const f = 1 + ((0.5 - v) * height) / rMean;                     // v = 1 (top of the letters) lies toward the summit
     const x = centre[0] + ox * f, y = centre[1] + oy * f;
     x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
     const p = ground(x, y);
-    pos.set([p.x, p.y + 0.07, p.z], k * 3); uv.set([u, v], k * 2);
-    if (i < cols - 1 && j < rows - 1) idx.push(k, k + 1, k + cols, k + 1, k + cols + 1, k + cols);
+    pos[k * 3] = p.x; pos[k * 3 + 1] = p.y + 0.07; pos[k * 3 + 2] = p.z; uv[k * 2] = u; uv[k * 2 + 1] = v;
   }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
-  geo.setIndex(idx);
+  geo.setIndex(new THREE.BufferAttribute(WRAP_INDEX, 1));
   const mat = new THREE.MeshBasicMaterial({ map: l.tex, transparent: true, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2 });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.name = "grass-label"; mesh.renderOrder = 2;

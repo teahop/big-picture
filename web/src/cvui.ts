@@ -36,13 +36,14 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
     rows = []; title.textContent = "Add your CV";
     body.innerHTML = `
       <p class="hint">Your CV is sent to this site's reader, which asks a language model (OpenAI) to list your roles and degrees
-      and suggest an industry for each. Nothing is stored, by the site or in your browser. Your career is drawn straight away; use Make adjustments in the panel to change any row.</p>
+      and suggest industries so your career can be visualized on the map. Nothing is stored, by the site or in your browser. You can correct
+      anything the model suggested using the &lsquo;Make adjustments&rsquo; link in the panel after the map is drawn. Take a screenshot if you want to save it.</p>
       <label class="cv-file">Choose a PDF or text file <input type="file" accept=".pdf,.txt,application/pdf,text/plain" /></label>
-      <label class="cv-paste">or paste the text<textarea rows="8" maxlength="${MAX_CHARS}" placeholder="Paste your CV here"></textarea></label>
+      <textarea class="cv-paste" rows="8" maxlength="${MAX_CHARS}" placeholder="or paste the text of your CV here" aria-label="Or paste the text of your CV"></textarea>
       <div class="cv-actions"><button type="button" class="primary" data-act="read">Read my CV</button>
       <button type="button" class="link" data-act="manual">Fill in by hand instead</button></div>
       <p class="cv-status" role="status"></p>
-      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries. The result is a guess you can correct, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries.</p>`;
   };
 
   const readText = async () => {
@@ -99,7 +100,7 @@ export function buildCvDialog(b: Bundle, show: (fp: FootprintData | null) => voi
       <div class="cv-actions"><button type="button" class="link" data-act="add-role">+ role</button><button type="button" class="link" data-act="add-degree">+ degree</button></div>
       <div class="cv-actions"><button type="button" class="primary" data-act="show">Show on map</button><button type="button" class="link" data-act="restart">Start again</button></div>
       <p class="cv-status" role="status">${esc(msg)}</p>
-      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries. The result is a guess you can correct, not an assessment.</p>`;
+      <p class="hint cv-limits">The map is of the United States, and its finest level is the 304 detailed industries.</p>`;
   };
   const redrawRow = (i: number) => {
     const el = body.querySelector(`.cv-row[data-i="${i}"]`);

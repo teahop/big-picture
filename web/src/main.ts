@@ -55,7 +55,7 @@ async function start(): Promise<void> {
   // The machinery is built on first use; `useFootprint(null)` clears it.
   let fpData: FootprintData | null = null, fpReady: Promise<void> | null = null;
   const clear = $<HTMLButtonElement>("cv-clear"), add = $<HTMLButtonElement>("cv-open");
-  const showCvButton = (loaded: boolean) => { clear.hidden = !loaded; add.hidden = loaded; };   // one or the other
+  const showCvButton = (loaded: boolean) => { $("cv-clear-line").hidden = !loaded; $("cv-add-line").hidden = loaded; };   // one sentence or the other
   const panelExtra: { fn?: (n: NodeRec) => string } = {};
   const setMode = (m: FootprintMode) => {
     const c = m === "off" || !fpData ? null : compute(fpData, h(), __VIEWER__.footprint);
