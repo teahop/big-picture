@@ -106,7 +106,7 @@ export class Scene3D {
     this.scale = SPAN / (g.x[1] - g.x[0]);
     this.cx = (g.x[0] + g.x[1]) / 2; this.cy = (g.y[0] + g.y[1]) / 2;
 
-    this.map2d = new Map2D(el, labelLayer, b, state, () => this.ownerGrid(), this.scale, this.cx, this.cy, STRETCH_X, STRETCH_Z);
+    this.map2d = new Map2D(el, labelLayer, b, state, this.scale, this.cx, this.cy, STRETCH_X, STRETCH_Z);
     this.map2d.onLeave = () => this.onLeave2D();
 
     this.camera.position.copy(HOME);   // oblique view across the hills, high enough to read the large sectors at the back

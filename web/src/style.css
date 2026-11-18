@@ -232,7 +232,7 @@ h1 .title-art { display: block; height: 30px; width: auto; filter: drop-shadow(0
 :root[data-theme="dark"] .map-label.career { color: #fff; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map-label.career { color: #fff; } }
 .map-label.est { font-style: italic; }
-.map-label.active { color: var(--topo-accent); text-decoration: underline; text-underline-offset: 2px; }
+.map-label.active { color: var(--topo-accent); }
 .map2d-axis { position: absolute; font: 500 11px var(--font-body); color: var(--topo-ink); }
 .map2d-axis.x { left: 0; right: 0; bottom: 0; height: 28px; background: color-mix(in srgb, var(--topo-paper) 88%, transparent); border-top: 1px solid color-mix(in srgb, var(--topo-line) 40%, transparent); }
 .map2d-axis.y { left: 0; top: 0; bottom: 28px; width: 58px; background: color-mix(in srgb, var(--topo-paper) 88%, transparent); border-right: 1px solid color-mix(in srgb, var(--topo-line) 40%, transparent); }

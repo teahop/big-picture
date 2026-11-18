@@ -8,7 +8,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { type Bundle, type NodeRec, axisScale, fmtMeasure, sampleAt } from "./data";
-import type { Owners } from "./footprintLayer";
+import { owners, type Owners } from "./footprintLayer";
 import { logTicks, mapLines, niceTicks, placeLabels, type LabelItem } from "./labels2d";
 import type { State } from "./state";
 
@@ -16,7 +16,7 @@ const HEIGHT_EASE = 0.8;     // same easing as the 3D heights
 const CONTOUR = 0.05;        // contour interval (share of the tallest peak, after easing); every fifth is an index contour
 const BORDER = 1.1;          // the neat border, in layout units (the hills fill -1..1)
 const MIN_ZOOM = 0.8;
-const HILL_FLOOR = 0.2;
+const CAREER_REACH = 1.4;    // a career hill is coloured this many hill widths (kernel sigmas) out from its summit
 const MARGIN = { top: 70, bottom: 30, left: 60, right: 10 };   // screen space kept clear around the whole map (pixels)        // zooming out past this returns to the 3D Sectors view
 
 const VERT = /* glsl */ `
@@ -30,11 +30,22 @@ uniform float interval, border;
 uniform vec3 paper, low, mid, high, line, accent;
 varying vec2 vUv;
 vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1.0), k, s); }
+// heights sampled with a smooth (cubic B-spline) filter from four bilinear taps: plain bilinear heights bend at every
+// grid cell, which zoomed in breaks the contour lines into jagged dashes
+float hAt(vec2 t) {
+  vec2 p = t / texel - 0.5, i = floor(p), f = p - i, f2 = f * f, f3 = f2 * f;
+  vec2 w0 = (1.0 - 3.0 * f + 3.0 * f2 - f3) / 6.0, w1 = (4.0 - 6.0 * f2 + 3.0 * f3) / 6.0;
+  vec2 w2 = (1.0 + 3.0 * f + 3.0 * f2 - 3.0 * f3) / 6.0, w3 = f3 / 6.0;
+  vec2 g0 = w0 + w1, g1 = w2 + w3;
+  vec2 c0 = (i - 0.5 + w1 / g0) * texel, c1 = (i + 1.5 + w3 / g1) * texel;
+  return g0.y * (g0.x * texture2D(hTex, vec2(c0.x, c0.y)).r + g1.x * texture2D(hTex, vec2(c1.x, c0.y)).r)
+       + g1.y * (g0.x * texture2D(hTex, vec2(c0.x, c1.y)).r + g1.x * texture2D(hTex, vec2(c1.x, c1.y)).r);
+}
 void main() {
   vec2 t = vec2(vUv.x, 1.0 - vUv.y);                        // texture row 0 is the back of the map (top of the screen)
-  float h = texture2D(hTex, t).r;
-  float dx = texture2D(hTex, t + vec2(texel.x, 0.0)).r - texture2D(hTex, t - vec2(texel.x, 0.0)).r;
-  float dup = texture2D(hTex, t - vec2(0.0, texel.y)).r - texture2D(hTex, t + vec2(0.0, texel.y)).r;
+  float h = hAt(t);
+  float dx = hAt(t + vec2(texel.x, 0.0)) - hAt(t - vec2(texel.x, 0.0));
+  float dup = hAt(t - vec2(0.0, texel.y)) - hAt(t + vec2(0.0, texel.y));
   vec3 n = normalize(vec3(-dx * 9.0, -dup * 9.0, 1.0));
   float shade = clamp(dot(n, normalize(vec3(-1.0, 1.0, 1.3))), 0.0, 1.0);
   // hypsometric tints: paper on the flat, then low green through buff to pale brown on the tops
@@ -43,20 +54,21 @@ void main() {
   tint = mix(paper, tint, smoothstep(0.004, 0.03, h));
   vec4 m = texture2D(mTex, t);
   // a career: rainbow bands between the contour lines, violet at the foot of the hill to red at its top
-  if (m.r > 0.5) {
+  float car = smoothstep(0.3, 0.7, m.r);                  // (softened edge: the mask is blurred a little)
+  if (car > 0.0) {
     float band = (floor(h / interval) + 0.5) * interval, top = max(m.g, m.a + interval);
     float rel = clamp((band - m.a) / (top - m.a), 0.0, 1.0);
-    tint = mix(tint, hsv(0.78 * (1.0 - rel), 0.62, 0.97), 0.88);
+    tint = mix(tint, hsv(0.78 * (1.0 - rel), 0.62, 0.97), 0.88 * car);
   }
   vec3 col = tint * (0.78 + 0.32 * shade);
-  // contours: thin lines every interval, heavier every fifth; drawn in the accent colour on the hovered hill
+  // contours: thin lines every interval, heavier every fifth; on the hovered hill they are a little heavier and red
+  // (only the lines change: the ground keeps its colour), fading in over a soft edge
   float c = h / interval, f = abs(fract(c - 0.5) - 0.5) / fwidth(c);
   bool idx = mod(floor(c + 0.5), 5.0) < 0.5;
-  float hov = step(0.5, m.b);
-  float wdt = (idx ? 1.25 : 0.7) + hov * 0.8;
-  float ink = (1.0 - smoothstep(wdt - 0.5, wdt + 0.5, f)) * step(0.004, h) * (idx ? 0.8 : 0.45);
-  col = mix(col, col * 1.06 + accent * 0.1, hov * 0.55);         // the hovered hill is lit a little...
-  col = mix(col, mix(line, accent, hov), clamp(ink + hov * 0.45 * step(0.01, ink), 0.0, 1.0));   // ...and its contours turn red
+  float hov = smoothstep(0.2, 0.8, m.b);
+  float wdt = (idx ? 1.25 : 0.7) + hov * 0.6;
+  float ink = (1.0 - smoothstep(wdt - 0.6, wdt + 0.6, f)) * smoothstep(0.002, 0.006, h) * mix(idx ? 0.8 : 0.45, 0.95, hov);
+  col = mix(col, mix(line, accent, hov), ink);
   vec2 L = vec2(gx.x + vUv.x * (gx.y - gx.x), gy.x + t.y * (gy.y - gy.x));
   // the neat border
   vec2 bd = abs(abs(L) - border) / fwidth(L);
@@ -65,6 +77,22 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }`;
+
+/** Box-blur one channel of an RGBA grid in place (radius in cells, separable). */
+function soften(d: Uint8Array, n: number, ch: number, r: number): void {
+  const a = new Float32Array(n * n), b = new Float32Array(n * n);
+  for (let k = 0; k < n * n; k++) a[k] = d[4 * k + ch];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    let s = 0, c = 0;
+    for (let q = Math.max(0, i - r); q <= Math.min(n - 1, i + r); q++) { s += a[j * n + q]; c++; }
+    b[j * n + i] = s / c;
+  }
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    let s = 0, c = 0;
+    for (let q = Math.max(0, j - r); q <= Math.min(n - 1, j + r); q++) { s += b[q * n + i]; c++; }
+    d[4 * (j * n + i) + ch] = Math.round(s / c);
+  }
+}
 
 interface Palette { paper: string; low: string; mid: string; high: string; line: string; accent: string }
 
@@ -86,11 +114,13 @@ export class Map2D {
   private labels = new Map<string, { el: HTMLDivElement; w: number; h: number }>();
   private key = ""; private maskKey = ""; private viewKey = "";
   private w = 1; private h = 1;
+  private own: Owners | null = null; private ownKey = ""; private ownVis: Set<string> | null = null;
+  private placed: { id: string; x: number; y: number; w: number; h: number }[] = [];
   onLeave: () => void = () => {};
   labelsShown = 0;
 
   constructor(private canvas: HTMLElement, labelLayer: HTMLElement, private b: Bundle, private state: State,
-              private ownerGrid: () => Owners, private scale: number, private cx: number, private cy: number,
+              private scale: number, private cx: number, private cy: number,
               private sx: number, private sy: number) {
     this.camera.position.set(0, 0, 50); this.camera.up.set(0, 1, 0); this.camera.lookAt(0, 0, 0);
     this.controls = new OrbitControls(this.camera, canvas);
@@ -122,6 +152,18 @@ export class Map2D {
   }
 
   setActive(on: boolean): void { this.controls.enabled = on; this.overlay.hidden = !on; if (on) this.viewKey = ""; }
+
+  /** Who owns each grid point in 2D: the nearest summit (in its hill's own shape), so the ground under a name is that
+   *  name's and a small hill on a big one's slope still has ground to colour, hover and click. */
+  private ownerGrid(): Owners {
+    const k = [this.state.size, this.state.level].join("|");
+    if (!this.own || k !== this.ownKey || this.ownVis !== this.state.visibleIds) {
+      const vis = this.b.nodes.filter((n) => this.state.visibleIds.has(n.id));
+      this.own = owners(this.b.grids[this.state.level]!, vis, this.state.measure, this.b.meta.terrain, 0, true);
+      this.ownKey = k; this.ownVis = this.state.visibleIds;
+    }
+    return this.own;
+  }
 
   // ---- heights, career and hover
   /** Redraw for the current level and size setting (and career). */
@@ -158,15 +200,23 @@ export class Map2D {
     const h = (k: number) => Math.pow(Math.max(0, vals[k] / max), HEIGHT_EASE);
     const data = new Uint8Array(n * n * 4);
     if (touched?.size) {
-      const cells = new Map<number, number[]>();
-      for (let k = 0; k < o.owner.length; k++) { const w = o.owner[k]; if (w >= 0 && touched.has(o.ids[w])) (cells.get(w) ?? cells.set(w, []).get(w)!).push(k); }
-      for (const [w, ks] of cells) {
-        ks.sort((p, q) => h(q) - h(p));                  // summit first
-        // the hill itself: not the low ground at its edges that only loosely belongs to it
-        const floor = h(ks[0]) * HILL_FLOOR, cut = ks.findIndex((k) => h(k) < floor);
-        if (cut > 0) ks.length = cut;
-        // the whole career hill is coloured (owner, 2026-11-13; colouring only the career's share was nearly invisible)
-        const top = h(ks[0]), foot = Math.floor(h(ks[ks.length - 1]) / CONTOUR) * CONTOUR;   // violet starts at the contour below the lowest coloured ground
+      // each career hill is coloured out to CAREER_REACH widths of its own hill from its summit, over its neighbours'
+      // ground if need be (owner, 2026-11-17: at the detailed level a hill's own ground is smaller than its name, so
+      // the colour hid under the lettering); where two career hills meet, the nearer summit wins
+      const vis = this.b.nodes.filter((x) => this.state.visibleIds.has(x.id)), m = this.state.measure;
+      const big = vis.reduce((a, x) => Math.max(a, x.size[m] ?? 0), 0);
+      const mine = owners(g, vis.filter((x) => touched.has(x.id)), m, this.b.meta.terrain, big, true);
+      const peak = new Map<number, number>();
+      for (let k = 0; k < mine.owner.length; k++) { const w = mine.owner[k]; if (w >= 0) peak.set(w, Math.max(peak.get(w) ?? 0, mine.strength![k])); }
+      const cells = new Map<number, number[]>(), reach = Math.exp(-CAREER_REACH * CAREER_REACH / 2);
+      for (let k = 0; k < mine.owner.length; k++) {
+        const w = mine.owner[k];
+        if (w >= 0 && mine.strength![k] >= reach * peak.get(w)!) (cells.get(w) ?? cells.set(w, []).get(w)!).push(k);
+      }
+      for (const ks of cells.values()) {
+        let top = 0, low = 1;
+        for (const k of ks) { top = Math.max(top, h(k)); low = Math.min(low, h(k)); }
+        const foot = Math.floor(low / CONTOUR) * CONTOUR;   // violet starts at the contour below the lowest coloured ground
         for (const k of ks) { data[4 * k] = 255; data[4 * k + 1] = Math.round(top * 255); data[4 * k + 3] = Math.round(foot * 255); }
       }
     }
@@ -182,13 +232,18 @@ export class Map2D {
     }
     const lit = new Set([act?.id, sel?.id].filter((x): x is string => !!x).map((id) => o.ids.indexOf(id)).filter((i) => i >= 0));
     if (lit.size) for (let k = 0; k < o.owner.length; k++) if (lit.has(o.owner[k])) data[4 * k + 2] = 255;
+    // soften the career (R) and hover (B) edges so they do not follow the grid cells as steps (R by one cell, inside
+    // the ring of copied tops and feet above; B by two)
+    soften(data, n, 0, 1); soften(data, n, 2, 2);
     this.mTex?.dispose();
     this.mTex = new THREE.DataTexture(data, n, n, THREE.RGBAFormat);
     Object.assign(this.mTex, { magFilter: THREE.LinearFilter, minFilter: THREE.LinearFilter, needsUpdate: true });
     this.mat.uniforms.mTex.value = this.mTex;
     for (const [id, l] of this.labels) l.el.classList.toggle("active", id === act?.id || id === sel?.id);
-    if (touched) for (const [id, l] of this.labels) l.el.classList.toggle("career", touched.has(id));
-    this.viewKey = "";
+    for (const [id, l] of this.labels) {
+      const was = l.el.classList.contains("career"), now = !!touched?.has(id);
+      if (was !== now) { l.el.classList.toggle("career", now); l.w = 0; this.viewKey = ""; }   // (a career name is bolder: re-measure)
+    }
   }
 
   applyTheme(): void {
@@ -238,6 +293,10 @@ export class Map2D {
   /** The hill under the pointer: the industry that owns that ground. */
   nodeAt(ev: PointerEvent): NodeRec | null {
     const r = this.canvas.getBoundingClientRect();
+    // a name stands for its own hill (it may sit just off the summit, over a neighbour's ground)
+    const sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+    const lab = this.placed.find((p) => Math.abs(sx - p.x) * 2 <= p.w + 4 && Math.abs(sy - p.y) * 2 <= p.h + 4);
+    if (lab) return this.b.byId.get(lab.id) ?? null;
     const v = new THREE.Vector3(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1, 0).unproject(this.camera);
     const [x, y] = this.layoutAt(v.x, v.y), g = this.b.grids[this.state.level]!, o = this.ownerGrid();
     const i = Math.round(((x - g.x[0]) / (g.x[1] - g.x[0])) * (g.n - 1)), j = Math.round(((y - g.y[0]) / (g.y[1] - g.y[0])) * (g.n - 1));
@@ -269,7 +328,9 @@ export class Map2D {
 
   /** Place the names and the axis ticks for the current view (only when the view or the career changed). */
   private layout(): void {
-    const key = [this.camera.zoom.toFixed(4), this.camera.position.x.toFixed(4), this.camera.position.y.toFixed(4), this.w, this.h, this.maskKey].join("|");
+    // (not on hover: re-placing names under the pointer moved them, which hovered another hill, and so on)
+    const key = [this.camera.zoom.toFixed(4), this.camera.position.x.toFixed(4), this.camera.position.y.toFixed(4), this.w, this.h, this.key,
+                 this.state.fpVersion, this.state.selected?.id ?? ""].join("|");
     if (key === this.viewKey) return;
     this.viewKey = key;
     const touched = this.state.touchedNow(), m = this.state.measure, items: LabelItem[] = [];
@@ -277,8 +338,8 @@ export class Map2D {
       const n = this.b.byId.get(id)!;
       if (!l.w) { l.w = l.el.offsetWidth || 80; l.h = l.el.offsetHeight || 14; }
       const [x, y] = this.screen(n.xy[0], n.xy[1]);
-      // the hovered or selected hill's name always comes first (so a lit hill always shows its name), then the career's
-      const lit = id === this.state.active?.id || id === this.state.selected?.id;
+      // the selected hill's name always comes first (so it always shows), then the career's
+      const lit = id === this.state.selected?.id;
       items.push({ id, x, y, w: l.w, h: l.h, priority: (lit ? 1e15 : 0) + (touched?.has(id) ? 1e12 * (1 + (touched.get(id) ?? 0)) : 0) + (n.size[m] ?? 0) });
     }
     // names stay clear of the axis strips (left and bottom) and the header
@@ -290,7 +351,7 @@ export class Map2D {
       l.el.style.visibility = p ? "visible" : "hidden";
       if (p) l.el.style.transform = `translate(${(p.x - l.w / 2).toFixed(1)}px, ${(p.y - l.h / 2).toFixed(1)}px)`;
     }
-    this.labelsShown = placed.size;
+    this.labelsShown = placed.size; this.placed = [...placed.values()];
     this.drawAxes();
   }
 

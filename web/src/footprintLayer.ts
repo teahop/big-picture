@@ -5,11 +5,15 @@ import type { LevelGrids, Measure, Meta, NodeRec } from "./data";
 /** owner: index into ids per grid point (-1 = flat ground); strength: the owner's own peak value there (how far up its hill). */
 export interface Owners { owner: Int32Array; ids: string[]; strength?: Float32Array }
 
-/** For every grid point, the visible industry whose peak is tallest there (the same rule the terrain is built with:
+/** `nearest`: instead, the industry whose summit is nearest in its own hill's shape (its peak relative to its own
+ *  height), so every hill owns the ground around its summit even where a bigger neighbour is taller (the 2D map, where
+ *  the ground under a name should be that name's). The flat-ground cut is the same.
+ *
+ *  For every grid point, the visible industry whose peak is tallest there (the same rule the terrain is built with:
  *  amplitude (size / largest) ** height_exponent, kernel width shrinking with level), or -1 on flat ground (beyond
  *  about two kernel widths of every peak). */
-export function owners(g: LevelGrids, nodes: NodeRec[], measure: Measure, t: Meta["terrain"], max = 0): Owners {
-  const n = g.n, best = new Float32Array(n * n), owner = new Int32Array(n * n).fill(-1), floor = new Float32Array(nodes.length);
+export function owners(g: LevelGrids, nodes: NodeRec[], measure: Measure, t: Meta["terrain"], max = 0, nearest = false): Owners {
+  const n = g.n, best = new Float32Array(n * n), score = new Float32Array(n * n), owner = new Int32Array(n * n).fill(-1), floor = new Float32Array(nodes.length);
   max = max || nodes.reduce((m, x) => Math.max(m, x.size[measure] ?? 0), 0) || 1;   // pass the level's largest when `nodes` is a subset
   const dx = (g.x[1] - g.x[0]) / (n - 1), dy = (g.y[1] - g.y[0]) / (n - 1);
   nodes.forEach((node, idx) => {
@@ -26,7 +30,8 @@ export function owners(g: LevelGrids, nodes: NodeRec[], measure: Measure, t: Met
       const x = g.x[0] + dx * i - px, y = g.y[0] + dy * j - py;
       const u = x * ca + y * sn, w = -x * sn + y * ca;   // along and across the ridge (the pipeline's hill shape)
       const v = amp * Math.exp(-(u * u / (2 * sa * sa) + w * w / (2 * sb * sb))), k = j * n + i;
-      if (v > best[k]) { best[k] = v; owner[k] = idx; }
+      const sc = nearest ? v / amp : v;
+      if (sc > score[k]) { score[k] = sc; best[k] = v; owner[k] = idx; }
     }
   });
   for (let k = 0; k < owner.length; k++) if (owner[k] >= 0 && best[k] < floor[owner[k]]) owner[k] = -1;
